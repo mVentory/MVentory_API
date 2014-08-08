@@ -243,8 +243,8 @@ class MVentory_API_Model_Product_Attribute_Api
              ->delete($table, $condition);
   }
 
-  protected function _isAllowedAttribute ($attr, $attrs = null) {
-    if (!parent::__isAllowedAttribute($attr, $attrs))
+  protected function __isAllowedAttribute ($attr, $attrs = null) {
+    if (!parent::_isAllowedAttribute($attr, $attrs))
       return false;
 
     if (!(($attr->getIsVisible() && $attr->getIsUserDefined())
