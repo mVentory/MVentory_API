@@ -163,37 +163,6 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
     return $ids ? $ids[0] : null;
   }
 
-  /**
-   * Check if api user has access to a product.
-   *
-   * Return true if current api users assigned to the Admin website
-   * or to the same website as the product
-   *
-   * @param  int|string $productId (SKU or ID)
-   * @param  string $identifierType
-   *
-   * @return boolean
-   */
-  public function hasApiUserAccess ($productId, $identifierType = null) {
-    $userWebsite = $this->getApiUserWebsite();
-
-    if (!$userWebsite)
-      return false;
-
-    $userWebsiteId = $userWebsite->getId();
-
-    if ($userWebsiteId == 0)
-      return true;
-
-    $id = $this->getProductId($productId, $identifierType);
-
-    $productWebsiteId = $this
-                          ->getWebsite($id)
-                          ->getId();
-
-    return $productWebsiteId == $userWebsiteId;
-  }
-
   public function updateFromSimilar ($product, $similar) {
     if ($similar instanceof Mage_Catalog_Model_Product)
       $similar = array($similar);

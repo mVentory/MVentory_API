@@ -273,27 +273,6 @@ EOT;
       $image['disabled'] = 0;
   }
 
-  public function checkAccessToWebsite ($observer) {
-    $apiUser = $observer->getModel();
-
-    $helper = Mage::helper('mventory');
-
-    $website = $helper->getApiUserWebsite($apiUser);
-
-    if (!$website) {
-      $apiUser->setId(null);
-
-      return;
-    }
-
-    //Allow access to all websites for customers assigned to Admin website
-    if (($websiteId = $website->getId()) == 0)
-      return;
-
-    if ($helper->getCurrentWebsite()->getId() != $websiteId)
-      $apiUser->setId(null);
-  }
-
   /**
    * Unset is_duplicate flag to prevent coping image files
    * in Mage_Catalog_Model_Product_Attribute_Backend_Media::beforeSave() method

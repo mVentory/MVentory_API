@@ -81,7 +81,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     $productId = $helper->getProductId($productId, $identifierType);
 
-    if (!($productId && $helper->hasApiUserAccess($productId, 'id')))
+    if (!$productId)
       $this->_fault('product_not_exists');
 
     $website = Mage::helper('mventory/product')->getWebsite($productId);
@@ -587,8 +587,8 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
   /**
    * Return loaded product instance
    *
-   * The function is redefined to check if api user has access to the product
-   * and to load product but barcode or additional SKUs
+   * The function is redefined to load product by barcode or additional SKUs
+   * or load children product if specified product is configurable
    *
    * @param  int|string $productId (SKU or ID)
    * @param  int|string $store
@@ -602,7 +602,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     $productId = $helper->getProductId($productId, $identifierType);
 
-    if (!($productId && $helper->hasApiUserAccess($productId, 'id')))
+    if (!$productId)
       $this->_fault('product_not_exists');
 
     $helper = Mage::helper('mventory/product_configurable');

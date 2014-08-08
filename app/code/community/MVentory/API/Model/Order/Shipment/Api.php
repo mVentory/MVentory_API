@@ -48,23 +48,6 @@ class MVentory_API_Model_Order_Shipment_Api extends Mage_Sales_Model_Order_Shipm
     if (!$order->getId())
       $this->_fault('order_not_exists');
 
-    $userWebsite = Mage::helper('mventory')->getApiUserWebsite();
-
-    if (!$userWebsite)
-      $this->_fault('access_denied');
-
-    $userWebsiteId = $userWebsite->getId();
-
-    if ($userWebsiteId == 0)
-      return $order;
-
-    $orderWebsiteId = $order
-                        ->getStore()
-                        ->getWebsiteId();
-
-    if ($orderWebsiteId != $userWebsiteId)
-      $this->_fault('not_exists');
-
     $shipmentId = $this->create($orderIncrementId,$itemsQty,$comment,$email,
       $includeComment);
 

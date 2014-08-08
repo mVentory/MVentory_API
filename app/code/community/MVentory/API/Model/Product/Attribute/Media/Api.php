@@ -163,7 +163,8 @@ class MVentory_API_Model_Product_Attribute_Media_Api
   /**
    * Retrieve product
    *
-   * The function is redefined to check if api user has access to the product
+   * The function is redefined to allow loading product by additional SKU
+   * or barcode
    *
    * @param int|string $productId
    * @param string|int $store
@@ -177,7 +178,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
 
     $productId = $helper->getProductId($productId, $identifierType);
 
-    if (!($productId && $helper->hasApiUserAccess($productId, 'id')))
+    if (!$productId)
       $this->_fault('product_not_exists');
 
     $product = Mage::getModel('catalog/product')

@@ -55,23 +55,6 @@ class MVentory_API_Helper_Data extends Mage_Core_Helper_Abstract {
   }
 
   /**
-   * Retrieve website which current or specified API user is assigned with
-   *
-   * @param Mage_Api_Model_User $user API user
-   *
-   * @return null|Mage_Core_Model_Website
-   */
-  public function getApiUserWebsite ($user = null) {
-    if (!$customer = $this->getCustomerByApiUser($user))
-      return null;
-
-    if (($websiteId = $customer->getWebsiteId()) === null)
-      return null;
-
-    return Mage::app()->getWebsite($websiteId);
-  }
-
-  /**
    * Get a customer assigned to the current API user or specified one
    *
    * @param Mage_Api_Model_User $user API user
