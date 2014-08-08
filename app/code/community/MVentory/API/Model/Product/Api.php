@@ -620,33 +620,4 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     return $product;
   }
-
-  /**
-   * Set additional data before product saved
-   *
-   * @param Mage_Catalog_Model_Product $product
-   * @param array $productData
-   */
-  protected function _prepareDataForSave ($product, $productData) {
-    parent::_prepareDataForSave($product, $productData);
-
-    if (isset($productData['stock_data']['qty'])) {
-      $qty = $this->_getStockJournalRecord($productData['stock_data']['qty']);
-
-      $record = $product->getData('mv_stock_journal')
-                . "\r\n"
-                . $qty;
-
-      $product->setData('mv_stock_journal', trim($record));
-    }
-  }
-
-  protected function _getStockJournalRecord ($qty) {
-    if (!$user = Mage::helper('mventory')->getApiUser())
-      return;
-
-    $date = Mage::getModel('core/date')->date();
-
-    return $qty . ', ' . $date . ', ' . $user->getId();
-  }
 }
