@@ -51,7 +51,7 @@ class MVentory_API_Model_Product_Attribute_Api
    * @param integer|string $attribute attribute ID or code
    * @return array
    */
-  public function info ($attr) {
+  protected function _info ($attr) {
     $attr = $attr instanceof Mage_Catalog_Model_Resource_Eav_Attribute
               ? $attr
                 : $this->_getAttribute($attr);
@@ -92,7 +92,7 @@ class MVentory_API_Model_Product_Attribute_Api
     foreach ($attrs as $attr)
       if ((!$attr->getId() || $attr->isInSet($setId))
           && $this->_isAllowedAttribute($attr))
-        $result[] = $this->info($attr);
+        $result[] = $this->_info($attr);
 
     return $result;
   }
@@ -165,7 +165,7 @@ class MVentory_API_Model_Product_Attribute_Api
       } catch (Exception $e) {}
     }
 
-    return $this->info($attributeId);
+    return $this->_info($attributeId);
   }
 
   private function getOptionLabels($storeId, $attributeId)
