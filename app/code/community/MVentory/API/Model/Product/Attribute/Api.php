@@ -39,12 +39,6 @@ class MVentory_API_Model_Product_Attribute_Api
     'tax_class_id' => true
   );
 
-  public function __construct () {
-    parent::__construct();
-
-    $this->_ignoredAttributeCodes[] = 'cost';
-  }
-
   /**
    * Get information about attribute with list of options
    *
@@ -82,6 +76,11 @@ class MVentory_API_Model_Product_Attribute_Api
   }
 
   public function fullInfoList ($setId) {
+
+    //Add 'cost' attr to the list of ignored attrs here instead in constructure
+    //to not affect other core API calls
+    $this->_ignoredAttributeCodes[] = 'cost';
+
     $attrs = Mage::getModel('catalog/product')
       ->getResource()
       ->loadAllAttributes()
@@ -91,7 +90,7 @@ class MVentory_API_Model_Product_Attribute_Api
 
     foreach ($attrs as $attr)
       if ((!$attr->getId() || $attr->isInSet($setId))
-          && $this->_isAllowedAttribute($attr))
+          && $this->__isAllowedAttribute($attr))
         $result[] = $this->_info($attr);
 
     return $result;
@@ -245,7 +244,7 @@ class MVentory_API_Model_Product_Attribute_Api
   }
 
   protected function _isAllowedAttribute ($attr, $attrs = null) {
-    if (!parent::_isAllowedAttribute($attr, $attrs))
+    if (!parent::__isAllowedAttribute($attr, $attrs))
       return false;
 
     if (!(($attr->getIsVisible() && $attr->getIsUserDefined())
