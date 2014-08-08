@@ -157,26 +157,6 @@
         </methods>
       </catalog_product_attribute_media>
 
-      <cataloginventory_stock_item>
-        <model>mventory/stock_item_api</model>
-        <acl>mventory/cataloginventory</acl>
-
-        <methods>
-          <list translate="title" module="cataloginventory">
-            <title>Retrieve stock data by product ids</title>
-            <method>items</method>
-            <acl>mventory/cataloginventory/info</acl>
-          </list>
-        </methods>
-
-        <faults module="cataloginventory">
-          <not_exists>
-            <code>101</code>
-            <message>Product not exists.</message>
-          </not_exists>
-        </faults>
-      </cataloginventory_stock_item>
-
       <cart>
         <model>mventory/cart_api</model>
         <acl>mventory/cart</acl>
@@ -383,16 +363,6 @@
               </attribute>
             </product>
           </catalog>
-
-          <cataloginventory translate="title" module="cataloginventory">
-            <title>Catalog Inventory</title>
-            <sort_order>2</sort_order>
-
-            <info translate="title" module="cataloginventory">
-              <title>Retrieve stock data</title>
-              <sort_order>1</sort_order>
-            </info>
-          </cataloginventory>
 
           <dataflow translate="title" module="mventory">
             <title>Dataflow</title>
