@@ -109,10 +109,6 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     if (isset($_result[0]))
       $result = array_merge($result, $_result[0]);
 
-    $result['set_attributes']
-      = Mage::getModel('mventory/product_attribute_api')
-          ->fullInfoList($result['set']);
-
     $productAttributeMedia
       = Mage::getModel('catalog/product_attribute_media_api');
 
@@ -133,7 +129,10 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
      $helper = Mage::helper('mventory/product_configurable');
 
     if ($siblingIds = $helper->getSiblingsIds($productId)) {
-      foreach ($result['set_attributes'] as $attr)
+      $attrs = Mage::getModel('mventory/product_attribute_api')
+        ->fullInfoList($result['set']);
+
+      foreach ($attrs as $attr)
         if ($attr['is_configurable'])
           break;
 
