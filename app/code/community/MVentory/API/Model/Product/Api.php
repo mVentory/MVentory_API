@@ -528,6 +528,10 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
   /**
    * Update product data
    *
+   * Method is redefined to:
+   *   - Update product's attribute set
+   *   - Process additional SKUs
+   *
    * @param int|string $productId
    * @param array $productData
    * @param string|int $store
@@ -546,6 +550,19 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $identifierType
     );
 
+    //Update attribute set in the product and set flag to remove old values
+    //from the DB if it's set in incoming data and is different
+    //from current one.
+    if (isset($productData['set'])
+        && ($newSet = (int) $productData['set'])
+        && ($oldSet = (int) $product->getAttributeSetId())
+        && ($removeOldValues = $newSet != $oldSet)) {
+
+      $this->_checkProductAttributeSet($newSet);
+
+      $product->setAttributeSetId($newSet);
+    }
+
     $skus = isset($productData['additional_sku'])
               ? (array) $productData['additional_sku']
                 : false;
@@ -557,6 +574,9 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       unset($productData['stock_data']);
 
     $this->_prepareDataForSave($product, $productData);
+
+    if ($removeOldValues)
+      $this->_removeOldValues($product, $oldSet, $newSet);
 
     try {
       if (is_array($errors = $product->validate())) {
@@ -636,5 +656,32 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $this->_fault('product_not_exists');
 
     return $product;
+  }
+
+  /**
+   * Remove data of attributes from the old attribute set
+   * which are not presence in the new set
+   *
+   * @param Mage_Catalog_Model_Product $product
+   * @param int $oldSet Old attribute sed ID
+   * @param int $newSet New attribute sed ID
+   */
+  protected function _removeOldValues ($product, $oldSet, $newSet) {
+    $type = $product->getTypeId();
+
+    if (!$oldAttrs = $this->getAdditionalAttributes($type, $oldSet))
+      return;
+
+    $newAttrs = $this->getAdditionalAttributes($type, $newSet);
+
+    foreach ($newAttrs as $attr)
+      $_newAttrs[$attr['code']] = true;
+
+    foreach ($oldAttrs as $oldAttr) {
+      $code = $oldAttr['code'];
+
+      if (!isset($_newAttrs[$code]))
+        $product->setData($code, false);
+    }
   }
 }
