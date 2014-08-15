@@ -24,6 +24,9 @@
  */
 class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
+  const __INVALID_VAL = 'Value for "%s" is invalid';
+  const __INVALID_VAL_ERR = 'Value for "%s" is invalid: %s';
+
   const CONF_TYPE = Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE;
 
   protected $_excludeFromProduct = array(
@@ -528,6 +531,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
    * @param int|string $productId
    * @param array $productData
    * @param string|int $store
+   * @param string $identifierType Type of $productId parameter
    * @return boolean
    */
   public function update ($productId,
@@ -535,12 +539,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
                           $store = null,
                           $identifierType = null) {
 
-    $helper = Mage::helper('mventory/product');
-
-    $productId = $helper->getProductId($productId, $identifierType);
-
-    if (!$productId)
-      $this->_fault('product_not_exists');
+    //Use admin store ID to save values of attributes in the default scope
+    $product = $this->_getProduct(
+      $productId,
+      Mage_Core_Model_App::ADMIN_STORE_ID,
+      $identifierType
+    );
 
     $skus = isset($productData['additional_sku'])
               ? (array) $productData['additional_sku']
@@ -552,16 +556,28 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     if ($skus)
       unset($productData['stock_data']);
 
-    //Use admin store ID to save values of attributes in the default scope
-    $result = parent::update(
-      $productId,
-      $productData,
-      Mage_Core_Model_App::ADMIN_STORE_ID,
-      'id'
-    );
+    $this->_prepareDataForSave($product, $productData);
 
-    if (!$result)
-      return $result;
+    try {
+      if (is_array($errors = $product->validate())) {
+        $_errors = array();
+        $cHelper = Mage::helper('catalog');
+
+        foreach ($errors as $code => $error)
+          $_errors[]
+            = $error === true
+                ? $cHelper->__(self::__INVALID_VAL, $code)
+                  : $cHelper->__(self::__INVALID_VAL_ERR, $code, $error);
+
+        $this->_fault('data_invalid', implode("\n", $_errors));
+      }
+
+      $product->save();
+    } catch (Mage_Core_Exception $e) {
+      $this->_fault('data_invalid', $e->getMessage());
+    }
+
+    $productId = $product->getId();
 
     if ($removeSkus)
       Mage::getResourceModel('mventory/sku')->removeByProductId($productId);
@@ -570,7 +586,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       Mage::getResourceModel('mventory/sku')->add(
         $skus,
         $productId,
-        $helper->getCurrentWebsite()
+        Mage::helper('mventory/product')->getCurrentWebsite()
       );
 
       $stock = Mage::getModel('cataloginventory/stock_item')
@@ -582,7 +598,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
           ->save();
     }
 
-    return $result;
+    return true;
   }
 
   /**
