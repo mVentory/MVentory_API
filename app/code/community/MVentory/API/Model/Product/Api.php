@@ -162,11 +162,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       array('product' => $product, 'website' => $website)
     );
 
-    return $product->getData();
+    return $helper->prepareApiResponse($product->getData());
   }
 
   public function limitedList ($name = null, $categoryId = null, $page = 1) {
-    $storeId = Mage::helper('mventory')->getCurrentStoreId();
+    $helper = Mage::helper('mventory');
+    $storeId = $helper->getCurrentStoreId();
 
     $limit = (int) Mage::getStoreConfig(
       MVentory_API_Model_Config::_FETCH_LIMIT,
@@ -229,7 +230,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     $result['current_page'] = $collection->getCurPage();
     $result['last_page'] = (int) $collection->getLastPageNumber();
 
-    return $result;
+    return $helper->prepareApiResponse($result);
   }
 
   public function createAndReturnInfo ($type, $set, $sku, $data,
@@ -366,7 +367,8 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
    * @return array
    */
   public function statistics () {
-    $storeId    = Mage::helper('mventory')->getCurrentStoreId();
+    $helper = Mage::helper('mventory');
+    $storeId = $helper->getCurrentStoreId();
     $store      = Mage::app()->getStore($storeId);
 
     $date       = new Zend_Date();
@@ -509,7 +511,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
                      ->getData('loaded');
     // End of Products info
 
-    return array('day_sales' => (double)$daySales,
+    return $helper->prepareApiResponse(array('day_sales' => (double)$daySales,
                  'week_sales' => (double)$weekSales,
                  'month_sales' => (double)$monthSales,
                  'total_sales' => (double)$totalSales,
@@ -517,7 +519,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
                  'total_stock_value' => (double)$totalStockValue,
                  'day_loaded' => (double)$dayLoaded,
                  'week_loaded' => (double)$weekLoaded,
-                 'month_loaded' => (double)$monthLoaded);
+                 'month_loaded' => (double)$monthLoaded));
   }
 
   /**
