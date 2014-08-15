@@ -11,3 +11,5 @@ skin/frontend/base/default/mventory                     skin/frontend/base/defau
 js/*                                                    js/
 
 app/etc/modules/*                                       app/etc/modules/
+
+build.xml                                               var/connect/MVentory_API.xml

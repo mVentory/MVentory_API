@@ -1,0 +1,157 @@
+<_>
+   <form_key>unTR2SePXOW9MbNC</form_key>
+   <name>MVentory_API</name>
+   <channel>community</channel>
+   <version_ids>
+      <version_ids>2</version_ids>
+   </version_ids>
+   <summary>The easiest way to sell online: PoS, Inventory and Website control in one elegant Android application.</summary>
+   <description>mVentory is an Android application for efficient management of Magento stores. This extension provides additional API functionality and is required for the app to connect to your Magento website.
+
+App Features
+
+• Create new products
+• Edit product details and attributes
+• Take product photos with the phone
+• Take photos with an external camera and upload via the phone
+• Upload photos from a digital library or from the Internet
+• Scan product barcodes
+• Check out product sold in the shop
+• View and manage orders
+• Manage shipping, scan shipping labels
+
+Download the app from Google Play (https://play.google.com/) or find out more on http://mventory.com
+
+Configuration
+
+You need to configure user access and product attributes. Read a step by step guide (https://github.com/mVentory/MVentory_Tm) or contact our support on info@mventory.com
+
+License
+
+Creative Commons BY-NC-ND 4.0 (http://creativecommons.org/licenses/by-nc-nd/4.0/)
+
+The extension is free for non-commercial or trial use. Please, request a FREE commercial license from info@mventory.com
+Visit http://mventory.com for more info.</description>
+   <license>CC BY-NC-ND 4.0</license>
+   <license_uri>http://creativecommons.org/licenses/by-nc-nd/4.0/</license_uri>
+   <version>1.1.0</version>
+   <stability>stable</stability>
+   <notes>NOTE: make sure you use this release with mVentory App version 20140804 or later.
+
+* Allow to choose default visibility for products without photos that have been created via the phone app
+* Add Shipping attribute with following options: Small Envelope, Large Envelope, Parcel, Courier and Freight
+* Remove API access control
+* Remove setting to choose websites which are used for newly created product. Current website is used instead.
+* Remove filtering of attributes used in the app by undescore symbol at the end of name
+* Improve admin interface
+* Remove some non-related functionality
+* Bug fixes
+
+This release contains some major changes in the API part of the code and attribute handling. Contact our support if you run into problems or need help upgrading.
+</notes>
+   <authors>
+      <name>
+         <name>Anatoly A. Kazantsev</name>
+      </name>
+      <user>
+         <user>anatoly</user>
+      </user>
+      <email>
+         <email>anatoly@mventory.com</email>
+      </email>
+   </authors>
+   <depends_php_min>5.3.0</depends_php_min>
+   <depends_php_max>6.0.0</depends_php_max>
+   <depends>
+      <package>
+         <name>
+            <name/>
+            <name>MVentory_JQuery</name>
+         </name>
+         <channel>
+            <channel/>
+            <channel>community</channel>
+         </channel>
+         <min>
+            <min/>
+            <min/>
+         </min>
+         <max>
+            <max/>
+            <max/>
+         </max>
+         <files>
+            <files>                                                                               </files>
+            <files>                                                                               </files>
+         </files>
+      </package>
+      <extension>
+         <name>
+            <name>Core</name>
+         </name>
+         <min>
+            <min/>
+         </min>
+         <max>
+            <max/>
+         </max>
+      </extension>
+   </depends>
+   <contents>
+      <target>
+         <target>magelocal</target>
+         <target>mageetc</target>
+         <target>magecommunity</target>
+         <target>magedesign</target>
+         <target>magedesign</target>
+         <target>magedesign</target>
+         <target>mageskin</target>
+         <target>mageskin</target>
+         <target>mageweb</target>
+      </target>
+      <path>
+         <path/>
+         <path>modules/MVentory_API.xml</path>
+         <path>MVentory/API</path>
+         <path>adminhtml/default/default/layout/mventory.xml</path>
+         <path>adminhtml/default/default/template/mventory</path>
+         <path>frontend/base/default/layout/mventory.xml</path>
+         <path>adminhtml/default/default/mventory</path>
+         <path>frontend/base/default/mventory</path>
+         <path>js/mventory</path>
+      </path>
+      <type>
+         <type>file</type>
+         <type>file</type>
+         <type>dir</type>
+         <type>file</type>
+         <type>dir</type>
+         <type>file</type>
+         <type>dir</type>
+         <type>dir</type>
+         <type>dir</type>
+      </type>
+      <include>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+      </include>
+      <ignore>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+      </ignore>
+   </contents>
+</_>
