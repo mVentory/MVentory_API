@@ -1,0 +1,71 @@
+<?php
+/**
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Creative Commons License BY-NC-ND.
+ * NonCommercial — You may not use the material for commercial purposes.
+ * NoDerivatives — If you remix, transform, or build upon the material,
+ * you may not distribute the modified material.
+ * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
+ *
+ * See http://mventory.com/legal/licensing/ for other licensing options.
+ *
+ * @package MVentory/API
+ * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * @author Anatoly A. Kazantsev <anatoly@mventory.com>
+ */
+?>
+
+<?php
+
+$_el = $this->getElement();
+$_class = $_el->getFieldsetHtmlClass();
+$_note = $_el->getNote();
+$_tooltip = $_el->getTooltip();
+
+$_trId = $_el->getHtmlContainerId();
+$_trId = $_trId ? ' id="' . $_trId . '"' : '';
+
+$_labelClass = 'label' . ($_class ? ' ' . $_class . '-label' : '');
+
+$_valueClass = $_el->hasValueClass() ? $_el->getValueClass() : 'value';
+$_valueClass .= $_class ? ' ' . $_class . '-value' : '';
+$_valueClass .= $_tooltip ? ' with-tooltip' : '';
+
+$_noteId = 'note_' . $_el->getId();
+$_noteClass = 'note' . ($_class ? ' ' . $_class . '-note' : '');
+
+?>
+
+<?php if (!$_el->getNoDisplay()): ?>
+<tr<?php echo $_trId ?>>
+
+  <?php if ($_el->getType() == 'hidden'): ?>
+  <td colspan="2" class="hidden">
+    <?php echo trim($_el->getElementHtml()) ?>
+  </td>
+  <?php else: ?>
+  <td class="<?php echo $_labelClass ?>">
+    <?php echo trim($_el->getLabelHtml()) ?>
+  </td>
+  <td class="<?php echo $_valueClass ?>">
+    <?php echo trim($_el->getElementHtml()) ?>
+
+    <?php if ($_tooltip): ?>
+    <div class="field-tooltip">
+      <div><?php echo $_tooltip ?></div>
+    </div>
+    <?php endif ?>
+
+    <?php if ($_note): ?>
+    <p id="<?php echo $_noteId ?>" class="<?php echo $_noteClass ?>">
+      <span><?php echo $_note ?></span>
+    </p>
+    <?php endif ?>
+
+  </td>
+  <?php endif; ?>
+
+</tr>
+<?php endif; ?>

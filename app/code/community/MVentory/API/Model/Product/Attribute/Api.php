@@ -56,7 +56,7 @@ class MVentory_API_Model_Product_Attribute_Api
                ? $labels[$storeId]
                  : $attr->getFrontendLabel();
 
-    return array(
+    $result = array(
       'attribute_id' => $attr->getId(),
       'attribute_code' => $attr->getAttributeCode(),
       'frontend_input' => $attr->getFrontendInput(),
@@ -73,6 +73,12 @@ class MVentory_API_Model_Product_Attribute_Api
 
       'options' => $this->optionsPerStoreView($attr->getId(), $storeId)
     );
+
+    if ($attr['mventory_metadata']
+        && ($metadata = unserialize($attr['mventory_metadata'])) !== false)
+      $result += $metadata;
+
+    return $result;
   }
 
   public function fullInfoList ($setId) {

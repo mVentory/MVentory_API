@@ -21,7 +21,7 @@
 <config>
   <modules>
     <MVentory_API>
-      <version>25</version>
+      <version>26</version>
     </MVentory_API>
   </modules>
 
@@ -408,6 +408,16 @@
           </mventory_generate_link_for_profile>
         </observers>
       </api_user_save_after>
+
+      <catalog_entity_attribute_save_before>
+        <observers>
+          <mventory_attr_save_metadata>
+            <type>singleton</type>
+            <class>mventory/observer</class>
+            <method>saveAttrMetadata</method>
+          </mventory_attr_save_metadata>
+        </observers>
+      </catalog_entity_attribute_save_before>
     </events>
 
     <layout>
@@ -439,6 +449,11 @@
         <apply_rules>0</apply_rules>
         <product_visiblity>1</product_visiblity>
       </api>
+
+      <metadata>
+        <add_new_values>1</add_new_values>
+        <copy_from_search>1</copy_from_search>
+      </metadata>
     </mventory>
 
     <carriers>
@@ -473,4 +488,78 @@
       </dummy>
     </payment>
   </default>
+
+  <mventory>
+    <metadata>
+      <fields>
+        <invisible_for_websites>
+          <type>multiselect</type>
+          <label>Make invisible for</label>
+          <note>Select all websites this attribute should NOT appear in</note>
+          <tooltip>All non-system attributes appear in the app by default. You can hide some of them from the app. It won't affect their use in Magento or the front-end.</tooltip>
+          <source_model>adminhtml/system_config_source_website</source_model>
+        </invisible_for_websites>
+
+        <hint>
+          <type>text</type>
+          <label>Hint</label>
+          <note>Text to appear under the input field in the app.</note>
+          <tooltip>Use hints to help users understand the meaning of the attribute, how to use it and how to format data for clarity and consistency.</tooltip>
+        </hint>
+
+        <use_for_search>
+          <type>select</type>
+          <label>Use for search</label>
+          <note>Include the value into search string</note>
+          <tooltip>The value of this attribute will be included in the search string when users search for product info, videos and images online. E.g. you may want to include the name of the brand or product number.</tooltip>
+          <source_model>adminhtml/system_config_source_yesno</source_model>
+        </use_for_search>
+
+        <config_product_identity>
+          <type>select</type>
+          <label>Config product identity</label>
+          <note>Must match values in associates</note>
+          <tooltip>Configurable products can be created automatically out of simple products with identical details and different configurable attribute. Set to YES if values of this attribute must match on all associate products.</tooltip>
+          <source_model>adminhtml/system_config_source_yesno</source_model>
+          <depends>select</depends>
+        </config_product_identity>
+
+        <default_capitalisation>
+          <type>select</type>
+          <label>Default capitalisation</label>
+          <note>Auto-correct capitalisation in user input</note>
+          <tooltip>The text can be corrected by the app as the users type it in, but they can go back and edit the corrections.</tooltip>
+          <source_model>mventory/system_config_source_capitalisation</source_model>
+          <depends>text,textarea</depends>
+        </default_capitalisation>
+
+        <special_content_type>
+          <type>select</type>
+          <label>Special content type</label>
+          <note>For content-specific features in the app</note>
+          <tooltip>The content of the attribute has some special meaning and may have additional functionality in the app. E.g. a video link has YouTube search, ISBN number is populated if the scanned barcode is an ISBN.</tooltip>
+          <source_model>mventory/system_config_source_contenttype</source_model>
+          <depends>text,textarea</depends>
+        </special_content_type>
+
+        <copy_from_search>
+          <type>select</type>
+          <label>Copy from search</label>
+          <note>Copy selected text into this field</note>
+          <tooltip>The app user will be able to copy text from a web search (e.g. search for manufacturer's specs) to this attribute.</tooltip>
+          <source_model>adminhtml/system_config_source_yesno</source_model>
+          <depends>text,textarea</depends>
+        </copy_from_search>
+
+        <add_new_values>
+          <type>select</type>
+          <label>Allow adding new values</label>
+          <note>A user can add new values via the app</note>
+          <tooltip>Users can add new values via the app. While it is convenient, it may lead to inconsistency.</tooltip>
+          <source_model>adminhtml/system_config_source_yesno</source_model>
+          <depends>select,multiselect</depends>
+        </add_new_values>
+      </fields>
+    </metadata>
+  </mventory>
 </config>
