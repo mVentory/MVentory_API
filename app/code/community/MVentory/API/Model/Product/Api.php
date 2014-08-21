@@ -575,7 +575,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     $this->_prepareDataForSave($product, $productData);
 
-    if ($removeOldValues)
+    if (isset($removeOldValues) && $removeOldValues)
       $this->_removeOldValues($product, $oldSet, $newSet);
 
     try {
