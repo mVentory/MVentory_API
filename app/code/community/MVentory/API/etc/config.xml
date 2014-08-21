@@ -451,8 +451,29 @@
       </api>
 
       <metadata>
-        <add_new_values>1</add_new_values>
+        <!-- Empty string = No website selected -->
+        <invisible_for_websites><![CDATA[]]></invisible_for_websites>
+
+        <!-- Empty string = No hint -->
+        <hint><![CDATA[]]></hint>
+
+        <!-- 0 = No -->
+        <use_for_search>0</use_for_search>
+
+        <!-- 0 = No -->
+        <config_product_identity>0</config_product_identity>
+
+        <!-- 0 = None -->
+        <default_capitalisation>0</default_capitalisation>
+
+        <!-- 0 = None -->
+        <special_content_type>0</special_content_type>
+
+        <!-- 1 = Yes -->
         <copy_from_search>1</copy_from_search>
+
+        <!-- 1 = Yes -->
+        <add_new_values>1</add_new_values>
       </metadata>
     </mventory>
 
