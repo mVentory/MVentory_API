@@ -148,8 +148,6 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
   /**
    * Search product ID by value of product_barcode_ attribute
    *
-   * !!!TODO: product_barcode_ attribute should be converted to global
-   *
    * @param  string $barcode Barcode
    *
    * @return int|null
@@ -157,7 +155,6 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
   public function getProductIdByBarcode ($barcode) {
     $ids = Mage::getResourceModel('catalog/product_collection')
              ->addAttributeToFilter('product_barcode_', $barcode)
-             ->addStoreFilter($this->getCurrentStoreId())
              ->getAllIds(1);
 
     return $ids ? $ids[0] : null;
