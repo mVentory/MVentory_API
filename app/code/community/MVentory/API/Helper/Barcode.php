@@ -55,7 +55,7 @@ class MVentory_API_Helper_Barcode extends MVentory_API_Helper_Data
    * @return bool Result of the check
    */
   public function checksumEAN13 ($barcode) {
-Mage::log($barcode);
+
     //Convert to EAN13 format if barcode is UPC-A
     if (strlen($barcode) == self::UPCA_LENGTH)
       $barcode = '0' . $barcode;
