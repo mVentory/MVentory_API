@@ -153,11 +153,52 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
    * @return int|null
    */
   public function getProductIdByBarcode ($barcode) {
+    if (Mage::helper('mventory/barcode')->isEAN13($barcode))
+      return $this->getIdByEAN13Barcode($barcode);
+
     $ids = Mage::getResourceModel('catalog/product_collection')
              ->addAttributeToFilter('product_barcode_', $barcode)
              ->getAllIds(1);
 
     return $ids ? $ids[0] : null;
+  }
+
+  /**
+   * Search product ID by value (in EAN13 or UPC-A format) of product_barcode_
+   * attribute
+   *
+   * @param  string $barcode Barcode in EAN13 or UPC-A format
+   * @return int|null
+   */
+  public function getIdByEAN13Barcode ($barcode) {
+
+    //Get ID by exact match
+    $ids = Mage::getResourceModel('catalog/product_collection')
+      ->addAttributeToFilter('product_barcode_', $barcode)
+      ->getAllIds();
+
+    //Return ID if we found only 1 match
+    if (count($ids) == 1)
+      return $ids[0];
+
+    //Stop searching if barcode w/o supplemental part or we found several
+    //IDs by exact match
+    if (strpos($barcode, '-') == false || count($ids))
+      return null;
+
+    //Search for barcodes beginning with the main part of the supplied barcode
+    //and return product ID if we found exactly one match
+
+    list($barcode) = explode('-', $barcode);
+
+    $ids = Mage::getResourceModel('catalog/product_collection')
+      ->addAttributeToFilter(
+          'product_barcode_',
+          array('like' => $barcode . '%')
+        )
+      ->getAllIds();
+
+    return count($ids) == 1 ? $ids[0] : null;
   }
 
   public function updateFromSimilar ($product, $similar) {
