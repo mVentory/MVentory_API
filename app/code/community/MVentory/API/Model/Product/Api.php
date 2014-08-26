@@ -308,9 +308,6 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     //They will be hidden if configurable one is created.
     $data['visibility'] = 4;
 
-    //Reset stock journal for the duplicate
-    $data['mv_stock_journal'] = '';
-
     $new = $old
             ->setData('mventory_update_duplicate', $data)
             ->duplicate();

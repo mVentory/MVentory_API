@@ -90,7 +90,6 @@ class MVentory_API_Helper_Product_Configurable
 
     //Reset value of attributes
     $data['product_barcode_'] = null;
-    $data['mv_stock_journal'] = null;
 
     //Load media gallery if it's not loaded automatically (e.g. the product
     //is loaded in collection) to duplicate images
