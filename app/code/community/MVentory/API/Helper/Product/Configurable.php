@@ -85,8 +85,10 @@ class MVentory_API_Helper_Product_Configurable
     $data['type_id'] = Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE;
     $data['status'] = Mage_Catalog_Model_Product_Status::STATUS_ENABLED;
     $data['visibility'] = 4;
-    $data['name'] = $product->getName();
+    $data['name'] = $product->getName(); //???Do we need it?
     $data['short_description'] = $data['description'];
+
+    //???Set store ID to admin?
 
     //Reset value of attributes
     $data['product_barcode_'] = null;
@@ -117,7 +119,7 @@ class MVentory_API_Helper_Product_Configurable
   }
 
   public function getConfigurableAttributes ($configurable) {
-    return ($attrs = $configurable->getConfigurableAttributesData())
+    return (($attrs = $configurable->getConfigurableAttributesData()) !== null)
              ? $attrs
                : $configurable
                    ->getTypeInstance()
@@ -292,7 +294,9 @@ class MVentory_API_Helper_Product_Configurable
       $ids[] = $product->getId();
 
     $configurable->setConfigurableProductsData(array_flip(array_merge(
-      $configurable->getTypeInstance()->getUsedProductIds(),
+      $configurable->getId()
+        ? $configurable->getTypeInstance()->getUsedProductIds()
+          : array(),
       $ids
     )));
 
@@ -351,5 +355,115 @@ class MVentory_API_Helper_Product_Configurable
     $configurable->setData('mventory_update_description', true);
 
     return $currentDesc . "\r\n" . $desc;
+  }
+
+  /**
+   * Update products with specified data and return list of updated products
+   *
+   * @param array|Traversable $prods List of product to update
+   * @param array $data List of attributes to update in $code => $value format
+   * @return array List of updated products
+   */
+  public function updateProds ($prods, $data) {
+    $_prods = array();
+
+    foreach ($prods as $prod)
+      foreach ($data as $code => $val)
+        if ($prod->getData($code) != $val)
+          $_prods[$prod->getId()] = $prod->setData($code, $val);
+
+    return $_prods;
+  }
+
+  /**
+   * Link product A to B's configurable product (create new configurable C
+   * if product B doesn't have it)
+   *
+   * @param Mage_Catalog_Model_Product $a Product A
+   * @param Mage_Catalog_Model_Product|int $b Product B
+   * @return bool
+   */
+  public function link ($a, $b) {
+    $aID = $a->getId();
+    $cID = $this->getIdByChild($b);
+
+    //List of attributes and values which should be updated in all products
+    //assigned to configurable product
+    $updAttrs = array(
+      'visibility'
+        => Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE
+    );
+
+    if ($cID) {
+      $ids = $this->getChildrenIds($cID);
+
+      //Add ID of configurable product to load it; unset ID of currently
+      //creating/updating product (A) because it's been already loaded
+      $ids[$cID] = $cID;
+      unset($ids[$aID]);
+
+      $prods = Mage::getResourceModel('catalog/product_collection')
+        ->addAttributeToSelect('*')
+        ->addIdFilter($ids)
+        ->addStoreFilter($this->getCurrentWebsite()->getDefaultStore())
+        ->getItems();
+
+      $prods[$aID] = $a;
+
+      $c = $prods[$cID];
+      unset($prods[$cID]);
+    } else {
+      if (!($b instanceof Mage_Catalog_Model_Product))
+        $b = Mage::getModel('catalog/product')
+          ->setStoreId(Mage_Core_Model_App::ADMIN_STORE_ID)
+          ->load($b);
+
+      if (!$b->getId())
+        return;
+
+      $prods = array(
+        $aID => $a,
+        $b->getId() => $b
+      );
+
+      $c = new Varien_Object();
+
+      //Set to empty array to prevent loading configurable attributes in
+      //MVentory_API_Helper_Product_Configurable::getConfigurableAttributes()
+      //method because new configurable product doesn't have them
+      $c['configurable_attributes_data'] = array();
+    }
+
+    $attr = $this->getConfigurableAttribute(
+      $cID ? $c->getAttributeSetId() : $b->getAttributeSetId()
+    );
+
+    $changedProds = $this
+      ->addAttribute($c, $attr, $prods)
+      ->recalculatePrices($c, $attr, $prods)
+      ->assignProducts($c, $prods)
+      ->updateProds($prods, $updAttrs);
+
+
+    if ($cID) {
+      //Add configurable product (C) to the list of changed products to save
+      //them all together later
+      $changedProds[$cID] = $c;
+    } else {
+      //Create configurable product (C) from product B
+      $c = $this->create($b, $c->getData());
+
+      if (!$c->getId())
+        return;
+    }
+
+    //Unset currently creating/updating product (A) from the list of changed
+    //products because it will be saved by caller later
+    unset($changedProds[$aID]);
+
+    foreach ($changedProds as $prod)
+      $prod->save();
+
+    return true;
   }
 }

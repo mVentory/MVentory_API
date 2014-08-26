@@ -239,7 +239,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
   public function createAndReturnInfo ($type, $set, $sku, $data,
                                        $storeId = null) {
 
-    $helper = Mage::helper('mventory/product');
+    $helper = Mage::helper('mventory/product_configurable');
 
     if (!$id = $helper->getProductId($sku, 'sku')) {
       $data['mv_created_userid'] = $helper->getApiUser()->getId();
@@ -266,6 +266,23 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         $data,
         Mage_Core_Model_App::ADMIN_STORE_ID
       );
+
+      if (isset($data['_api_link_with_product'])
+          && $sid = $data['_api_link_with_product']) {
+
+        if ($sid = $helper->getProductId($sid)) {
+
+          //Use admin store to save values of attributes in the default scope
+          $product = $this->_getProduct(
+            $id,
+            Mage_Core_Model_App::ADMIN_STORE_ID,
+            'id'
+          );
+
+          if ($helper->link($product, $sid))
+            $product->save();
+        }
+      }
     } else if (isset($data['_api_update_if_exists'])
               && $data['_api_update_if_exists']) {
 
@@ -580,6 +597,20 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     if (isset($removeOldValues) && $removeOldValues)
       $this->_removeOldValues($product, $oldSet, $newSet);
+
+    if (isset($productData['_api_link_with_product'])
+        && $sibling = $productData['_api_link_with_product']) {
+
+      $helper = Mage::helper('mventory/product_configurable');
+
+      if ($sid = $helper->getProductId($sibling)) try {
+        $helper->link($product, $sid);
+      } catch (Exception $e) {
+        Mage::log(1);
+        Mage::log($e);
+        $this->_fault();
+      }
+    }
 
     try {
       if (is_array($errors = $product->validate())) {
