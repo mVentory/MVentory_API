@@ -168,8 +168,10 @@ class MVentory_API_Helper_Data extends Mage_Core_Helper_Abstract {
   /**
    * Return configurable attribute by attribute set ID
    *
-   * It searches configurable attribute which is global and has underscore
-   * at the end and select as frontend
+   * It searches configurable attribute which is global
+   * and has select as frontend
+   *
+   * !!!TODO: implement filtering attrs by special metadata option
    *
    * NOTE: the function returns first attribute because we support
    *       only one configurable attribute in product
@@ -177,7 +179,6 @@ class MVentory_API_Helper_Data extends Mage_Core_Helper_Abstract {
   public function getConfigurableAttribute ($setId) {
     return Mage::getResourceModel('catalog/product_attribute_collection')
              ->setAttributeSetFilter($setId)
-             ->addFieldToFilter('attribute_code', array('like' => '%\_'))
              ->addFieldToFilter('is_configurable', '1')
              ->addFieldToFilter('frontend_input', 'select')
              ->addFieldToFilter(
