@@ -86,6 +86,7 @@ class MVentory_API_Helper_Product_Configurable
     $data['status'] = Mage_Catalog_Model_Product_Status::STATUS_ENABLED;
     $data['visibility'] = 4;
     $data['name'] = $product->getName();
+    $data['short_description'] = $data['description'];
 
     //Reset value of attributes
     $data['product_barcode_'] = null;
