@@ -266,6 +266,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         $data,
         Mage_Core_Model_App::ADMIN_STORE_ID
       );
+    } else if (isset($data['_api_update_if_exists'])
+              && $data['_api_update_if_exists']) {
+
+      $data['set'] = $set;
+
+      $this->update($id, $data, null, 'id');
     }
 
     return $this->fullInfo($id, 'id');
