@@ -1012,4 +1012,18 @@ EOT;
       -1
     );
   }
+
+  /**
+   * Observer for catalog_entity_attribute_save_before event in adminhtml area
+   * Serialise array of metadata for the app if it's set
+   *
+   * @param Varien_Event_Observer $observer
+   */
+  public function saveAttrMetadata ($observer) {
+    $attr = $observer->getData('attribute');
+
+    if (isset($attr['mventory_metadata'])
+        && is_array($attr['mventory_metadata']))
+      $attr['mventory_metadata'] = serialize($attr['mventory_metadata']);
+  }
 }

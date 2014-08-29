@@ -58,7 +58,7 @@ class MVentory_API_Model_Product_Attribute_Api
 
     $frontendInput = $attr->getFrontendInput();
 
-    return array(
+    $result = array(
       'attribute_id' => $attr->getId(),
       'attribute_code' => $attr->getAttributeCode(),
       'frontend_input' => $attr->getFrontendInput(),
@@ -83,6 +83,8 @@ class MVentory_API_Model_Product_Attribute_Api
 
       'options' => $this->optionsPerStoreView($attr->getId(), $storeId)
     );
+
+    return $result + $this->_prepareMetadata($attr);
   }
 
   public function fullInfoList ($setId) {
@@ -268,5 +270,42 @@ class MVentory_API_Model_Product_Attribute_Api
                  : $attr->getFrontendLabel();
 
     return $label != '~';
+  }
+
+  /**
+   * Deserialise and return metadata of it's available otherwise return
+   * empty array
+   *
+   * @param array $attr Attr data
+   * @return array Deserialised metadata
+   */
+  protected function _getMetadata ($attr) {
+    if (!$attr['mventory_metadata'])
+      return array();
+
+    return ($metadata = unserialize($attr['mventory_metadata'])) === false
+             ? array()
+               : $metadata;
+  }
+
+  /**
+   * Set default values for metadata fields if they don't have value in the
+   * attr's metadata
+   *
+   * @param array $attr Attr data
+   * @return array Prepared metadata
+   */
+  protected function _prepareMetadata ($attr) {
+    $metadata = $this->_getMetadata ($attr);
+    $defaults = (array) Mage::getConfig()->getNode(
+      'mventory/metadata',
+      'default'
+    );
+
+    foreach ($defaults as $field => $defValue)
+      if (!isset($metadata[$field]))
+        $metadata[$field] = (string) $defValue;
+
+    return $metadata;
   }
 }

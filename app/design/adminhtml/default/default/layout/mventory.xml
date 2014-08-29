@@ -20,6 +20,17 @@
 -->
 
 <layout>
+  <adminhtml_catalog_product_attribute_edit>
+    <reference name="attribute_edit_tabs">
+      <block type="mventory/metadata" name="mventory.tab" as="mventory" template="mventory/metadata.phtml" />
+      <action method="addTabAfter">
+        <id>mventory</id>
+        <tab>mventory</tab>
+        <after>labels</after>
+      </action>
+    </reference>
+  </adminhtml_catalog_product_attribute_edit>
+
   <adminhtml_catalog_product_set_edit>
     <update handle="jquery" />
     <update handle="jquery_ui" />
