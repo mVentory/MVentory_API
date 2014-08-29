@@ -331,30 +331,43 @@ class MVentory_API_Helper_Product_Configurable
     return $this;
   }
 
-  public function updateDescription ($configurable, $product) {
-    $desc = trim($product->getDescription());
-    $currentDesc = trim($configurable->getDescription());
+  /**
+   * Update description in configurable product
+   *
+   * @param Varien_Object $c Configurable product
+   * @param array|Traversable $prods List of products
+   * @return MVentory_API_Helper_Product_Configurable
+   */
+  public function updateDesc ($c, $prods) {
+    $desc = $this->mergeDesc($prods);
 
-    if (!$desc)
-      return $currentDesc;
+    $c
+      ->setDescription($desc)
+      ->setShortDescription($desc);
 
-    if (!$currentDesc) {
-      $configurable->setData('mventory_update_description', true);
+    return $this;
+  }
 
-      return $desc;
-    }
-
+  /**
+   * Merge descriptions of supplied products. Ignore duplicates
+   *
+   * @param array|Traversable $prods List of products
+   * @return string Merged description without duplicates
+   */
+  public function mergeDesc ($prods) {
     $search = array(' ', "\r", "\n");
 
-    $_desc = str_replace($search, '', strtolower($desc));
-    $_currentDesc = str_replace($search, '', strtolower($currentDesc));
+    foreach ($prods as $prod) {
+      $desc = $prod->getDescription();
+      $_desc = strtolower(str_replace($search, '', $desc));
 
-    if (strpos($_currentDesc, $_desc) !== false)
-      return $currentDesc;
+      if (!isset($_descs[$_desc]))
+        $descs[] = $desc;
 
-    $configurable->setData('mventory_update_description', true);
+      $_descs[$_desc] = true;
+    }
 
-    return $currentDesc . "\r\n" . $desc;
+    return implode("\r\n", $descs);
   }
 
   /**
@@ -442,6 +455,7 @@ class MVentory_API_Helper_Product_Configurable
       ->addAttribute($c, $attr, $prods)
       ->recalculatePrices($c, $attr, $prods)
       ->assignProducts($c, $prods)
+      ->updateDesc($c, $prods)
       ->updateProds($prods, $updAttrs);
 
 
