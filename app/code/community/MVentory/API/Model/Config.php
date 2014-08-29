@@ -24,6 +24,9 @@
  */
 class MVentory_API_Model_Config
 {
+  //Version of API. Returned in every API call under '_apiversion_' key
+  const API_VERSION = '20140815';
+
   //Config paths
   const _FETCH_LIMIT = 'mventory/api/products-number-to-fetch';
   const _TAX_CLASS = 'mventory/api/tax_class';

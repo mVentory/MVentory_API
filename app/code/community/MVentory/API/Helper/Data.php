@@ -100,6 +100,21 @@ class MVentory_API_Helper_Data extends Mage_Core_Helper_Abstract {
   }
 
   /**
+   * Prepare API response:
+   *   - Add API version to the beginning of the response data
+   *
+   * @param array $data API response data
+   * @return array Prepared response data
+   */
+  public function prepareApiResponse ($data) {
+    $data = array_reverse($data, true);
+
+    $data['_apiversion_'] = MVentory_API_Model_Config::API_VERSION;
+
+    return array_reverse($data, true);
+  }
+
+  /**
    * !!!TODO: remove method; fix dependent code
    */
   public function getWebsitesForProduct () {

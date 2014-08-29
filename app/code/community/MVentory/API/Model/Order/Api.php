@@ -25,7 +25,8 @@
 class MVentory_API_Model_Order_Api extends Mage_Sales_Model_Order_Api {
 
   public function listByStatus ($status = null) {
-    $storeId = Mage::helper('mventory')->getCurrentStoreId();
+    $helper = Mage::helper('mventory');
+    $storeId = $helper->getCurrentStoreId();
 
     $limit = (int) Mage::getStoreConfig(
       MVentory_API_Model_Config::_FETCH_LIMIT,
@@ -77,7 +78,7 @@ class MVentory_API_Model_Order_Api extends Mage_Sales_Model_Order_Api {
                     ->getCollection()
                     ->toOptionHash();
 
-    return compact('statuses', 'orders');
+    return $helper->prepareApiResponse(compact('statuses', 'orders'));
   }
 
   public function fullInfo($orderIncrementId) {
@@ -127,6 +128,6 @@ class MVentory_API_Model_Order_Api extends Mage_Sales_Model_Order_Api {
 
     unset($shipments);
 
-    return $order;
+    return Mage::helper('mventory')->prepareApiResponse($order);
   }
 }

@@ -174,7 +174,7 @@ class MVentory_API_Model_Product_Attribute_Api
       } catch (Exception $e) {}
     }
 
-    return $this->_info($attributeId);
+    return $helper->prepareApiResponse($this->_info($attributeId));
   }
 
   private function getOptionLabels($storeId, $attributeId)
