@@ -56,13 +56,23 @@ class MVentory_API_Model_Product_Attribute_Api
                ? $labels[$storeId]
                  : $attr->getFrontendLabel();
 
+    $frontendInput = $attr->getFrontendInput();
+
     return array(
       'attribute_id' => $attr->getId(),
       'attribute_code' => $attr->getAttributeCode(),
       'frontend_input' => $attr->getFrontendInput(),
       'default_value' => $attr->getDefaultValue(),
       'is_required' => $attr->getIsRequired(),
-      'is_configurable' => $attr->getIsConfigurable(),
+
+      //Return value of is_configurable field only for attributes which can be
+      //used to create configurable products (such as global with dropdown
+      //as frontend input) and 0 for others, because Magento sets
+      //is_configurable to 1 for all attributes by default on create.
+      'is_configurable' => $attr->isScopeGlobal() && $frontendInput == 'select'
+                             ? $attr->getIsConfigurable()
+                               : '0',
+
       'label' => $label,
 
       //!!!DEPRECATED: replaced by 'label' key
