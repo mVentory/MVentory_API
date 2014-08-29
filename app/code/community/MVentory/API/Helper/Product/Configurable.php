@@ -222,13 +222,18 @@ class MVentory_API_Helper_Product_Configurable
     if ($this->hasAttribute($configurable, $attribute))
       return $this->addOptions($configurable, $attribute, $products);
 
+    $code = $attribute->getAttributeCode();
+
+    //Reset value of configurable attribute in configurable product
+    $configurable[$code] = null;
+
     $attributes = $this->getConfigurableAttributes($configurable);
 
     $attributes[] = array(
       'label' => $attribute->getStoreLabel(),
       'use_default' => true,
       'attribute_id' => $attribute->getAttributeId(),
-      'attribute_code' => $attribute->getAttributeCode()
+      'attribute_code' => $code
     );
 
     $this->setConfigurableAttributes($configurable, $attributes);
