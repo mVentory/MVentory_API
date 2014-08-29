@@ -478,6 +478,12 @@ class MVentory_API_Helper_Product_Configurable
     foreach ($changedProds as $prod)
       $prod->save();
 
+    //Unset currently creating/updating product (A) from the list of products
+    //assinged to configurable product (C) because we are passing it
+    //in a separate parameter
+    unset($prods[$aID]);
+    Mage::helper('mventory/image')->sync($a, $c, $prods);
+
     return true;
   }
 }

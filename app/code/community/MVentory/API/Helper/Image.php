@@ -92,4 +92,120 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
 
     return true;
   }
+
+  /**
+   * Synching images between configurable product and all assigned products
+   *
+   * !!!TODO: make $product parameter optional, because there's sense to pass
+   *          it only when images are updated/removed (e.g. when calling from
+   *          media API)
+   *
+   * @param Mage_Catalog_Model_Product $product Currently updating product
+   * @param Mage_Catalog_Model_Product $configurable Configurable product
+   * @param array $_products List of other assigned products
+   */
+  public function sync ($product, $configurable, $_products) {
+    $attrs = $product->getAttributes();
+
+    if (!isset($attrs['media_gallery']))
+      return;
+
+    $galleryAttribute = $attrs['media_gallery'];
+    $galleryAttributeId = $galleryAttribute->getAttributeId();
+
+    unset($attrs);
+
+    $helper = Mage::helper('mventory/product_configurable');
+    $storeId = $product->getStoreId();
+    $productId = $product->getId();
+    $configurableId = $configurable->getId();
+
+    //Collect IDs of all products
+    $products = array(
+      $productId => $productId,
+      $configurableId => $configurableId,
+    );
+
+    foreach ($_products as $p)
+      $products[$p->getId()] = $p->getId();
+
+    //Store selected images (image, small_image, thumbnail)
+    $mediaAttributes = $product->getMediaAttributes();
+
+    foreach ($mediaAttributes as $code => $attr)
+      $mediaValues[$attr->getAttributeId()] = $configurable->getData($code);
+
+    unset($product, $mediaAttributes);
+
+    $object = new Varien_Object();
+    $object->setAttribute($galleryAttribute);
+
+    $product = new Varien_Object();
+    $product->setStoreId($storeId);
+
+    $resourse
+      = Mage::getResourceSingleton('catalog/product_attribute_backend_media');
+
+    foreach ($products as $id => $images) {
+      $gallery = $resourse->loadGallery($product->setId($id), $object);
+
+      $products[$id] = array();
+
+      if ($gallery) foreach ($gallery as $image) {
+        $file = $image['file'];
+
+        if (isset($image['removed']) && $image['removed']) {
+          $imagesToDelete[$file] = true;
+
+          continue;
+        }
+
+        if (isset($imagesToDelete[$file])) {
+          $idsToDelete[] = $image['value_id'];
+
+          continue;
+        }
+
+        $products[$id][$file] = $image;
+
+        if (!isset($allImages[$file]))
+          $allImages[$file] = $image;
+      }
+    }
+
+    unset($imagesToDelete, $_images);
+
+    if (isset($idsToDelete)) {
+      foreach ($idsToDelete as $id)
+        $resourse->deleteGalleryValueInStore($id, $storeId);
+
+      $resourse->deleteGallery($idsToDelete);
+    }
+
+    unset($idsToDelete);
+
+    if (isset($allImages)) foreach ($products as $id => $images) {
+      foreach ($allImages as $file => $image) {
+        if (!isset($images[$file]))
+          $resourse->insertGalleryValueInStore(
+            array(
+              'value_id' => $resourse->insertGallery(
+                array(
+                  'entity_id' => $id,
+                  'attribute_id' => $galleryAttributeId,
+                  'value' => $file
+                )
+              ),
+              'label'  => $image['label'],
+              'position' => (int) $image['position'],
+              'disabled' => (int) $image['disabled'],
+              'store_id' => $storeId
+            )
+          );
+      }
+    }
+
+    Mage::getResourceSingleton('catalog/product_action')
+      ->updateAttributes(array_keys($products), $mediaValues, $storeId);
+  }
 }
