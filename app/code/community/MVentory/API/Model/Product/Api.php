@@ -570,6 +570,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $identifierType
     );
 
+    //!!!TODO: do we want to update attr set in linked prods?
     //Update attribute set in the product and set flag to remove old values
     //from the DB if it's set in incoming data and is different
     //from current one.
@@ -610,6 +611,11 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         Mage::log($e);
         $this->_fault();
       }
+    } else {
+      $helper = Mage::helper('mventory/product_configurable');
+
+      if ($cID = $helper->getIdByChild($product))
+        $helper->update($product, $cID);
     }
 
     try {

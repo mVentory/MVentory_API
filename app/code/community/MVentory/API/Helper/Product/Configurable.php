@@ -322,41 +322,6 @@ class MVentory_API_Helper_Product_Configurable
     return $this;
   }
 
-  public function shareDescription ($configurable, $products, $description) {
-    $description = trim($description);
-
-    if (!$description)
-      return this;
-
-    foreach ($products as $product)
-      $product
-        ->setShortDescription($description)
-        ->setDescription($description);
-
-    $configurable
-      ->setShortDescription($description)
-      ->setDescription($description);
-
-    return $this;
-  }
-
-  /**
-   * Update description in configurable product
-   *
-   * @param Varien_Object $c Configurable product
-   * @param array|Traversable $prods List of products
-   * @return MVentory_API_Helper_Product_Configurable
-   */
-  public function updateDesc ($c, $prods) {
-    $desc = $this->mergeDesc($prods);
-
-    $c
-      ->setDescription($desc)
-      ->setShortDescription($desc);
-
-    return $this;
-  }
-
   /**
    * Merge descriptions of supplied products. Ignore duplicates
    *
@@ -367,7 +332,9 @@ class MVentory_API_Helper_Product_Configurable
     $search = array(' ', "\r", "\n");
 
     foreach ($prods as $prod) {
-      $desc = $prod->getDescription();
+      if (!$desc = trim($prod->getDescription()))
+        continue;
+
       $_desc = strtolower(str_replace($search, '', $desc));
 
       if (!isset($_descs[$_desc]))
@@ -376,7 +343,7 @@ class MVentory_API_Helper_Product_Configurable
       $_descs[$_desc] = true;
     }
 
-    return implode("\r\n", $descs);
+    return trim(implode("\r\n", $descs));
   }
 
   /**
@@ -413,8 +380,12 @@ class MVentory_API_Helper_Product_Configurable
   }
 
   /**
-   * Link product A to B's configurable product (create new configurable C
-   * if product B doesn't have it)
+   * - Link product A to B's configurable product (create new configurable C
+   *   if product B doesn't have it).
+   * - Update values of replicable attributes in product A (use values from
+   *   configurable C if it exists or from product B).
+   * - Merge description from all products and then share it to all of them.
+   * - Synching images between all products.
    *
    * @param Mage_Catalog_Model_Product $a Product A
    * @param Mage_Catalog_Model_Product|int $b Product B
@@ -423,13 +394,6 @@ class MVentory_API_Helper_Product_Configurable
   public function link ($a, $b) {
     $aID = $a->getId();
     $cID = $this->getIdByChild($b);
-
-    //List of attributes and values which should be updated in all products
-    //assigned to configurable product
-    $updAttrs = array(
-      'visibility'
-        => Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE
-    );
 
     if ($cID) {
       $ids = $this->getChildrenIds($cID);
@@ -447,8 +411,22 @@ class MVentory_API_Helper_Product_Configurable
 
       $prods[$aID] = $a;
 
+      //Merge description while we have array of all products: configurable
+      //product (C) and all assigned products (A, B, ...)
+      $desc = $this->mergeDesc($prods);
+
       $c = $prods[$cID];
-      unset($prods[$cID]);
+
+      //Set description to configurable product (C) if we have merged
+      //description. Configurable product (C) will be used as a source of values
+      //for replicable attributes thus merged description will be replicated
+      //across all assigned products (A, B, ...)
+      if ($desc)
+        $c
+          ->setDescription($desc)
+          ->setShortDescription($desc);
+
+      unset($prods[$cID], $desc);
     } else {
       if (!($b instanceof Mage_Catalog_Model_Product))
         $b = Mage::getModel('catalog/product')
@@ -469,19 +447,46 @@ class MVentory_API_Helper_Product_Configurable
       //MVentory_API_Helper_Product_Configurable::getConfigurableAttributes()
       //method because new configurable product doesn't have them
       $c['configurable_attributes_data'] = array();
+
+      //Merge description from products (A and B) and set it to product B
+      //Product B will be used as a source of values for replicable attributes
+      //thus merged description will be replicated across all products (A and B)
+      //and configurable product (C) (it's created by cloning product B)
+      if ($desc = $this->mergeDesc($prods))
+        $b
+          ->setDescription($desc)
+          ->setShortDescription($desc);
+
+      unset($desc);
     }
 
-    $attr = $this->getConfigurableAttribute(
-      $cID ? $c->getAttributeSetId() : $b->getAttributeSetId()
+    $setId = $cID ? $c->getAttributeSetId() : $b->getAttributeSetId();
+    $attr = $this->getConfigurableAttribute($setId);
+
+    //List of attributes and values which should be updated in all products
+    //assigned to configurable product
+    $updAttrs = array(
+      'visibility'
+        => Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE
     );
+
+    $replAttrs = Mage::helper('mventory/product_attribute')->getReplicables(
+      $setId,
+      array($attr->getAttributeCode() => true)
+    );
+
+    $srcProd = $cID ? $c : $b;
+
+    foreach ($replAttrs as $code)
+      $updAttrs[$code] = $srcProd->getData($code);
+
+    unset($replAttrs, $srcProd);
 
     $changedProds = $this
       ->addAttribute($c, $attr, $prods)
       ->recalculatePrices($c, $attr, $prods)
       ->assignProducts($c, $prods)
-      ->updateDesc($c, $prods)
       ->updateProds($prods, $updAttrs);
-
 
     if ($cID) {
       //Add configurable product (C) to the list of changed products to save
@@ -509,5 +514,52 @@ class MVentory_API_Helper_Product_Configurable
     Mage::helper('mventory/image')->sync($a, $c, $prods);
 
     return true;
+  }
+
+  public function update ($a, $cID) {
+    $aID = $a->getId();
+    $ids = $this->getChildrenIds($cID);
+
+    //Add ID of configurable product to load it; unset ID of currently
+    //creating/updating product (A) because it's been already loaded
+    $ids[$cID] = $cID;
+    unset($ids[$aID]);
+
+    $prods = Mage::getResourceModel('catalog/product_collection')
+      ->addAttributeToSelect('*')
+      ->addIdFilter($ids)
+      ->addStoreFilter($this->getCurrentWebsite()->getDefaultStore())
+      ->getItems();
+
+    //!!!TODO: not sure which product is better to use to get attr set ID
+    //in case attribute set was updated
+    $setId = $a->getAttributeSetId();
+    $attr = $this->getConfigurableAttribute($setId);
+
+    $replAttrs = Mage::helper('mventory/product_attribute')->getReplicables(
+      $setId,
+      array($attr->getAttributeCode() => true)
+    );
+
+    foreach ($replAttrs as $code)
+      $replAttrs[$code] = $a->getData($code);
+
+    $prods[$aID] = $a;
+    $c = $prods[$cID];
+    unset($prods[$cID]);
+
+    //!!!TODO: no need to do it everytime, only when price was changed or
+    //         value of configurable attribute was changed
+    $this
+      ->addOptions($c, $attr, $prods)
+      ->recalculatePrices($c, $attr, $prods);
+
+    $prods[$cID] = $c;
+    unset($prods[$aID]);
+
+    $this->updateProds($prods, $replAttrs);
+
+    foreach ($prods as $prod)
+      $prod->save();
   }
 }
