@@ -25,6 +25,13 @@
 class MVentory_API_Helper_Product_Configurable
   extends MVentory_API_Helper_Product {
 
+  /**
+   * Attributes which are ignored for config products on update
+   *
+   * @see MVentory_API_Helper_Product_Configurable::updateProds()
+   */
+  protected $_ignUpdInConfig = array('weight' => true);
+
   public function getIdByChild ($child) {
     $id = $child instanceof Mage_Catalog_Model_Product
             ? $child->getId()
@@ -373,6 +380,10 @@ class MVentory_API_Helper_Product_Configurable
   /**
    * Update products with specified data and return list of updated products
    *
+   * Some attributes are ignored for config prods.
+   *
+   * @see MVentory_API_Helper_Product_Configurable::_ignUpdInConfig List of
+   *   attrs which are ignored in config prods
    * @param array|Traversable $prods List of product to update
    * @param array $data List of attributes to update in $code => $value format
    * @return array List of updated products
@@ -380,10 +391,18 @@ class MVentory_API_Helper_Product_Configurable
   public function updateProds ($prods, $data) {
     $_prods = array();
 
-    foreach ($prods as $prod)
-      foreach ($data as $code => $val)
+    foreach ($prods as $prod) {
+      $isConfig = $prod->getTypeId()
+                    == Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE;
+
+      foreach ($data as $code => $val) {
+        if ($isConfig && isset($this->_ignUpdInConfig[$code]))
+          continue;
+
         if ($prod->getData($code) != $val)
           $_prods[$prod->getId()] = $prod->setData($code, $val);
+      }
+    }
 
     return $_prods;
   }
