@@ -116,6 +116,12 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         $identifierType
       );
 
+    $helper = Mage::helper('mventory/product_configurable');
+
+    if (($productId = $helper->getProductId($productId, $identifierType))
+        && $cID = $helper->getIdByChild($productId))
+      $this->_sync($productId, $cID, $helper);
+
     return $productApi->fullInfo($productId, $identifierType);
   }
 
@@ -125,37 +131,39 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     $this->remove($productId, $file, $identifierType);
     $images = $this->items($productId, null, $identifierType);
 
+    $helper = Mage::helper('mventory/product_configurable');
+
+    if (($productId = $helper->getProductId($productId, $identifierType)))
+      $cID = $helper->getIdByChild($productId);
+
     $productApi = Mage::getModel('mventory/product_api');
 
     if (!$images) {
-      $helper = Mage::helper('mventory/product');
-
-      $productApi->update(
+      if (!(isset($cID) && $cID))
+        $productApi->update(
+          $productId,
+          array('visibility' => (int) $helper->getConfig(
+            MVentory_API_Model_Config::_API_VISIBILITY,
+            $helper->getWebsite($productId)
+          )),
+          null,
+          $identifierType
+        );
+    } else if (in_array('image', $image['types'])) {
+      $this->update(
         $productId,
-        array('visibility' => (int) $helper->getConfig(
-          MVentory_API_Model_Config::_API_VISIBILITY,
-          $helper->getWebsite($productId)
-        )),
+        $images[0]['file'],
+        array(
+          'types' => array('image', 'small_image', 'thumbnail'),
+          'exclude' => 0
+        ),
         null,
         $identifierType
       );
-
-      return $productApi->fullInfo($productId, $identifierType);
     }
 
-    if (!in_array('image', $image['types']))
-      return $productApi->fullInfo($productId, $identifierType);
-
-    $this->update(
-      $productId,
-      $images[0]['file'],
-      array(
-        'types' => array('image', 'small_image', 'thumbnail'),
-        'exclude' => 0
-      ),
-      null,
-      $identifierType
-    );
+    if (isset($cID) && $cID)
+      $this->_sync($productId, $cID, $helper);
 
     return $productApi->fullInfo($productId, $identifierType);
   }
@@ -214,5 +222,27 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     $io->rmdir($tmp, true);
 
     return $data;
+  }
+
+  protected function _sync ($aID, $cID, $helper) {
+    Mage::log('_sync()');
+
+    $ids = $helper->getChildrenIds($cID);
+
+    //Add ID of configurable (C) product to load it; unset ID of currently
+    //updating product because it's been already loaded above
+    $ids[$cID] = $cID;
+
+    $prods = Mage::getResourceModel('catalog/product_collection')
+      ->addAttributeToSelect('*')
+      ->addIdFilter($ids)
+      ->addStoreFilter($helper->getCurrentWebsite()->getDefaultStore())
+      ->getItems();
+
+    $a = $prods[$aID];
+    $c = $prods[$cID];
+    unset($prods[$aID], $prods[$cID]);
+
+    Mage::helper('mventory/image')->sync($a, $c, $prods);
   }
 }

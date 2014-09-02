@@ -511,7 +511,7 @@ class MVentory_API_Helper_Product_Configurable
     //assinged to configurable product (C) because we are passing it
     //in a separate parameter
     unset($prods[$aID]);
-    Mage::helper('mventory/image')->sync($a, $c, $prods);
+    Mage::helper('mventory/image')->sync($a, $c, $prods, true);
 
     return true;
   }
