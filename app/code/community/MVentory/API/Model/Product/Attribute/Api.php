@@ -64,6 +64,8 @@ class MVentory_API_Model_Product_Attribute_Api
       'frontend_input' => $attr->getFrontendInput(),
       'default_value' => $attr->getDefaultValue(),
       'is_required' => $attr->getIsRequired(),
+      'frontend_class' => (string) $attr->getFrontendClass(),
+      'is_html_allowed_on_front' => $attr->getIsHtmlAllowedOnFront(),
 
       //Return value of is_configurable field only for attributes which can be
       //used to create configurable products (such as global with dropdown
