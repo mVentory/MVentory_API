@@ -469,8 +469,8 @@
         <!-- 0 = None -->
         <special_content_type>0</special_content_type>
 
-        <!-- 1 = Yes -->
-        <copy_from_search>1</copy_from_search>
+        <!-- 0 = No  -->
+        <copy_from_search>0</copy_from_search>
 
         <!-- 1 = Yes -->
         <add_new_values>1</add_new_values>
