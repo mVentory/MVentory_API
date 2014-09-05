@@ -400,8 +400,11 @@ class MVentory_API_Helper_Product_Configurable
           continue;
 
         if ($prod->getData($code) != $val)
-          $_prods[$prod->getId()] = $prod->setData($code, $val);
+          $prod->setData($code, $val);
       }
+
+      if ($prod->hasDataChanges())
+        $_prods[$prod->getId()] = $prod;
     }
 
     return $_prods;
