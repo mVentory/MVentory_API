@@ -93,7 +93,9 @@ class MVentory_API_Helper_Product_Configurable
     $data['status'] = Mage_Catalog_Model_Product_Status::STATUS_ENABLED;
     $data['visibility'] = 4;
     $data['name'] = $product->getName(); //???Do we need it?
-    $data['short_description'] = $data['description'];
+
+    if (isset($data['description']))
+      $data['short_description'] = $data['description'];
 
     //???Set store ID to admin?
 
