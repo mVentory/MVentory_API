@@ -662,6 +662,28 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
   }
 
   /**
+   * Delete product
+   *
+   * @param int|string $productId
+   * @return boolean
+   */
+  public function delete ($productId, $identifierType = null) {
+    $product = $this->_getProduct($productId, null, $identifierType);
+    $helper = Mage::helper('mventory/product_configurable');
+
+    try {
+      if ($cID = $helper->getIdByChild($product))
+        $helper->remove($product, $cID);
+
+      $product->delete();
+    } catch (Mage_Core_Exception $e) {
+      $this->_fault('not_deleted', $e->getMessage());
+    }
+
+    return true;
+  }
+
+  /**
    * Return loaded product instance
    *
    * The function is redefined to load product by barcode or additional SKUs

@@ -562,4 +562,36 @@ class MVentory_API_Helper_Product_Configurable
     foreach ($prods as $prod)
       $prod->save();
   }
+
+  public function remove ($a, $cID) {
+    $aID = $a->getId();
+    $ids = $this->getChildrenIds($cID);
+
+    //Add ID of configurable product to load it; unset ID of currently
+    //removing product (A) because it's been already loaded
+    $ids[$cID] = $cID;
+    unset($ids[$aID]);
+
+    $setId = $a->getAttributeSetId();
+    $attr = $this->getConfigurableAttribute($setId);
+
+    $prods = Mage::getResourceModel('catalog/product_collection')
+      ->addAttributeToSelect(array(
+          $attr->getAttributeCode(),
+          'price'
+        ))
+      ->addIdFilter($ids)
+      ->addStoreFilter($this->getCurrentWebsite()->getDefaultStore())
+      ->getItems();
+
+    $c = $prods[$cID];
+    unset($prods[$cID]);
+
+    $this
+      ->removeOption($c, $attr, $a)
+      ->unassignProduct($c, $a)
+      ->recalculatePrices($c, $attr, $prods);
+
+    $c->save();
+  }
 }
