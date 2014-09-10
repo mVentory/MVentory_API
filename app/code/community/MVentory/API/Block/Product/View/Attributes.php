@@ -50,10 +50,14 @@ class MVentory_API_Block_Product_View_Attributes
     $category = $helper->getCategory($product);
     $attributes = $product->getAttributes();
 
-    if ($category)
-      $queryParams = $category
-                       ->getUrlInstance()
-                       ->getQueryParams();
+    if ($category) {
+      $urlInstance = $category
+        ->getUrlModel()
+        ->getUrlInstance();
+
+      //Remember query parameters to re-store them at the end
+      $queryParams = $urlInstance->getQueryParams();
+    }
 
     $title = $helper->__('View more of this type');
 
@@ -65,6 +69,7 @@ class MVentory_API_Block_Product_View_Attributes
 
       $label = trim($attribute->getStoreLabel());
 
+      //!!!TODO: replace by checking special option in metadata
       if ($label == '~')
         continue;
 
@@ -106,17 +111,18 @@ class MVentory_API_Block_Product_View_Attributes
           && $attribute->getIsHtmlAllowedOnFront()
           && $isSelect
           && $html) {
+
+        //Make a copy of original query parameters
+        $params = $queryParams;
+
         foreach ($values as $i => &$value) {
-          $params = $queryParams;
           $params[$code] = $i;
 
-          $category
-            ->unsetData('url')
-            ->getUrlInstance()
+          $urlInstance
             ->unsetData('query_params')
             ->setQueryParams($params);
 
-          $value = '<a href="' . $category->getUrl() . '" '
+          $value = '<a href="' . $category->unsetData('url')->getUrl() . '" '
                     . 'title="' . $title . '">'
                     . $value
                     . '</a>';
@@ -139,12 +145,16 @@ class MVentory_API_Block_Product_View_Attributes
       );
     }
 
-    if ($category)
-      $category
-        ->unsetData('url')
-        ->getUrlInstance()
+    //Re-store original query parameters and reset cached generated URL
+    //to produce correct URL from original query params on the next call of
+    //getUrl() method from category model
+    if ($category) {
+      $urlInstance
         ->unsetData('query_params')
         ->setQueryParams($queryParams);
+
+      $category->unsetData('url');
+    }
 
     //Round value of weight attribute or unset if it's 0
     if (isset($data['weight'])) {

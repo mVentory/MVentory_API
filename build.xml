@@ -1,5 +1,6 @@
 <_>
-   <form_key>unTR2SePXOW9MbNC</form_key>
+   <form_key>yypQLVMepXbcLBKg</form_key>
+   <_create/>
    <name>MVentory_API</name>
    <channel>community</channel>
    <version_ids>
@@ -67,22 +68,27 @@ This release contains some major changes in the API part of the code and attribu
          <name>
             <name/>
             <name>MVentory_JQuery</name>
+            <name>Mage_Core_Modules</name>
          </name>
          <channel>
             <channel/>
+            <channel>community</channel>
             <channel>community</channel>
          </channel>
          <min>
             <min/>
             <min/>
+            <min>1.8.0.0</min>
          </min>
          <max>
             <max/>
             <max/>
+            <max/>
          </max>
          <files>
-            <files>                                                                               </files>
-            <files>                                                                               </files>
+            <files>                                                                                 </files>
+            <files>                                                                                 </files>
+            <files>                                                                                 </files>
          </files>
       </package>
       <extension>
