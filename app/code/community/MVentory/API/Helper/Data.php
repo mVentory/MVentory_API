@@ -118,7 +118,7 @@ class MVentory_API_Helper_Data extends Mage_Core_Helper_Abstract {
    * !!!TODO: remove method; fix dependent code
    */
   public function getWebsitesForProduct () {
-    return array($this->getCurrentWebsite());
+    return array($this->getCurrentWebsite()->getId());
   }
 
   /**
