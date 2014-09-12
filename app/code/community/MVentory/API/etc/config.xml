@@ -172,13 +172,6 @@
             <class>mventory/observer</class>
             <method>restoreDuplicateFlagInProduct</method>
           </mventory_restore_duplicate_flag_in_product>
-
-          <mventory_sync_images>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>syncImages</method>
-          </mventory_sync_images>
-        </observers>
       </catalog_product_media_save_before>
 
       <catalog_controller_product_init>
