@@ -368,8 +368,20 @@ class MVentory_API_Helper_Product_Configurable
         if ($isConfig && isset($this->_ignUpdInConfig[$code]))
           continue;
 
-        if ($prod->getData($code) != $val)
-          $prod->setData($code, $val);
+        $set = $get = $cmp = NULL;
+
+        if (isset($this->_attrSetGet[$code])) {
+          extract($this->_attrSetGet[$code]);
+
+          $set = method_exists($prod, $set) ? $set : NULL;
+          $get = method_exists($prod, $get) ? $get : NULL;
+          $cmp = is_callable($cmp) ? $cmp : NULL;
+        }
+
+        $pval = $get ? $prod->$get() : $prod->getData($code);
+
+        if ($cmp ? call_user_func($cmp, $pval, $val) : ($pval != $val))
+          $set ? $prod->$set($val) : $prod->setData($code, $val);
       }
 
       if ($prod->hasDataChanges())
@@ -463,24 +475,17 @@ class MVentory_API_Helper_Product_Configurable
     $setId = $cID ? $c->getAttributeSetId() : $b->getAttributeSetId();
     $attr = $this->getConfigurableAttribute($setId);
 
-    //List of attributes and values which should be updated in all products
-    //assigned to configurable product
-    $updAttrs = array(
-      'visibility'
-        => Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE
-    );
-
-    $replAttrs = Mage::helper('mventory/product_attribute')->getReplicables(
+    //List of attributes and their values which should be updated
+    //in all linked products
+    $updAttrs = $this->_getUpdAttrs(
+      $cID ? $c : $b,
       $setId,
-      array($attr->getAttributeCode() => true)
+      $attr,
+      array(
+        'visibility'
+          => Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE
+      )
     );
-
-    $srcProd = $cID ? $c : $b;
-
-    foreach ($replAttrs as $code)
-      $updAttrs[$code] = $srcProd->getData($code);
-
-    unset($replAttrs, $srcProd);
 
     $changedProds = $this
       ->addAttribute($c, $attr, $prods)
@@ -536,13 +541,9 @@ class MVentory_API_Helper_Product_Configurable
     $setId = $a->getAttributeSetId();
     $attr = $this->getConfigurableAttribute($setId);
 
-    $replAttrs = Mage::helper('mventory/product_attribute')->getReplicables(
-      $setId,
-      array($attr->getAttributeCode() => true)
-    );
-
-    foreach ($replAttrs as $code)
-      $replAttrs[$code] = $a->getData($code);
+    //List of attributes and their values which should be updated
+    //in all linked products
+    $updAttrs = $this->_getUpdAttrs($a, $setId, $attr);
 
     $prods[$aID] = $a;
     $c = $prods[$cID];
@@ -557,7 +558,7 @@ class MVentory_API_Helper_Product_Configurable
     $prods[$cID] = $c;
     unset($prods[$aID]);
 
-    $this->updateProds($prods, $replAttrs);
+    $this->updateProds($prods, $updAttrs);
 
     foreach ($prods as $prod)
       $prod->save();
@@ -593,5 +594,31 @@ class MVentory_API_Helper_Product_Configurable
       ->recalculatePrices($c, $attr, $prods);
 
     $c->save();
+  }
+
+  protected function _getUpdAttrs ($src, $setId, $attr, $overwrite = array()) {
+    $helper = Mage::helper('mventory/product_attribute');
+
+    //Get list of attributes with special setter and getter and cache it to
+    //use in updateProds() method
+    $this->_attrSetGet  = $helper->getAttrsSetGetInfo();
+
+    $attrs = $helper->getReplicables(
+      $setId,
+      array($attr->getAttributeCode() => true)
+    );
+
+    foreach ($attrs as $code) {
+      if ($overwrite && isset($overwrite[$code]))
+        continue;
+
+      $hasGetter = isset($this->_attrSetGet[$code])
+                   && ($get = $this->_attrSetGet[$code]['get'])
+                   && method_exists($src, $get);
+
+      $attrs[$code] = $hasGetter ? $src->$get($code) : $src->getData($code);
+    }
+
+    return $overwrite ? array_merge($attrs, $overwrite) : $attrs;
   }
 }

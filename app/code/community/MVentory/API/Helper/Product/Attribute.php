@@ -51,6 +51,21 @@ class MVentory_API_Helper_Product_Attribute
     'product_barcode_' => true,
   );
 
+  /**
+   * List of attributes which use special functions to set/get values
+   */
+  protected $_attrsSetGet = array(
+    'category_ids' => array(
+      'set' => 'setCategoryIds',
+      'get' => 'getCategoryIds',
+      'cmp' => 'array_diff'
+    )
+  );
+
+  public function getAttrsSetGetInfo () {
+    return $this->_attrsSetGet;
+  }
+
   public function getEditables ($setId) {
     $attrs = array();
 
