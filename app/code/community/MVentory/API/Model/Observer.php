@@ -27,17 +27,6 @@ class MVentory_API_Model_Observer {
 mVentory configuration URL: <a href="%1$s">%1$s</a> (Can only be used once and is valid for %2$d hours)
 EOT;
 
-  public function populateAttributes ($observer) {
-    if (Mage::helper('mventory/product')->isObserverDisabled($observer))
-      return;
-
-    $event = $observer->getEvent();
-
-    //Populate product attributes
-    Mage::getSingleton('mventory/product_action')
-      ->populateAttributes(array($event->getProduct()), null, false);
-  }
-
   public function saveProductCreateDate ($observer) {
     $product = $observer
                  ->getEvent()

@@ -122,12 +122,6 @@
     <events>
       <catalog_product_save_before>
         <observers>
-          <mventory_populate_attributes>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>populateAttributes</method>
-          </mventory_populate_attributes>
-
           <mventory_save_product_create_date>
             <type>singleton</type>
             <class>mventory/observer</class>

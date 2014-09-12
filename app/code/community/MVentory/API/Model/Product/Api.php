@@ -274,10 +274,14 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         'id'
       );
 
-      $saveProduct = isset($data['_api_link_with_product'])
-                     && ($sid = $data['_api_link_with_product'])
-                     && ($sid = $helper->getProductId($sid))
-                     && $helper->link($product, $sid);
+      //!!!TODO: consider to move it before creating product
+      $saveProduct = 1 == Mage::getSingleton('mventory/product_action')
+                            ->populateAttributes(array($product), null, false);
+
+      $saveProduct |= isset($data['_api_link_with_product'])
+                      && ($sid = $data['_api_link_with_product'])
+                      && ($sid = $helper->getProductId($sid))
+                      && $helper->link($product, $sid);
 
       if ($saveProduct)
         $product->save();
@@ -597,6 +601,9 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     if (isset($removeOldValues) && $removeOldValues)
       $this->_removeOldValues($product, $oldSet, $newSet);
+
+    Mage::getSingleton('mventory/product_action')
+      ->populateAttributes(array($product), null, false);
 
     if (isset($productData['_api_link_with_product'])
         && $sibling = $productData['_api_link_with_product']) {
