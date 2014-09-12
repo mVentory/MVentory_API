@@ -267,22 +267,21 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         Mage_Core_Model_App::ADMIN_STORE_ID
       );
 
-      if (isset($data['_api_link_with_product'])
-          && $sid = $data['_api_link_with_product']) {
+      //Use admin store to save values of attributes in the default scope
+      $product = $this->_getProduct(
+        $id,
+        Mage_Core_Model_App::ADMIN_STORE_ID,
+        'id'
+      );
 
-        if ($sid = $helper->getProductId($sid)) {
+      $saveProduct = isset($data['_api_link_with_product'])
+                     && ($sid = $data['_api_link_with_product'])
+                     && ($sid = $helper->getProductId($sid))
+                     && $helper->link($product, $sid);
 
-          //Use admin store to save values of attributes in the default scope
-          $product = $this->_getProduct(
-            $id,
-            Mage_Core_Model_App::ADMIN_STORE_ID,
-            'id'
-          );
+      if ($saveProduct)
+        $product->save();
 
-          if ($helper->link($product, $sid))
-            $product->save();
-        }
-      }
     } else if (isset($data['_api_update_if_exists'])
               && $data['_api_update_if_exists']) {
 
