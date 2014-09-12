@@ -279,6 +279,8 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $saveProduct = 1 == Mage::getSingleton('mventory/product_action')
                             ->populateAttributes(array($product), null, false);
 
+      $saveProduct |= $this->_matchCategory($product);
+
       $saveProduct |= isset($data['_api_link_with_product'])
                       && ($sid = $data['_api_link_with_product'])
                       && ($sid = $helper->getProductId($sid))
@@ -606,6 +608,8 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     Mage::getSingleton('mventory/product_action')
       ->populateAttributes(array($product), null, false);
 
+    $this->_matchCategory($product);
+
     if (isset($productData['_api_link_with_product'])
         && $sibling = $productData['_api_link_with_product']) {
 
@@ -752,5 +756,16 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       if (!isset($_newAttrs[$code]))
         $product->setData($code, false);
     }
+  }
+
+  protected function _matchCategory ($product) {
+    $result = Mage::getModel('mventory/matching')->matchCategory($product);
+
+    if ($result === false)
+      return;
+
+    $product->setCategoryIds((string) $result);
+
+    return true;
   }
 }

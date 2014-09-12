@@ -152,23 +152,6 @@ EOT;
       ->append($matching);
   }
 
-  public function matchCategory ($observer) {
-    if (Mage::helper('mventory/product')->isObserverDisabled($observer))
-      return;
-
-    $product = $observer
-                 ->getEvent()
-                 ->getProduct();
-
-    if ($product->getIsMventoryCategoryMatched())
-      return;
-
-    $result = Mage::getModel('mventory/matching')->matchCategory($product);
-
-    if ($result)
-      $product->setCategoryIds((string) $result);
-  }
-
   public function updateDuplicate ($observer) {
     $data = $observer
               ->getCurrentProduct()
