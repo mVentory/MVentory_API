@@ -243,6 +243,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     if (!$id = $helper->getProductId($sku, 'sku')) {
       $data['mv_created_userid'] = $helper->getApiUser()->getId();
+      $data['mv_created_date'] = time();
       $data['website_ids'] = $helper->getWebsitesForProduct();
 
       $website = $helper->getCurrentWebsite();

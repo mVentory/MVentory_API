@@ -27,17 +27,6 @@ class MVentory_API_Model_Observer {
 mVentory configuration URL: <a href="%1$s">%1$s</a> (Can only be used once and is valid for %2$d hours)
 EOT;
 
-  public function saveProductCreateDate ($observer) {
-    $product = $observer
-                 ->getEvent()
-                 ->getProduct();
-
-    if ($product->getId())
-      return;
-
-    $product->setData('mv_created_date', time());
-  }
-
   public function productInit ($observer) {
     $product = $observer->getProduct();
 
