@@ -343,7 +343,7 @@ class MVentory_API_Helper_Product_Configurable
       $_descs[$_desc] = true;
     }
 
-    return trim(implode("\r\n", $descs));
+    return isset($descs) ? trim(implode("\r\n", $descs)) : '';
   }
 
   /**
