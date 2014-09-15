@@ -102,16 +102,6 @@ EOT;
       ->addItem('categorymatch', compact('label', 'url'));
   }
 
-  public function resetExcludeFlag ($observer) {
-    if (Mage::helper('mventory/product')->isObserverDisabled($observer))
-      return;
-
-    $images = $observer->getImages();
-
-    foreach ($images['images'] as &$image)
-      $image['disabled'] = 0;
-  }
-
   /**
    * Unset is_duplicate flag to prevent coping image files
    * in Mage_Catalog_Model_Product_Attribute_Backend_Media::beforeSave() method
