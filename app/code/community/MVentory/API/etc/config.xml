@@ -163,6 +163,8 @@
         </observers>
       </catalog_controller_product_init>
 
+      <!-- Temporarily disabled until we will find a proper solution -->
+      <!--
       <cataloginventory_stock_item_save_after>
         <observers>
           <mventory_update_prices_in_configurable_on_stock_change>
@@ -172,6 +174,7 @@
           </mventory_update_prices_in_configurable_on_stock_change>
         </observers>
       </cataloginventory_stock_item_save_after>
+      -->
 
       <adminhtml_catalog_product_grid_prepare_massaction>
         <observers>
