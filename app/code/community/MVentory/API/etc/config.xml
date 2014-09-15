@@ -150,6 +150,7 @@
             <class>mventory/observer</class>
             <method>restoreDuplicateFlagInProduct</method>
           </mventory_restore_duplicate_flag_in_product>
+        </observers>
       </catalog_product_media_save_before>
 
       <catalog_controller_product_init>
