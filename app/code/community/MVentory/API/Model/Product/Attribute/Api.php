@@ -304,6 +304,12 @@ class MVentory_API_Model_Product_Attribute_Api
       'default'
     );
 
+    //Remove following fields from output of API
+    unset(
+      $metadata['invisible_for_websites'],
+      $defaults['invisible_for_websites']
+    );
+
     foreach ($defaults as $field => $defValue)
       if (!isset($metadata[$field]))
         $metadata[$field] = (string) $defValue;
