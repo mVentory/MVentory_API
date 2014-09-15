@@ -607,9 +607,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       if ($sid = $helper->getProductId($sibling)) try {
         $helper->link($product, $sid);
       } catch (Exception $e) {
-        Mage::log(1);
-        Mage::log($e);
-        $this->_fault();
+        $this->_fault('linking_problems', $e->getMessage());
       }
     } else {
       $helper = Mage::helper('mventory/product_configurable');

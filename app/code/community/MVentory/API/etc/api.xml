@@ -88,6 +88,13 @@
             <acl>mventory/catalog/product/delete</acl>
           </delete>
         </methods>
+
+        <faults module="mventory">
+          <linking_problems>
+            <code>1000</code>
+            <message>Can't link or update linked products.</message>
+          </linking_problems>
+        </faults>
       </catalog_product>
 
       <catalog_product_attribute>
