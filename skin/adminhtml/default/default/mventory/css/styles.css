@@ -146,3 +146,8 @@
   display: none;
   position: absolute;
 }
+
+/* Tooltips on attribute's metadata tab */
+#product_attribute_tabs_mventory_content .field-tooltip > div ul {
+  list-style: disc inside;
+}

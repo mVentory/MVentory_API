@@ -460,8 +460,8 @@
         <!-- 0 = No -->
         <use_for_search>0</use_for_search>
 
-        <!-- 0 = None -->
-        <special_content_type>0</special_content_type>
+        <!-- 0 = Text -->
+        <content_type>0</content_type>
 
         <!-- 1 = Yes -->
         <add_new_values>1</add_new_values>
@@ -527,14 +527,24 @@
           <source_model>adminhtml/system_config_source_yesno</source_model>
         </use_for_search>
 
-        <special_content_type>
+        <content_type>
           <type>select</type>
-          <label>Special content type</label>
+          <label>Content type</label>
           <note>For content-specific features in the app</note>
-          <tooltip>The content of the attribute has some special meaning and may have additional functionality in the app. E.g. a video link has YouTube search, ISBN number is populated if the scanned barcode is an ISBN.</tooltip>
+          <tooltip>
+            <![CDATA[
+              Some content types have special handling in the app.
+              <ul>
+                <li>YouTube video ID - the app saves YouTube video IDs from internet search. Modify your theme to display it as a video.</li>
+                <li>Web address - the app saves a web address of a page. Modify your theme to display it as a link.</li>
+                <li>ISBN10, ISBN13 - the app will search Google Books for this if a valid ISBN was entered or scanned by the user.</li>
+                <li>Secondary barcode block - this field is populated with the value of a secondary barcode block from the SKU/manufacturer code field.</li>
+              </ul>
+            ]]>
+          </tooltip>
           <source_model>mventory/system_config_source_contenttype</source_model>
           <depends>text,textarea</depends>
-        </special_content_type>
+        </content_type>
 
         <add_new_values>
           <type>select</type>
