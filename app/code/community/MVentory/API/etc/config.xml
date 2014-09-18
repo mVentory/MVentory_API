@@ -460,17 +460,8 @@
         <!-- 0 = No -->
         <use_for_search>0</use_for_search>
 
-        <!-- 0 = No -->
-        <config_product_identity>0</config_product_identity>
-
-        <!-- 0 = None -->
-        <default_capitalisation>0</default_capitalisation>
-
         <!-- 0 = None -->
         <special_content_type>0</special_content_type>
-
-        <!-- 0 = No  -->
-        <copy_from_search>0</copy_from_search>
 
         <!-- 1 = Yes -->
         <add_new_values>1</add_new_values>
@@ -536,24 +527,6 @@
           <source_model>adminhtml/system_config_source_yesno</source_model>
         </use_for_search>
 
-        <config_product_identity>
-          <type>select</type>
-          <label>Config product identity</label>
-          <note>Must match values in associates</note>
-          <tooltip>Configurable products can be created automatically out of simple products with identical details and different configurable attribute. Set to YES if values of this attribute must match on all associate products.</tooltip>
-          <source_model>adminhtml/system_config_source_yesno</source_model>
-          <depends>select</depends>
-        </config_product_identity>
-
-        <default_capitalisation>
-          <type>select</type>
-          <label>Default capitalisation</label>
-          <note>Auto-correct capitalisation in user input</note>
-          <tooltip>The text can be corrected by the app as the users type it in, but they can go back and edit the corrections.</tooltip>
-          <source_model>mventory/system_config_source_capitalisation</source_model>
-          <depends>text,textarea</depends>
-        </default_capitalisation>
-
         <special_content_type>
           <type>select</type>
           <label>Special content type</label>
@@ -562,15 +535,6 @@
           <source_model>mventory/system_config_source_contenttype</source_model>
           <depends>text,textarea</depends>
         </special_content_type>
-
-        <copy_from_search>
-          <type>select</type>
-          <label>Copy from search</label>
-          <note>Copy selected text into this field</note>
-          <tooltip>The app user will be able to copy text from a web search (e.g. search for manufacturer's specs) to this attribute.</tooltip>
-          <source_model>adminhtml/system_config_source_yesno</source_model>
-          <depends>text,textarea</depends>
-        </copy_from_search>
 
         <add_new_values>
           <type>select</type>
