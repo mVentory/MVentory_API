@@ -21,7 +21,7 @@
 <config>
   <modules>
     <MVentory_API>
-      <version>26</version>
+      <version>28</version>
     </MVentory_API>
   </modules>
 

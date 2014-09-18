@@ -34,12 +34,30 @@ class MVentory_API_Model_System_Config_Source_Inputmethod
     $helper = Mage::helper('mventory');
 
     return array(
-      array('value' => 0, 'label' => $helper->__('Normal keyboard')),
-      array('value' => 1, 'label' => $helper->__('Numeric keyboard')),
-      array('value' => 2, 'label' => $helper->__('Scanner')),
-      array('value' => 3, 'label' => $helper->__('Gestures (hand-writing)')),
-      array('value' => 4, 'label' => $helper->__('Copy from internet search')),
-      array('value' => 5, 'label' => $helper->__('Copy from another product'))
+      array(
+        'value' => MVentory_API_Model_Config::MT_INPUT_KBD,
+        'label' => $helper->__('Normal keyboard')
+      ),
+      array(
+        'value' => MVentory_API_Model_Config::MT_INPUT_NUMKBD,
+        'label' => $helper->__('Numeric keyboard')
+      ),
+      array(
+        'value' => MVentory_API_Model_Config::MT_INPUT_SCANNER,
+        'label' => $helper->__('Scanner')
+      ),
+      array(
+        'value' => MVentory_API_Model_Config::MT_INPUT_GESTURES,
+        'label' => $helper->__('Gestures (hand-writing)')
+      ),
+      array(
+        'value' => MVentory_API_Model_Config::MT_INPUT_INTERNETSEARCH,
+        'label' => $helper->__('Copy from internet search')
+      ),
+      array(
+        'value' => MVentory_API_Model_Config::MT_INPUT_ANOTHERPROD,
+        'label' => $helper->__('Copy from another product')
+      )
     );
   }
 }
