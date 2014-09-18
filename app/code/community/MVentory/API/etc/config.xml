@@ -458,6 +458,9 @@
         <hint><![CDATA[]]></hint>
 
         <!-- 0 = No -->
+        <readonly>0</readonly>
+
+        <!-- 0 = No -->
         <use_for_search>0</use_for_search>
 
         <!-- 0 = Text -->
@@ -518,6 +521,14 @@
           <note>Text to appear under the input field in the app.</note>
           <tooltip>Use hints to help users understand the meaning of the attribute, how to use it and how to format data for clarity and consistency.</tooltip>
         </hint>
+
+        <readonly>
+          <type>select</type>
+          <label>Read-only</label>
+          <note>Yes = disable editing in the app</note>
+          <tooltip>Set to Yes if the user should see, but not edit this attribute. It will be still displayed on product details and editing screens.</tooltip>
+          <source_model>adminhtml/system_config_source_yesno</source_model>
+        </readonly>
 
         <use_for_search>
           <type>select</type>
