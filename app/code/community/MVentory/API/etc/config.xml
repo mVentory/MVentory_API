@@ -555,7 +555,7 @@
           <note>E.g. pressing on the field activates this input method</note>
           <tooltip>The type of input displayed when the user taps on the input field.</tooltip>
           <source_model>mventory/system_config_source_inputmethod</source_model>
-          <depends>text,textarea</depends>
+          <depends>text,textarea,weight</depends>
         </input_method>
 
         <alt_input_method>
@@ -564,7 +564,7 @@
           <note>Select one or more</note>
           <tooltip>The type of input displayed when the user taps and holds on the input field. It can be the same as on-tap or different. A menu is displayed if there is more than one.</tooltip>
           <source_model>mventory/system_config_source_inputmethod</source_model>
-          <depends>text,textarea</depends>
+          <depends>text,textarea,weight</depends>
         </alt_input_method>
 
         <content_type>
@@ -583,7 +583,7 @@
             ]]>
           </tooltip>
           <source_model>mventory/system_config_source_contenttype</source_model>
-          <depends>text,textarea</depends>
+          <depends>text,textarea,weight</depends>
         </content_type>
 
         <add_new_values>
