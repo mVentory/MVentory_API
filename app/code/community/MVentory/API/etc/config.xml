@@ -451,7 +451,7 @@
       </api>
 
       <metadata>
-        <!-- Empty string = No website selected -->
+        <!-- Empty string = Visible in all -->
         <invisible_for_websites><![CDATA[]]></invisible_for_websites>
 
         <!-- Empty string = No hint -->
@@ -518,7 +518,7 @@
           <label>Make invisible for</label>
           <note>Select all websites this attribute should NOT appear in</note>
           <tooltip>All non-system attributes appear in the app by default. You can hide some of them from the app. It won't affect their use in Magento or the front-end.</tooltip>
-          <source_model>adminhtml/system_config_source_website</source_model>
+          <source_model>mventory/system_config_source_website</source_model>
         </invisible_for_websites>
 
         <hint>
