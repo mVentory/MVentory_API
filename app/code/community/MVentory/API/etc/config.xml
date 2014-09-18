@@ -463,6 +463,17 @@
         <!-- 0 = No -->
         <use_for_search>0</use_for_search>
 
+        <!-- 0 = Normal keyboard -->
+        <input_method>0</input_method>
+
+        <!--
+          0 = Normal keyboard
+          2 = Scanner
+          4 = Copy from internet search
+          5 = Copy from another product
+        -->
+        <alt_input_method>0,2,4,5</alt_input_method>
+
         <!-- 0 = Text -->
         <content_type>0</content_type>
 
@@ -537,6 +548,24 @@
           <tooltip>The value of this attribute will be included in the search string when users search for product info, videos and images online. E.g. you may want to include the name of the brand or product number.</tooltip>
           <source_model>adminhtml/system_config_source_yesno</source_model>
         </use_for_search>
+
+        <input_method>
+          <type>select</type>
+          <label>Default input method</label>
+          <note>E.g. pressing on the field activates this input method</note>
+          <tooltip>The type of input displayed when the user taps on the input field.</tooltip>
+          <source_model>mventory/system_config_source_inputmethod</source_model>
+          <depends>text,textarea</depends>
+        </input_method>
+
+        <alt_input_method>
+          <type>multiselect</type>
+          <label>Alternative input methods</label>
+          <note>Select one or more</note>
+          <tooltip>The type of input displayed when the user taps and holds on the input field. It can be the same as on-tap or different. A menu is displayed if there is more than one.</tooltip>
+          <source_model>mventory/system_config_source_inputmethod</source_model>
+          <depends>text,textarea</depends>
+        </alt_input_method>
 
         <content_type>
           <type>select</type>
