@@ -379,16 +379,6 @@
         </observers>
       </core_block_abstract_prepare_layout_before>
 
-      <core_block_abstract_prepare_layout_before>
-        <observers>
-          <mventory_add_attribute_convert_button>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>addAttributeConvertButton</method>
-          </mventory_add_attribute_convert_button>
-        </observers>
-      </core_block_abstract_prepare_layout_before>
-
       <controller_action_layout_render_before_adminhtml_catalog_product_set_edit>
         <observers>
           <mventory_add_mathing_rules_block>

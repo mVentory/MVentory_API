@@ -979,40 +979,6 @@ EOT;
     }
   }
 
-  public function addAttributeConvertButton ($observer) {
-    $block = $observer->getData('block');
-
-    if (!($block instanceof Mage_Adminhtml_Block_Catalog_Product_Attribute_Edit))
-      return;
-
-    $attr = Mage::registry('entity_attribute');
-
-    if (!$id = $attr->getId())
-      return;
-
-    $url = $block->getUrl(
-        'mventory/attribute/convert',
-        array(
-          '_current' => true,
-          //'id' => $id
-        )
-      );
-
-    $isConverted = substr($attr->getAttributeCode(), -1) === '_';
-
-    $block->addButton(
-      'convert_attribute',
-      array(
-        'label' => $isConverted
-                     ? Mage::helper('mventory')->__('Remove from mVentory')
-                       : Mage::helper('mventory')->__('Add to mVentory'),
-        'onclick' => 'setLocation(\'' . $url . '\')',
-        'class' => $isConverted ? 'delete' : 'add'
-      ),
-      -1
-    );
-  }
-
   /**
    * Observer for catalog_entity_attribute_save_before event in adminhtml area
    * Serialise array of metadata for the app if it's set
