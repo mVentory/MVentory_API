@@ -202,62 +202,6 @@ EOT;
         ->addData($data);
   }
 
-  public function updatePricesInConfigurable ($observer) {
-    $product = $observer->getProduct();
-
-    //We don't need to update prices because it's already been done in
-    //assignToConfigurableAfter() method or product is new
-    if ($product->hasData('mventory_assigned_to_configurable_after')
-        || $product->getTypeId()
-             == Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE)
-      return;
-
-    $origPrice = $product->getOrigData('price');
-
-    //Ignore product if it's newly created
-    if (($origPrice = $product->getOrigData('price')) === null)
-      return;
-
-    $origPrice = (float) $origPrice;
-    $price = (float) $product->getData('price');
-
-    if ($price == $origPrice)
-      return;
-
-    $helper = Mage::helper('mventory/product_configurable');
-
-    if (!$childrenIds = $helper->getSiblingsIds($product))
-      return;
-
-    $configurable = Mage::getModel('catalog/product')
-                      ->load($helper->getIdByChild($product));
-
-    if (!$configurable->getId())
-      return;
-
-    $attribute = $helper->getConfigurableAttribute(
-                   $product->getAttributeSetId()
-                 );
-
-    $children = Mage::getResourceModel('catalog/product_collection')
-                  ->addAttributeToSelect(array(
-                      'price',
-                      $attribute->getAttributeCode()
-                    ))
-                  ->addIdFilter($childrenIds);
-
-    Mage::getResourceModel('cataloginventory/stock')
-      ->setInStockFilterToCollection($children);
-
-    $helper->recalculatePrices(
-      $configurable,
-      $attribute,
-      $children->addItem($product)
-    );
-
-    $configurable->save();
-  }
-
   public function updatePricesInConfigurableOnStockChange ($observer) {
     $item = $observer->getItem();
 
@@ -317,55 +261,6 @@ EOT;
       $children->addItem($product);
 
     $helper->recalculatePrices($configurable, $attribute, $children);
-
-    $configurable->save();
-  }
-
-  public function updateDescriptionInConfigurable ($observer) {
-    $product = $observer->getProduct();
-
-    //We don't need to update prices because it's already been done in
-    //assignToConfigurableAfter() method or product is new
-    if ($product->hasData('mventory_assigned_to_configurable_after')
-        || $product->getTypeId()
-             == Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE)
-      return;
-
-    $origDescription = $product->getOrigData('description');
-    $description = $product->getDescription();
-
-    if ($origDescription == $description)
-      return;
-
-    $helper = Mage::helper('mventory/product_configurable');
-
-    if (!$childrenIds = $helper->getSiblingsIds($product))
-      return;
-
-    $configurable = Mage::getModel('catalog/product')
-                      ->load($helper->getIdByChild($product));
-
-    if (!$configurable->getId())
-      return;
-
-    $attribute = $helper
-                   ->getConfigurableAttribute($product->getAttributeSetId());
-
-    //Load all product attributes for correct saving
-    $children = Mage::getResourceModel('catalog/product_collection')
-                  ->addAttributeToSelect('*')
-                  ->addIdFilter($childrenIds);
-
-    $helper->shareDescription(
-      $configurable,
-      $children->addItem($product),
-      $description
-    );
-
-    $children
-      ->removeItemByKey($product->getId())
-      ->setDataToAll('mventory_assigned_to_configurable_after', false)
-      ->save();
 
     $configurable->save();
   }
