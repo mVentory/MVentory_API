@@ -52,6 +52,9 @@ class MVentory_API_Helper_Product_Attribute
   );
 
   public function getEditables ($setId) {
+    //Save ID of current website to use later (e.g. in _isAllowedAttribute())
+    $this->_websiteId = $this->getCurrentWebsite()->getId();
+
     $attrs = array();
 
     foreach ($this->_getAttrs($setId) as $attr)
@@ -63,6 +66,9 @@ class MVentory_API_Helper_Product_Attribute
   }
 
   public function getReplicables ($setId, $ignore = array()) {
+    //Save ID of current website to use later (e.g. in _isAllowedAttribute())
+    $this->_websiteId = $this->getCurrentWebsite()->getId();
+
     $attrs = array();
 
     $ignore = $this->_nonReplicable + $ignore;
@@ -90,6 +96,9 @@ class MVentory_API_Helper_Product_Attribute
    * @return Mage_Eav_Model_Entity_Attribute Configurable attribute
    */
   public function getConfigurable ($setId) {
+    //Save ID of current website to use later (e.g. in _isAllowedAttribute())
+    $this->_websiteId = $this->getCurrentWebsite()->getId();
+
     foreach ($this->_getAttrs($setId) as $attr)
       if ((!$attr->getId() || $attr->isInSet($setId))
           && $attr->isScopeGlobal()
@@ -97,6 +106,24 @@ class MVentory_API_Helper_Product_Attribute
           && ($attr->getIsConfigurable() == '1')
           && $this->_isAllowedAttribute($attr))
       return $attr;
+  }
+
+  /**
+   * Deserialise and set metadata in the attribute if it's available
+   *
+   * @param Mage_Eav_Model_Entity_Attribute $attr Attribute
+   * @return array Deserialised metadata
+   */
+  public function parseMetadata ($attr) {
+    if (is_array($raw = $attr['mventory_metadata']))
+      return $raw;
+
+    $attr['mventory_metadata']
+      = ($raw && ($metadata = unserialize($raw)) !== false)
+        ? $metadata
+          : ($metadata = array());
+
+    return $metadata;
   }
 
   protected function _getAttrs ($setId) {
@@ -116,13 +143,13 @@ class MVentory_API_Helper_Product_Attribute
           || isset($this->_whitelist[$code])))
       return false;
 
-    //!!!TODO: replace with filtering by metadata option
-    $storeId = Mage::helper('mventory')->getCurrentStoreId();
-
-    $label = (($labels = $attr->getStoreLabels()) && isset($labels[$storeId]))
-               ? $labels[$storeId]
-                 : $attr->getFrontendLabel();
-
-    return $label != '~';
+    return !(($metadata = $this->parseMetadata($attr))
+             && isset($metadata['invisible_for_websites'])
+             && ($websites = $metadata['invisible_for_websites'])
+             && in_array(
+                  $this->_websiteId,
+                  is_array($websites) ? $websites : explode(',', $websites)
+                )
+            );
   }
 }
