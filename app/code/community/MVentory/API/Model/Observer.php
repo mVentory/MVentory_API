@@ -27,17 +27,6 @@ class MVentory_API_Model_Observer {
 mVentory configuration URL: <a href="%1$s">%1$s</a> (Can only be used once and is valid for %2$d hours)
 EOT;
 
-  public function populateAttributes ($observer) {
-    if (Mage::helper('mventory/product')->isObserverDisabled($observer))
-      return;
-
-    $event = $observer->getEvent();
-
-    //Populate product attributes
-    Mage::getSingleton('mventory/product_action')
-      ->populateAttributes(array($event->getProduct()), null, false);
-  }
-
   public function saveProductCreateDate ($observer) {
     $product = $observer
                  ->getEvent()
@@ -93,22 +82,6 @@ EOT;
     $block
       ->getMassactionBlock()
       ->addItem('namerebuild', compact('label', 'url'));
-  }
-
-  /**
-   * Add action "Populate product attributes" to admin product manage grid
-   */
-  public function addProductAttributesPopulateMassaction ($observer) {
-    $block = $observer->getBlock();
-
-    $route = 'mventory/catalog_product/massAttributesPopulate';
-
-    $label = Mage::helper('mventory')->__('Populate product attributes');
-    $url = $block->getUrl($route, array('_current' => true));
-
-    $block
-      ->getMassactionBlock()
-      ->addItem('attributespopulate', compact('label', 'url'));
   }
 
   public function addProductCategoryMatchMassaction ($observer) {
