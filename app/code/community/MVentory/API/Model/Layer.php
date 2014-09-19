@@ -50,22 +50,4 @@ class MVentory_API_Model_Layer extends Mage_Catalog_Model_Layer {
              ->_prepareAttributeCollection($collection)
              ->load();
   }
-
-  /**
-   * Add filters to attribute collection
-   *
-   * @param Mage_Catalog_Model_Resource_Product_Attribute_Collection $collection
-   * @return Mage_Catalog_Model_Resource_Product_Attribute_Collection
-   */
-  protected function _prepareAttributeCollection ($collection) {
-    $collection = parent::_prepareAttributeCollection($collection);
-
-    //Filter out attributes which have label equal to '~' or '~ ' or ' ~'
-    //in the current store
-    $collection
-      ->getSelect()
-      ->having('store_label NOT IN (\'~\', \'~ \', \' ~\')');
-
-    return $collection;
-  }
 }
