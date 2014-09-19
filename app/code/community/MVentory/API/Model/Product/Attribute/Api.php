@@ -86,31 +86,25 @@ class MVentory_API_Model_Product_Attribute_Api
       'options' => $this->optionsPerStoreView($attr->getId(), $storeId)
     );
 
-    return $result + $this->_prepareMetadata($attr);
+    return $result + $this->_prepareMetadata(
+      $this->_helperAttr->parseMetadata($attr)
+    );
   }
 
   public function fullInfoList ($setId) {
-
-    //Add 'cost' attr to the list of ignored attrs here instead in constructure
-    //to not affect other core API calls
-    $this->_ignoredAttributeCodes[] = 'cost';
-
-    $attrs = Mage::getModel('catalog/product')
-      ->getResource()
-      ->loadAllAttributes()
-      ->getSortedAttributes($setId);
+    $this->_helperAttr = Mage::helper('mventory/product_attribute');
 
     $result = array();
+    $attrs = $this->_helperAttr->getEditables($setId);
 
     foreach ($attrs as $attr)
-      if ((!$attr->getId() || $attr->isInSet($setId))
-          && $this->__isAllowedAttribute($attr))
-        $result[] = $this->_info($attr);
+      $result[] = $this->_info($attr);
 
     return $result;
   }
 
   public function addOptionAndReturnInfo ($attribute, $value) {
+    $this->_helperAttr = Mage::helper('mventory/product_attribute');
     $storeId = Mage::helper('mventory')->getCurrentStoreId();
 
     $attribute = $this->_getAttribute($attribute);
@@ -257,48 +251,14 @@ class MVentory_API_Model_Product_Attribute_Api
              ->delete($table, $condition);
   }
 
-  protected function __isAllowedAttribute ($attr, $attrs = null) {
-    if (!parent::_isAllowedAttribute($attr, $attrs))
-      return false;
-
-    if (!(($attr->getIsVisible() && $attr->getIsUserDefined())
-          || isset($this->_whitelist[$attr->getAttributeCode()])))
-      return false;
-
-    $storeId = Mage::helper('mventory')->getCurrentStoreId();
-
-    $label = (($labels = $attr->getStoreLabels()) && isset($labels[$storeId]))
-               ? $labels[$storeId]
-                 : $attr->getFrontendLabel();
-
-    return $label != '~';
-  }
-
-  /**
-   * Deserialise and return metadata of it's available otherwise return
-   * empty array
-   *
-   * @param array $attr Attr data
-   * @return array Deserialised metadata
-   */
-  protected function _getMetadata ($attr) {
-    if (!$attr['mventory_metadata'])
-      return array();
-
-    return ($metadata = unserialize($attr['mventory_metadata'])) === false
-             ? array()
-               : $metadata;
-  }
-
   /**
    * Set default values for metadata fields if they don't have value in the
    * attr's metadata
    *
-   * @param array $attr Attr data
+   * @param array $metadata Parsed metadata from attribute
    * @return array Prepared metadata
    */
-  protected function _prepareMetadata ($attr) {
-    $metadata = $this->_getMetadata ($attr);
+  protected function _prepareMetadata ($metadata) {
     $defaults = (array) Mage::getConfig()->getNode(
       'mventory/metadata',
       'default'
