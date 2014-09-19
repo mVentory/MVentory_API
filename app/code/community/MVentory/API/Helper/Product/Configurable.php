@@ -392,6 +392,8 @@ class MVentory_API_Helper_Product_Configurable
    * @return bool
    */
   public function link ($a, $b) {
+    $attrHelper = Mage::helper('mventory/product_attribute');
+
     $aID = $a->getId();
     $cID = $this->getIdByChild($b);
 
@@ -461,7 +463,7 @@ class MVentory_API_Helper_Product_Configurable
     }
 
     $setId = $cID ? $c->getAttributeSetId() : $b->getAttributeSetId();
-    $attr = $this->getConfigurableAttribute($setId);
+    $attr = $attrHelper->getConfigurable($setId);
 
     //List of attributes and values which should be updated in all products
     //assigned to configurable product
@@ -470,7 +472,7 @@ class MVentory_API_Helper_Product_Configurable
         => Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE
     );
 
-    $replAttrs = Mage::helper('mventory/product_attribute')->getReplicables(
+    $replAttrs = $attrHelper->getReplicables(
       $setId,
       array($attr->getAttributeCode() => true)
     );
@@ -517,6 +519,8 @@ class MVentory_API_Helper_Product_Configurable
   }
 
   public function update ($a, $cID) {
+    $attrHelper = Mage::helper('mventory/product_attribute');
+
     $aID = $a->getId();
     $ids = $this->getChildrenIds($cID);
 
@@ -534,9 +538,9 @@ class MVentory_API_Helper_Product_Configurable
     //!!!TODO: not sure which product is better to use to get attr set ID
     //in case attribute set was updated
     $setId = $a->getAttributeSetId();
-    $attr = $this->getConfigurableAttribute($setId);
+    $attr = $attrHelper->getConfigurable($setId);
 
-    $replAttrs = Mage::helper('mventory/product_attribute')->getReplicables(
+    $replAttrs = $attrHelper->getReplicables(
       $setId,
       array($attr->getAttributeCode() => true)
     );
@@ -573,7 +577,7 @@ class MVentory_API_Helper_Product_Configurable
     unset($ids[$aID]);
 
     $setId = $a->getAttributeSetId();
-    $attr = $this->getConfigurableAttribute($setId);
+    $attr = Mage::helper('mventory/product_attribute')->getConfigurable($setId);
 
     $prods = Mage::getResourceModel('catalog/product_collection')
       ->addAttributeToSelect(array(

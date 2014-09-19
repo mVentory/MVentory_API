@@ -77,6 +77,28 @@ class MVentory_API_Helper_Product_Attribute
     return $attrs;
   }
 
+  /**
+   * Return configurable attribute by attribute set ID
+   *
+   * It returns first configurable attribute which is global
+   * and has select as frontend
+   *
+   * NOTE: the function returns first attribute because we support
+   *       only one configurable attribute in product
+   *
+   * @param int $setId Attribute set ID
+   * @return Mage_Eav_Model_Entity_Attribute Configurable attribute
+   */
+  public function getConfigurable ($setId) {
+    foreach ($this->_getAttrs($setId) as $attr)
+      if ((!$attr->getId() || $attr->isInSet($setId))
+          && $attr->isScopeGlobal()
+          && ($attr->getFrontendInput() == 'select')
+          && ($attr->getIsConfigurable() == '1')
+          && $this->_isAllowedAttribute($attr))
+      return $attr;
+  }
+
   protected function _getAttrs ($setId) {
     return Mage::getModel('catalog/product')
       ->getResource()
