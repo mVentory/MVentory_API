@@ -303,9 +303,18 @@ class MVentory_API_Model_Product_Attribute_Api
       'default'
     );
 
-    foreach ($defaults as $field => $defValue)
-      if (!isset($metadata[$field]))
+    foreach ($defaults as $field => $defValue) {
+      if (!isset($metadata[$field])) {
         $metadata[$field] = (string) $defValue;
+
+        continue;
+      }
+
+      //Convert metadata value to string, array to comma-separated list
+      $metadata[$field] = is_array($value = $metadata[$field])
+        ? implode(',', $value)
+          : (string) $value;
+    }
 
     return $metadata;
   }
