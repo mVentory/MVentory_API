@@ -94,9 +94,6 @@ class MVentory_API_Helper_Product_Configurable
     $data['visibility'] = 4;
     $data['name'] = $product->getName(); //???Do we need it?
 
-    if (isset($data['description']))
-      $data['short_description'] = $data['description'];
-
     //???Set store ID to admin?
 
     //Reset value of attributes
@@ -328,22 +325,38 @@ class MVentory_API_Helper_Product_Configurable
    * @param array|Traversable $prods List of products
    * @return string Merged description without duplicates
    */
-  public function mergeDesc ($prods) {
+  public function mergeDescs ($prods) {
     $search = array(' ', "\r", "\n");
 
     foreach ($prods as $prod) {
-      if (!$desc = trim($prod->getDescription()))
-        continue;
+      if ($desc = trim($prod->getDescription())) {
+        $_desc = strtolower(str_replace($search, '', $desc));
 
-      $_desc = strtolower(str_replace($search, '', $desc));
+        if (!isset($_descs[$_desc]))
+          $descs[] = $desc;
 
-      if (!isset($_descs[$_desc]))
-        $descs[] = $desc;
+        $_descs[$_desc] = true;
+      }
 
-      $_descs[$_desc] = true;
+      if ($short = trim($prod->getShortDescription())) {
+        $_short = strtolower(str_replace($search, '', $short));
+
+        if (!isset($_shorts[$_short]))
+          $shorts[] = $short;
+
+        $_shorts[$_short] = true;
+      }
     }
 
-    return isset($descs) ? trim(implode("\r\n", $descs)) : '';
+    $res = array();
+
+    if (isset($descs))
+      $res['description'] = trim(implode("\r\n", $descs));
+
+    if (isset($shorts))
+      $res['short_description'] = trim(implode("\r\n", $shorts));
+
+    return $res;
   }
 
   /**
@@ -415,7 +428,7 @@ class MVentory_API_Helper_Product_Configurable
 
       //Merge description while we have array of all products: configurable
       //product (C) and all assigned products (A, B, ...)
-      $desc = $this->mergeDesc($prods);
+      $descs = $this->mergeDescs($prods);
 
       $c = $prods[$cID];
 
@@ -423,12 +436,10 @@ class MVentory_API_Helper_Product_Configurable
       //description. Configurable product (C) will be used as a source of values
       //for replicable attributes thus merged description will be replicated
       //across all assigned products (A, B, ...)
-      if ($desc)
-        $c
-          ->setDescription($desc)
-          ->setShortDescription($desc);
+      if ($descs)
+        $c->addData($descs);
 
-      unset($prods[$cID], $desc);
+      unset($prods[$cID], $descs);
     } else {
       if (!($b instanceof Mage_Catalog_Model_Product))
         $b = Mage::getModel('catalog/product')
@@ -454,12 +465,10 @@ class MVentory_API_Helper_Product_Configurable
       //Product B will be used as a source of values for replicable attributes
       //thus merged description will be replicated across all products (A and B)
       //and configurable product (C) (it's created by cloning product B)
-      if ($desc = $this->mergeDesc($prods))
-        $b
-          ->setDescription($desc)
-          ->setShortDescription($desc);
+      if ($descs = $this->mergeDescs($prods))
+        $b->addData($descs);
 
-      unset($desc);
+      unset($descs);
     }
 
     $setId = $cID ? $c->getAttributeSetId() : $b->getAttributeSetId();
