@@ -98,6 +98,23 @@ class MVentory_API_Helper_Product_Attribute
     return $attrs;
   }
 
+  public function getWritables ($setId) {
+    //Save ID of current website to use later (e.g. in _isAllowedAttribute())
+    $this->_websiteId = $this->getCurrentWebsite()->getId();
+
+    $attrs = array();
+
+    foreach ($this->_getAttrs($setId) as $attr)
+      if ((!$attr->getId() || $attr->isInSet($setId))
+          && $this->_isAllowedAttribute($attr)
+          && !(($metadata = $attr['mventory_metadata'])
+               && isset($metadata['readonly'])
+               && (1 == (int) $metadata['readonly'])))
+        $attrs[$attr->getAttributeCode()] = $attr;
+
+    return $attrs;
+  }
+
   /**
    * Return configurable attribute by attribute set ID
    *
