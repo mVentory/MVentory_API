@@ -29,42 +29,6 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
   const CONF_TYPE = Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE;
 
-  protected $_excludeFromProduct = array(
-    'type' => true,
-    'type_id' => true,
-    'old_id' => true,
-    'news_from_date' => true,
-    'news_to_date' => true,
-    'country_of_manufacture' => true,
-    'categories' => true,
-    'required_options' => true,
-    'has_options' => true,
-    'image_label' => true,
-    'small_image_label' => true,
-    'thumbnail_label' => true,
-    'group_price' => true,
-    'tier_price' => true,
-    'msrp_enabled' => true,
-    'minimal_price' => true,
-    'msrp_display_actual_price_type' => true,
-    'msrp' => true,
-    'enable_googlecheckout' => true,
-    'meta_title' => true,
-    'meta_keyword' => true,
-    'meta_description' => true,
-    'is_recurring' => true,
-    'recurring_profile' => true,
-    'custom_design' => true,
-    'custom_design_from' => true,
-    'custom_design_to' => true,
-    'custom_layout_update' => true,
-    'page_layout' => true,
-    'options_container' => true,
-    'gift_message_available' => true,
-    'url_key' => true,
-    'visibility' => true
-  );
-
   protected $_allowUpdate = array(
     //!!!TODO: remove it after the app will treat status as normal attribute
     //         Add to whitelist in MVentory_API_Helper_Product_Attribute
@@ -88,7 +52,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $identifierType = 'sku';
     }
 
-    $helper = Mage::helper('mventory/product');
+    $helper = Mage::helper('mventory/product_attribute');
 
     $productId = $helper->getProductId($productId, $identifierType);
 
@@ -106,12 +70,25 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     //product is configurable one
     $productId = $_result['product_id'];
 
-    foreach ($_result as $key => $value) {
-      if (isset($this->_excludeFromProduct[$key]))
-        continue;
-
-      $result[$key] = $value;
-    }
+    $result = array_intersect_key(
+      $_result,
+      array_merge(
+        array(
+          'product_id' => true,
+          'set' => true,
+          'websites' => true,
+          'url_path' => true,
+          'status' => true,
+          'category_ids' => true,
+          'mv_created_date' => true,
+          'mv_created_userid' => true,
+          'mv_stock_journal' => true,
+          'created_at' => true,
+          'updated_at' => true
+        ),
+        $helper->getEditables($_result['set'])
+      )
+    );
 
     $stockItem = Mage::getModel('mventory/stock_item_api');
 
