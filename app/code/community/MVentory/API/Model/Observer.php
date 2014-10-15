@@ -27,28 +27,6 @@ class MVentory_API_Model_Observer {
 mVentory configuration URL: <a href="%1$s">%1$s</a> (Can only be used once and is valid for %2$d hours)
 EOT;
 
-  public function populateAttributes ($observer) {
-    if (Mage::helper('mventory/product')->isObserverDisabled($observer))
-      return;
-
-    $event = $observer->getEvent();
-
-    //Populate product attributes
-    Mage::getSingleton('mventory/product_action')
-      ->populateAttributes(array($event->getProduct()), null, false);
-  }
-
-  public function saveProductCreateDate ($observer) {
-    $product = $observer
-                 ->getEvent()
-                 ->getProduct();
-
-    if ($product->getId())
-      return;
-
-    $product->setData('mv_created_date', time());
-  }
-
   public function productInit ($observer) {
     $product = $observer->getProduct();
 
@@ -124,16 +102,6 @@ EOT;
       ->addItem('categorymatch', compact('label', 'url'));
   }
 
-  public function resetExcludeFlag ($observer) {
-    if (Mage::helper('mventory/product')->isObserverDisabled($observer))
-      return;
-
-    $images = $observer->getImages();
-
-    foreach ($images['images'] as &$image)
-      $image['disabled'] = 0;
-  }
-
   /**
    * Unset is_duplicate flag to prevent coping image files
    * in Mage_Catalog_Model_Product_Attribute_Backend_Media::beforeSave() method
@@ -172,23 +140,6 @@ EOT;
     $content
       ->unsetChild('mventory.matching')
       ->append($matching);
-  }
-
-  public function matchCategory ($observer) {
-    if (Mage::helper('mventory/product')->isObserverDisabled($observer))
-      return;
-
-    $product = $observer
-                 ->getEvent()
-                 ->getProduct();
-
-    if ($product->getIsMventoryCategoryMatched())
-      return;
-
-    $result = Mage::getModel('mventory/matching')->matchCategory($product);
-
-    if ($result)
-      $product->setCategoryIds((string) $result);
   }
 
   public function updateDuplicate ($observer) {

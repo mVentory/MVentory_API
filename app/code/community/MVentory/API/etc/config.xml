@@ -120,28 +120,6 @@
     </resources>
 
     <events>
-      <catalog_product_save_before>
-        <observers>
-          <mventory_populate_attributes>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>populateAttributes</method>
-          </mventory_populate_attributes>
-
-          <mventory_save_product_create_date>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>saveProductCreateDate</method>
-          </mventory_save_product_create_date>
-
-          <mventory_match_category>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>matchCategory</method>
-          </mventory_match_category>
-        </observers>
-      </catalog_product_save_before>
-
       <catalog_model_product_duplicate>
         <observers>
           <mventory_unset_duplicate_flag_in_product>
@@ -161,23 +139,11 @@
       <!-- Requires M. >= 1.7 -->
       <catalog_product_media_save_before>
         <observers>
-          <mventory_reset_exclude_flag>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>resetExcludeFlag</method>
-          </mventory_reset_exclude_flag>
-
           <mventory_restore_duplicate_flag_in_product>
             <type>singleton</type>
             <class>mventory/observer</class>
             <method>restoreDuplicateFlagInProduct</method>
           </mventory_restore_duplicate_flag_in_product>
-
-          <mventory_sync_images>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>syncImages</method>
-          </mventory_sync_images>
         </observers>
       </catalog_product_media_save_before>
 
@@ -191,6 +157,8 @@
         </observers>
       </catalog_controller_product_init>
 
+      <!-- Temporarily disabled until we will find a proper solution -->
+      <!--
       <cataloginventory_stock_item_save_after>
         <observers>
           <mventory_update_prices_in_configurable_on_stock_change>
@@ -200,6 +168,7 @@
           </mventory_update_prices_in_configurable_on_stock_change>
         </observers>
       </cataloginventory_stock_item_save_after>
+      -->
 
       <adminhtml_catalog_product_grid_prepare_massaction>
         <observers>
