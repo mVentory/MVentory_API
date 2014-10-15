@@ -194,9 +194,8 @@ EOT;
     if (!$configurable->getId())
       return;
 
-    $attribute = $helper->getConfigurableAttribute(
-                   $product->getAttributeSetId()
-                 );
+    $attribute = Mage::helper('mventory/product_attribute')
+      ->getConfigurable($product->getAttributeSetId());
 
     $children = Mage::getResourceModel('catalog/product_collection')
                   ->addAttributeToSelect(array(

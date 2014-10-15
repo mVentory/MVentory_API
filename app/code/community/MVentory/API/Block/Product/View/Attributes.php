@@ -67,12 +67,6 @@ class MVentory_API_Block_Product_View_Attributes
       if (!$attribute->getIsVisibleOnFront() || in_array($code, $exclude))
         continue;
 
-      $label = trim($attribute->getStoreLabel());
-
-      //!!!TODO: replace by checking special option in metadata
-      if ($label == '~')
-        continue;
-
       $values = $product->getData($code);
 
       if ($values === null || $values === '' || strpos($values, '~') === 0)
@@ -139,7 +133,7 @@ class MVentory_API_Block_Product_View_Attributes
       }
 
       $data[$code] = array(
-        'label' => $label,
+        'label' => trim($attribute->getStoreLabel()),
         'value' => implode(', ', $values),
         'code'  => $code
       );
