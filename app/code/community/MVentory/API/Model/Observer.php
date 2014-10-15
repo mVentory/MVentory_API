@@ -73,22 +73,6 @@ EOT;
       ->addItem('namerebuild', compact('label', 'url'));
   }
 
-  /**
-   * Add action "Populate product attributes" to admin product manage grid
-   */
-  public function addProductAttributesPopulateMassaction ($observer) {
-    $block = $observer->getBlock();
-
-    $route = 'mventory/catalog_product/massAttributesPopulate';
-
-    $label = Mage::helper('mventory')->__('Populate product attributes');
-    $url = $block->getUrl($route, array('_current' => true));
-
-    $block
-      ->getMassactionBlock()
-      ->addItem('attributespopulate', compact('label', 'url'));
-  }
-
   public function addProductCategoryMatchMassaction ($observer) {
     $block = $observer->getBlock();
 

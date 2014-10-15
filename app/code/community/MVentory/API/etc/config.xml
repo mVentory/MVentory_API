@@ -178,12 +178,6 @@
             <method>addProductNameRebuildMassaction</method>
           </mventory_add_product_name_rebuild_massaction>
 
-          <mventory_add_product_attributes_populate_massaction>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>addProductAttributesPopulateMassaction</method>
-          </mventory_add_product_attributes_populate_massaction>
-
           <mventory_add_product_category_match_massaction>
             <type>singleton</type>
             <class>mventory/observer</class>
