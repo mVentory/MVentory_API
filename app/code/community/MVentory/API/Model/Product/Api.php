@@ -276,10 +276,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       );
 
       //!!!TODO: consider to move it before creating product
-      $saveProduct = 1 == Mage::getSingleton('mventory/product_action')
-                            ->populateAttributes(array($product), null, false);
-
-      $saveProduct |= $this->_matchCategory($product);
+      $saveProduct = $this->_matchCategory($product);
 
       $saveProduct |= isset($data['_api_link_with_product'])
                       && ($sid = $data['_api_link_with_product'])
@@ -604,9 +601,6 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     if (isset($removeOldValues) && $removeOldValues)
       $this->_removeOldValues($product, $oldSet, $newSet);
-
-    Mage::getSingleton('mventory/product_action')
-      ->populateAttributes(array($product), null, false);
 
     $this->_matchCategory($product);
 
