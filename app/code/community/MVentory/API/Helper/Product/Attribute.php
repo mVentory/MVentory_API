@@ -34,7 +34,7 @@ class MVentory_API_Helper_Product_Attribute
     'price' => true,
     'special_price' => true,
     'special_from_date' => true,
-    'special_to_data' => true,
+    'special_to_date' => true,
     'weight' => true,
     'tax_class_id' => true
   );
