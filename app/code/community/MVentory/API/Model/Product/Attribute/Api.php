@@ -25,6 +25,13 @@
 class MVentory_API_Model_Product_Attribute_Api
   extends Mage_Catalog_Model_Product_Attribute_Api {
 
+  /**
+   * Helper class
+   *
+   * @var MVentory_API_Helper_Product_Attribute
+   */
+  protected $_helper;
+
   protected $_whitelist = array(
     'category_ids' => true,
     'name' => true,
@@ -40,6 +47,13 @@ class MVentory_API_Model_Product_Attribute_Api
   );
 
   /**
+   * Constructor
+   */
+  public function __construct () {
+    $this->_helper = Mage::helper('mventory/product_attribute');
+  }
+
+  /**
    * Get information about attribute with list of options
    *
    * @param integer|string $attribute attribute ID or code
@@ -50,7 +64,7 @@ class MVentory_API_Model_Product_Attribute_Api
               ? $attr
                 : $this->_getAttribute($attr);
 
-    $storeId = Mage::helper('mventory')->getCurrentStoreId();
+    $storeId = $this->_helper->getCurrentStoreId();
 
     $label = (($labels = $attr->getStoreLabels()) && isset($labels[$storeId]))
                ? $labels[$storeId]
@@ -87,15 +101,13 @@ class MVentory_API_Model_Product_Attribute_Api
     );
 
     return $result + $this->_prepareMetadata(
-      $this->_helperAttr->parseMetadata($attr)
+      $this->_helper->parseMetadata($attr)
     );
   }
 
   public function fullInfoList ($setId) {
-    $this->_helperAttr = Mage::helper('mventory/product_attribute');
-
     $result = array();
-    $attrs = $this->_helperAttr->getEditables($setId);
+    $attrs = $this->_helper->getEditables($setId);
 
     foreach ($attrs as $attr)
       $result[] = $this->_info($attr);
@@ -104,8 +116,7 @@ class MVentory_API_Model_Product_Attribute_Api
   }
 
   public function addOptionAndReturnInfo ($attribute, $value) {
-    $this->_helperAttr = Mage::helper('mventory/product_attribute');
-    $storeId = Mage::helper('mventory')->getCurrentStoreId();
+    $storeId = $this->_helper->getCurrentStoreId();
 
     $attribute = $this->_getAttribute($attribute);
     $attributeId = $attribute->getId();
@@ -157,22 +168,20 @@ class MVentory_API_Model_Product_Attribute_Api
 
         $this->addOption($attributeId, $data);
 
-        $helper = Mage::helper('mventory');
-
         $subject = 'New attribute value: ' . $value;
         $body = $subject;
 
-        if ($customer = $helper->getCustomerByApiUser())
+        if ($customer = $this->_helper->getCustomerByApiUser())
           $body .= "\n\n"
                    . 'Attribute code: ' . $attribute->getAttributeCode() . "\n"
                    . 'Customer ID: ' . $customer->getId() . "\n"
                    . 'Customer e-mail: ' . $customer->getEmail();
 
-        $helper->sendEmail($subject, $body);
+        $this->_helper->sendEmail($subject, $body);
       } catch (Exception $e) {}
     }
 
-    return $helper->prepareApiResponse($this->_info($attributeId));
+    return $this->_helper->prepareApiResponse($this->_info($attributeId));
   }
 
   private function getOptionLabels($storeId, $attributeId)
