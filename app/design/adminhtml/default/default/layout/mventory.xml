@@ -53,4 +53,10 @@
       <block type="adminhtml/template" template="mventory/customer/edit/js.phtml" name="mventory.customer.edit.js" as="mventory_customer_edit_js"></block>
     </reference>
   </adminhtml_customer_edit>
+
+  <adminhtml_catalog_product_attribute_edit>
+    <reference name="head">
+      <action method="addCss"><css>mventory/css/styles.css</css></action>
+    </reference>
+  </adminhtml_catalog_product_attribute_edit>
 </layout>

@@ -44,4 +44,12 @@ class MVentory_API_Model_Config
   const _QR_CSS = 'mventory/qr/css';
   const _QR_URL = 'mventory/qr/base_url';
   const _QR_COPIES = 'mventory/qr/copies';
+
+  //Attribute metadata values
+  const MT_INPUT_KBD = 0;
+  const MT_INPUT_NUMKBD = 1;
+  const MT_INPUT_SCANNER = 2;
+  const MT_INPUT_GESTURES = 3;
+  const MT_INPUT_INTERNETSEARCH = 4;
+  const MT_INPUT_ANOTHERPROD = 5;
 }

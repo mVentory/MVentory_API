@@ -33,14 +33,12 @@ class MVentory_API_Model_System_Config_Source_Contenttype
     $helper = Mage::helper('mventory');
 
     return array(
-      array('value' => 0, 'label' => $helper->__('None')),
-      array('value' => 1, 'label' => $helper->__('Video')),
-      array('value' => 2, 'label' => $helper->__('Image')),
-      array('value' => 3, 'label' => $helper->__('Web page')),
-      array('value' => 4, 'label' => $helper->__('ISBN10')),
-      array('value' => 5, 'label' => $helper->__('ISBN13')),
-      array('value' => 6, 'label' => $helper->__('ISSN')),
-      array('value' => 7, 'label' => $helper->__('Secondary barcode block'))
+      array('value' => 0, 'label' => $helper->__('Text')),
+      array('value' => 1, 'label' => $helper->__('YouTube video ID')),
+      array('value' => 2, 'label' => $helper->__('Web address')),
+      array('value' => 3, 'label' => $helper->__('ISBN10')),
+      array('value' => 4, 'label' => $helper->__('ISBN13')),
+      array('value' => 5, 'label' => $helper->__('Secondary barcode block'))
     );
   }
 }

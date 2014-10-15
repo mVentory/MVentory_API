@@ -17,29 +17,35 @@
  */
 
 /**
- * Source model for default capitalisation type in the app
+ * Source model for 'Make invisible for' metadata field.
+ * Extended to add Visible in all option
  *
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
-class MVentory_API_Model_System_Config_Source_Capitalisation
+
+class MVentory_API_Model_System_Config_Source_Website
+  extends Mage_Adminhtml_Model_System_Config_Source_Website
 {
+
   /**
    * Options getter
    *
    * @return array
    */
   public function toOptionArray () {
-    $helper = Mage::helper('mventory');
+    if (!$this->_options) {
+      parent::toOptionArray();
 
-    return array(
-      array('value' => 0, 'label' => $helper->__('None')),
-      array('value' => 1, 'label' => $helper->__('Sentence case')),
-      array('value' => 2, 'label' => $helper->__('lower case')),
-      array('value' => 3, 'label' => $helper->__('UPPER CASE')),
-      array('value' => 4, 'label' => $helper->__('Camel Case'))
-    );
+      array_unshift(
+        $this->_options,
+        array(
+          'value' => '',
+          'label' => Mage::helper('mventory')->__('Visible in all')
+        )
+      );
+    }
+
+    return $this->_options;
   }
 }
-
-?>
