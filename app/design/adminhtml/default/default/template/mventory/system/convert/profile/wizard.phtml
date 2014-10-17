@@ -177,18 +177,8 @@ Event.observe(window, 'load', function(){
                 <option value="product" <?php echo $this->getSelected('entity_type', 'product') ?>><?php echo $this->__("Products") ?></option>
                 <option value="customer" <?php echo $this->getSelected('entity_type', 'customer') ?>><?php echo $this->__("Customers") ?></option>
                 
-                
-                
-                
-                
-                
-                
-                <!--@bog-->
-                <option value="order" <?= $this->getSelected('entity_type', 'order') ?>><?= $this->__("orders") ?></option>
-                
-                
-                
-                
+                <!--@-->
+                <option value="order" <?= $this->getSelected('entity_type', 'order') ?>><?= $this->__("Orders") ?></option>
                 
             </select>
         </span>
@@ -398,12 +388,9 @@ Event.observe(window, 'load', function(){
         
         
         
-        <?php ###foreach (array('product', 'customer') as $_entityType): ?>
-        <?php ///@Bog
-              foreach (array('product', 'customer'    ,'order' ) as $_entityType): ?>
+        <?php foreach (array('product', 'customer'    ,'order' ) as $_entityType): ?>
         
         
-  <? // /* ?>       
             <div class="profile_entity_type_<?php echo $_entityType ?>">
                 <div id="map_template_<?php echo $_entityType ?>" style="display:none">
                     <span class="field-row">
@@ -439,7 +426,7 @@ Event.observe(window, 'load', function(){
                     <?php endforeach ?>
                 </div>
             </div>
-<? // */ ?>
+
 
 
 
@@ -650,7 +637,7 @@ Event.observe(window, 'load', function(){
                 <span class="field-row">
                     <label for="order_filter_status"><?php echo $this->__("Status:") ?></label>
                     <select id="order_filter_status" name="gui_data[order][filter][status]">
-                        
+                        <option value=""><?php echo $this->__("All") ?></option>
                         <?php foreach ($this->getOrderStatusFilterOptions() as $_value=>$_label): ?>
                             <option value="<?php echo $_value ?>" <?php echo $this->getSelected('gui_data/order/filter/status', $_value) ?>><?php echo htmlspecialchars($_label) ?></option>
                         <?php endforeach ?>
@@ -660,6 +647,7 @@ Event.observe(window, 'load', function(){
                 <span class="field-row">
                     <label for="order_filter_status"><?php echo $this->__("Store id:") ?></label>
                     <select id="order_filter_status" name="gui_data[order][filter][store_id]">
+                        <option value=""><?php echo $this->__("All") ?></option>
                         <?php foreach ($this->getOrderStoreFilterOptions() as $_value=>$_label): ?>
                             <option value="<?php echo $_value ?>" <?php echo $this->getSelected('gui_data/order/filter/store_id', $_value) ?>><?php echo htmlspecialchars($_label) ?></option>
                         <?php endforeach ?>
