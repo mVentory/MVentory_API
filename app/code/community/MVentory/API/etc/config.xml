@@ -40,6 +40,8 @@
       <adminhtml>
         <rewrite>
           <dashboard_grids>MVentory_API_Block_Adminhtml_Dashboard_Grids</dashboard_grids>
+            <system_convert_gui_edit_tab_wizard>MVentory_API_Block_Adminhtml_System_Convert_Gui_Edit_Tab_Wizard</system_convert_gui_edit_tab_wizard>
+            <system_convert_gui_grid>MVentory_API_Block_Adminhtml_System_Convert_Gui_Grid</system_convert_gui_grid>
         </rewrite>
       </adminhtml>
 
@@ -92,6 +94,13 @@
           <convert>MVentory_API_Model_Core_Convert</convert>
         </rewrite>
       </core>
+      
+      <dataflow>
+        <rewrite>
+            <profile>MVentory_API_Model_Dataflow_Profile</profile>
+        </rewrite>
+      </dataflow>
+      
     </models>
 
     <helpers>
