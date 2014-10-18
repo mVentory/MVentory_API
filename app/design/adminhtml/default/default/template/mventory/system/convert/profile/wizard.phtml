@@ -559,7 +559,6 @@ Event.observe(window, 'load', function(){
                     <input class="input-text" style="width:5em" id="customer_filter_created_at_to" name="gui_data[customer][filter][created_at][to]" value="<?php echo $this->getValue('gui_data/customer/filter/created_at/to') ?>"/>
                     <img src="<?php echo $this->getSkinUrl('images/grid-cal.gif') ?>" alt="" class="v-middle" id="customer_filter_created_at_to_trig" title="<?php echo $this->__('Date selector') ?>" />
                     
-                 
 <script type="text/javascript">
     Calendar.setup({
         inputField : "customer_filter_created_at_from",
@@ -596,14 +595,14 @@ Event.observe(window, 'load', function(){
                     <script type="text/javascript">
                         Calendar.setup({
                             inputField : "order_filter_created_at_from",
-                            ifFormat : "<?php echo $this->getShortDateFormat() ?>",
+                            ifFormat : "<?php echo '%m/%e/%Y' //$this->getShortDateFormat() ?>",
                             button : "order_filter_created_at_from_trig",
                             align : "Bl",
                             singleClick : true
                         });
                         Calendar.setup({
                             inputField : "order_filter_created_at_to",
-                            ifFormat : "<?php echo $this->getShortDateFormat() ?>",
+                            ifFormat : "<?php echo '%m/%e/%Y' ?>",
                             button : "order_filter_created_at_to_trig",
                             align : "Bl",
                             singleClick : true
@@ -620,14 +619,14 @@ Event.observe(window, 'load', function(){
                     <script type="text/javascript">
                         Calendar.setup({
                             inputField : "order_filter_updated_at_from",
-                            ifFormat : "<?php echo $this->getShortDateFormat() ?>",
+                            ifFormat : "<?php echo '%m/%e/%Y' ?>",
                             button : "order_filter_updated_at_from_trig",
                             align : "Bl",
                             singleClick : true
                         });
                         Calendar.setup({
                             inputField : "order_filter_updated_at_to",
-                            ifFormat : "<?php echo $this->getShortDateFormat() ?>",
+                            ifFormat : "<?php echo '%m/%e/%Y' ?>",
                             button : "order_filter_updated_at_to_trig",
                             align : "Bl",
                             singleClick : true
