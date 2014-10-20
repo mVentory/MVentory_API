@@ -65,15 +65,14 @@ class MVentory_API_Model_Dataflow_Convert_Adapter_Order extends Mage_Dataflow_Mo
     if ($period = $this->getVar('filter/period')) {
         $date = "";
         if($period=="today"){
-            $this->setVar('filter/created_at/from', date('m/d/Y'). ' 00:00:00');
+            $date =date('m/d/Y');
         }elseif($period=="week"){
             #$current_dayname = date("l");
             $date = date("m/d/Y",strtotime('monday this week'));
             #date("Y-m-d",strtotime("$current_dayname this week"));
-            $this->setVar('filter/created_at/from', $date. ' 00:00:00');
+            #$this->setVar('filter/created_at/from', $date. ' 00:00:00');
         }elseif($period=="month"){
             $date = date('Y-m-01');
-            Mage::log($date);  
         }elseif($period=="7"){
             $date=date("m/d/Y", strtotime('-7 day'));
         }elseif($period=="30"){
