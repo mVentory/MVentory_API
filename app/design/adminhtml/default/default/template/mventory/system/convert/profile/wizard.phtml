@@ -634,11 +634,11 @@ Event.observe(window, 'load', function(){
                     </script>
                 </span>
                 <span class="field-row">
-                    <label for="order_filter_status"><?php echo $this->__("Status:") ?></label>
-                    <select id="order_filter_status" name="gui_data[order][filter][status]">
+                    <label for="order_filter_state"><?php echo $this->__("State:") ?></label>
+                    <select id="order_filter_state" name="gui_data[order][filter][state]">
                         <option value=""><?php echo $this->__("All") ?></option>
-                        <?php foreach ($this->getOrderStatusFilterOptions() as $_value=>$_label): ?>
-                            <option value="<?php echo $_value ?>" <?php echo $this->getSelected('gui_data/order/filter/status', $_value) ?>><?php echo htmlspecialchars($_label) ?></option>
+                        <?php foreach ($this->getOrderStateFilterOptions() as $_value=>$_label): ?>
+                            <option value="<?php echo $_value ?>" <?php echo $this->getSelected('gui_data/order/filter/state', $_value) ?>><?php echo htmlspecialchars($_label) ?></option>
                         <?php endforeach ?>
                         
                     </select>

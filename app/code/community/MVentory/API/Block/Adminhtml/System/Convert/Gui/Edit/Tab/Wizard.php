@@ -41,12 +41,14 @@ class MVentory_API_Block_Adminhtml_System_Convert_Gui_Edit_Tab_Wizard  extends M
   }
   
   
-  public function getOrderStatusFilterOptions(){
+  public function getOrderStateFilterOptions(){
     
-    $statuses = Mage::getModel('sales/order_status')->getResourceCollection()->getData();
+    $statuses = Mage::getModel('sales/order_status')->getResourceCollection()->joinStates()->getData();
     $pairs = array();
     foreach($statuses as $_pair){
-        $pairs[$_pair['status']] = $_pair['label'];
+        if(empty($_pair['state']))continue;
+        $pairs[$_pair['state']] = $_pair['label'];
+        
     }
     return $pairs;
   }

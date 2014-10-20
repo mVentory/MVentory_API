@@ -12,7 +12,7 @@ class MVentory_API_Model_Dataflow_Convert_Adapter_Order extends Mage_Dataflow_Mo
   /**
    * @param $attrFilter - $attrArray['attrDB']   = ['like','eq','fromTo','dateFromTo]
    * @param $attrToDb    - attribute name to DB field
-   * @return Mage_Eav_Model_Convert_Adapter_Entity
+   * 
   */
   protected function _parseVars()
   {
@@ -57,8 +57,8 @@ class MVentory_API_Model_Dataflow_Convert_Adapter_Order extends Mage_Dataflow_Mo
             );
     }
     
-    if ($status = $this->getVar('filter/status')) {
-        $attrFilterArray['status'] = 'eq';
+    if ($state = $this->getVar('filter/state')) {
+        $attrFilterArray['state'] = 'eq';
     }
     
     
