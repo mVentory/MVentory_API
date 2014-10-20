@@ -684,7 +684,7 @@ Event.observe(window, 'load', function(){
                       
                       $('edit_form').on('change', '#order_filter_created_at_from, #order_filter_created_at_to, #order_filter_updated_at_from, #order_filter_updated_at_to', function(event){
                             $$(".profile_direction_export .profile_entity_type_order input[type='radio']").each(function(s){
-                              s.clear();                                                                                  
+                              s.checked=false;                                                                              
                             })
                       });
                   });
