@@ -34,6 +34,7 @@ class MVentory_API_Model_Dataflow_Convert_Adapter_Order extends Mage_Dataflow_Mo
     
     $attrFilterArray['created_at'] = 'datetimeFromTo';
     if ($var = $this->getVar('filter/created_at/from')) {
+        
         $this->setVar('filter/created_at/from', $var . ' 00:00:00');
     }
     if ($var = $this->getVar('filter/created_at/to')) {
@@ -60,16 +61,37 @@ class MVentory_API_Model_Dataflow_Convert_Adapter_Order extends Mage_Dataflow_Mo
         $attrFilterArray['status'] = 'eq';
     }
     
-   
-   
-   
-   
+    
+    if ($period = $this->getVar('filter/period')) {
+        $date = "";
+        if($period=="today"){
+            $this->setVar('filter/created_at/from', date('m/d/Y'). ' 00:00:00');
+        }elseif($period=="week"){
+            #$current_dayname = date("l");
+            $date = date("m/d/Y",strtotime('monday this week'));
+            #date("Y-m-d",strtotime("$current_dayname this week"));
+            $this->setVar('filter/created_at/from', $date. ' 00:00:00');
+        }elseif($period=="month"){
+            $date = date('Y-m-01');
+            Mage::log($date);  
+        }elseif($period=="7"){
+            $date=date("m/d/Y", strtotime('-7 day'));
+        }elseif($period=="30"){
+            $date=date("m/d/Y", strtotime('-30 day'));
+        }elseif($period=="year"){
+            $date = date('Y-01-01');
+        }
+        $this->setVar('filter/created_at/from', $date. ' 00:00:00');
+    }
+    
+    
+    
     ///populates this->_filter
     $this->setFilter($attrFilterArray);
     
     
     $coll = Mage::getModel('sales/order')->getCollection();
-    #$coll->addAttributeToSelect('created_at');
+    
     foreach ($this->_filter as $val) {
         $coll->addFieldToFilter( $val['attribute'], $val );
     }

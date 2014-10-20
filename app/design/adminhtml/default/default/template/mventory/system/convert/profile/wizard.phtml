@@ -651,7 +651,44 @@ Event.observe(window, 'load', function(){
                             <option value="<?php echo $_value ?>" <?php echo $this->getSelected('gui_data/order/filter/store_id', $_value) ?>><?php echo htmlspecialchars($_label) ?></option>
                         <?php endforeach ?>
                     </select>
-                </span>                
+                </span>
+                <span class="field-row">
+                    <!--<label for="order_filter_lastxdays"><?php echo $this->__("Last:") ?></label>-->
+                    <?php Mage::Log( $this->getValue('gui_data/order/filter/period') ) ?>
+                    <label><?php echo $this->__("Today:") ?></label><input type="radio" name="gui_data[order][filter][period]" value="today" class="period" <?php echo ("today"==$this->getValue('gui_data/order/filter/period')?"checked":"") ?> />
+                </span>
+                <span class="field-row">
+                    <label><?php echo $this->__("This week:") ?></label><input type="radio" name="gui_data[order][filter][period]" value="week" <?php echo ("week"==$this->getValue('gui_data/order/filter/period')?"checked":"") ?>/>
+                </span>
+                <span class="field-row">
+                    <label><?php echo $this->__("Last 7 days:") ?></label><input type="radio" name="gui_data[order][filter][period]" value="7" <?php echo ("7"==$this->getValue('gui_data/order/filter/period')?"checked":"") ?>/>
+                </span>
+                <span class="field-row">
+                    <label><?php echo $this->__("This month:") ?></label><input type="radio" name="gui_data[order][filter][period]" value="month" <?php echo ("month"==$this->getValue('gui_data/order/filter/period')?"checked":"") ?>/>
+                </span>
+                <span class="field-row">
+                    <label><?php echo $this->__("Last 30 days:") ?></label><input type="radio" name="gui_data[order][filter][period]" value="30" <?php echo ("30"==$this->getValue('gui_data/order/filter/period')?"checked":"") ?>/>
+                </span>
+                <span class="field-row">
+                    <label><?php echo $this->__("Year:") ?></label><input type="radio" name="gui_data[order][filter][period]" value="year" <?php echo ("year"==$this->getValue('gui_data/order/filter/period')?"checked":"") ?>/>
+                </span>
+                <script type="text/javascript">
+                  ///Empty out the created_at and updated_at intervals when today/week/year radios are selected
+                  ///and viceversa
+                  document.observe('dom:loaded', function(){
+                      $('edit_form').on('change', 'input[type="radio"]', function(event){
+                            $$('#order_filter_created_at_from, #order_filter_created_at_to, #order_filter_updated_at_from, #order_filter_updated_at_to').each(function(s){
+                              s.clear();
+                            })
+                      });
+                      
+                      $('edit_form').on('change', '#order_filter_created_at_from, #order_filter_created_at_to, #order_filter_updated_at_from, #order_filter_updated_at_to', function(event){
+                            $$(".profile_direction_export .profile_entity_type_order input[type='radio']").each(function(s){
+                              s.clear();                                                                                  
+                            })
+                      });
+                  });
+                </script>
             </div>
             <!--//-->
             
