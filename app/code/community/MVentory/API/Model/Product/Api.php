@@ -241,7 +241,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     $helper = Mage::helper('mventory/product_configurable');
 
-    if (!$id = $helper->getProductId($sku, 'sku')) {
+    $hasProduct = ($id = $helper->getProductId($sku, 'sku'))
+                  && Mage::getModel('catalog/product')
+                       ->load($id)
+                       ->getId();
+
+    if (!$hasProduct) {
       $data['mv_created_userid'] = $helper->getApiUser()->getId();
       $data['mv_created_date'] = time();
       $data['website_ids'] = $helper->getWebsitesForProduct();
