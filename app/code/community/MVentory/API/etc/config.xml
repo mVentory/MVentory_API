@@ -474,6 +474,7 @@
                 <li>Web address - the app saves a web address of a page. Modify your theme to display it as a link.</li>
                 <li>ISBN10, ISBN13 - the app will search Google Books for this if a valid ISBN was entered or scanned by the user.</li>
                 <li>Secondary barcode block - this field is populated with the value of a secondary barcode block from the SKU/manufacturer code field.</li>
+                <li>ISSN - this field is populated with a periodical's ISSN.</li>
               </ul>
             ]]>
           </tooltip>
