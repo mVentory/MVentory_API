@@ -100,9 +100,17 @@ class MVentory_API_Model_Product_Attribute_Api
       'options' => $this->optionsPerStoreView($attr->getId(), $storeId)
     );
 
-    return $result + $this->_prepareMetadata(
+    //!!!TODO: remove when not needed
+    //Temporarily set 'category_ids' attribite to read-only until we will
+    //find final solution for 'category_ids'
+    $metadata = $this->_prepareMetadata(
       $this->_helper->parseMetadata($attr)
     );
+
+    if ($result['attribute_code'] == 'category_ids')
+      $metadata['readonly'] = '1';
+
+    return $result + $metadata;
   }
 
   public function fullInfoList ($setId) {
