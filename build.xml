@@ -1,5 +1,5 @@
 <_>
-   <form_key>JcHdx7RUDQu33LxO</form_key>
+   <form_key>Gikc2iLJ9xEubLgV</form_key>
    <name>MVentory_API</name>
    <channel>community</channel>
    <version_ids>
@@ -34,11 +34,11 @@ The extension is free for non-commercial or trial use. Please, request a FREE co
 Visit http://mventory.com for more info.</description>
    <license>CC BY-NC-ND 4.0</license>
    <license_uri>http://creativecommons.org/licenses/by-nc-nd/4.0/</license_uri>
-   <version>1.1.0</version>
-   <stability>devel</stability>
+   <version>1.2.0</version>
+   <stability>beta</stability>
    <notes>* Set min requirement to Magento 1.8 and greater
-* Attribute metadata
-* Product attribute set change
+* Implement attribute metadata
+* Allow to change product&apos;s attribute set via API
 * Support for UPC-A &amp; EAN-13 barcodes
 * Re-worked creating/updating of configurable products
 * Sync images only when uploading/updating/removing them via API
@@ -83,9 +83,9 @@ Visit http://mventory.com for more info.</description>
             <max/>
          </max>
          <files>
-            <files>                                                                                      </files>
-            <files>                                                                                      </files>
-            <files>                                                                                      </files>
+            <files>                                                                                        </files>
+            <files>                                                                                        </files>
+            <files>                                                                                        </files>
          </files>
       </package>
       <extension>
@@ -157,8 +157,4 @@ Visit http://mventory.com for more info.</description>
          <ignore/>
       </ignore>
    </contents>
-   <page>1</page>
-   <limit>200</limit>
-   <folder/>
-   <package/>
 </_>
