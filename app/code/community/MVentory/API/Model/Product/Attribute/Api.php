@@ -25,6 +25,13 @@
 class MVentory_API_Model_Product_Attribute_Api
   extends Mage_Catalog_Model_Product_Attribute_Api {
 
+  /**
+   * Helper class
+   *
+   * @var MVentory_API_Helper_Product_Attribute
+   */
+  protected $_helper;
+
   protected $_whitelist = array(
     'category_ids' => true,
     'name' => true,
@@ -40,6 +47,13 @@ class MVentory_API_Model_Product_Attribute_Api
   );
 
   /**
+   * Constructor
+   */
+  public function __construct () {
+    $this->_helper = Mage::helper('mventory/product_attribute');
+  }
+
+  /**
    * Get information about attribute with list of options
    *
    * @param integer|string $attribute attribute ID or code
@@ -50,7 +64,7 @@ class MVentory_API_Model_Product_Attribute_Api
               ? $attr
                 : $this->_getAttribute($attr);
 
-    $storeId = Mage::helper('mventory')->getCurrentStoreId();
+    $storeId = $this->_helper->getCurrentStoreId();
 
     $label = (($labels = $attr->getStoreLabels()) && isset($labels[$storeId]))
                ? $labels[$storeId]
@@ -86,33 +100,31 @@ class MVentory_API_Model_Product_Attribute_Api
       'options' => $this->optionsPerStoreView($attr->getId(), $storeId)
     );
 
-    return $result + $this->_prepareMetadata($attr);
+    //!!!TODO: remove when not needed
+    //Temporarily set 'category_ids' attribite to read-only until we will
+    //find final solution for 'category_ids'
+    $metadata = $this->_prepareMetadata(
+      $this->_helper->parseMetadata($attr)
+    );
+
+    if ($result['attribute_code'] == 'category_ids')
+      $metadata['readonly'] = '1';
+
+    return $result + $metadata;
   }
 
   public function fullInfoList ($setId) {
-
-    //Add 'cost' attr to the list of ignored attrs here instead in constructure
-    //to not affect other core API calls
-    $this->_ignoredAttributeCodes[] = 'cost';
-
-    $attrs = Mage::getModel('catalog/product')
-      ->getResource()
-      ->loadAllAttributes()
-      ->getSortedAttributes($setId);
-
     $result = array();
+    $attrs = $this->_helper->getEditables($setId);
 
     foreach ($attrs as $attr)
-      if ((!$attr->getId() || $attr->isInSet($setId))
-          && $this->__isAllowedAttribute($attr))
-        $result[] = $this->_info($attr);
+      $result[] = $this->_info($attr);
 
     return $result;
   }
 
   public function addOptionAndReturnInfo ($attribute, $value) {
-    $helper = Mage::helper('mventory');
-    $storeId = $helper->getCurrentStoreId();
+    $storeId = $this->_helper->getCurrentStoreId();
 
     $attribute = $this->_getAttribute($attribute);
     $attributeId = $attribute->getId();
@@ -167,17 +179,17 @@ class MVentory_API_Model_Product_Attribute_Api
         $subject = 'New attribute value: ' . $value;
         $body = $subject;
 
-        if ($customer = $helper->getCustomerByApiUser())
+        if ($customer = $this->_helper->getCustomerByApiUser())
           $body .= "\n\n"
                    . 'Attribute code: ' . $attribute->getAttributeCode() . "\n"
                    . 'Customer ID: ' . $customer->getId() . "\n"
                    . 'Customer e-mail: ' . $customer->getEmail();
 
-        $helper->sendEmail($subject, $body);
+        $this->_helper->sendEmail($subject, $body);
       } catch (Exception $e) {}
     }
 
-    return $helper->prepareApiResponse($this->_info($attributeId));
+    return $this->_helper->prepareApiResponse($this->_info($attributeId));
   }
 
   private function getOptionLabels($storeId, $attributeId)
@@ -256,56 +268,37 @@ class MVentory_API_Model_Product_Attribute_Api
              ->delete($table, $condition);
   }
 
-  protected function __isAllowedAttribute ($attr, $attrs = null) {
-    if (!parent::_isAllowedAttribute($attr, $attrs))
-      return false;
-
-    if (!(($attr->getIsVisible() && $attr->getIsUserDefined())
-          || isset($this->_whitelist[$attr->getAttributeCode()])))
-      return false;
-
-    $storeId = Mage::helper('mventory')->getCurrentStoreId();
-
-    $label = (($labels = $attr->getStoreLabels()) && isset($labels[$storeId]))
-               ? $labels[$storeId]
-                 : $attr->getFrontendLabel();
-
-    return $label != '~';
-  }
-
-  /**
-   * Deserialise and return metadata of it's available otherwise return
-   * empty array
-   *
-   * @param array $attr Attr data
-   * @return array Deserialised metadata
-   */
-  protected function _getMetadata ($attr) {
-    if (!$attr['mventory_metadata'])
-      return array();
-
-    return ($metadata = unserialize($attr['mventory_metadata'])) === false
-             ? array()
-               : $metadata;
-  }
-
   /**
    * Set default values for metadata fields if they don't have value in the
    * attr's metadata
    *
-   * @param array $attr Attr data
+   * @param array $metadata Parsed metadata from attribute
    * @return array Prepared metadata
    */
-  protected function _prepareMetadata ($attr) {
-    $metadata = $this->_getMetadata ($attr);
+  protected function _prepareMetadata ($metadata) {
     $defaults = (array) Mage::getConfig()->getNode(
       'mventory/metadata',
       'default'
     );
 
-    foreach ($defaults as $field => $defValue)
-      if (!isset($metadata[$field]))
+    //Remove following fields from output of API
+    unset(
+      $metadata['invisible_for_websites'],
+      $defaults['invisible_for_websites']
+    );
+
+    foreach ($defaults as $field => $defValue) {
+      if (!isset($metadata[$field])) {
         $metadata[$field] = (string) $defValue;
+
+        continue;
+      }
+
+      //Convert metadata value to string, array to comma-separated list
+      $metadata[$field] = is_array($value = $metadata[$field])
+        ? implode(',', $value)
+          : (string) $value;
+    }
 
     return $metadata;
   }

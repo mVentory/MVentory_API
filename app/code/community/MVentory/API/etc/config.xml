@@ -21,7 +21,7 @@
 <config>
   <modules>
     <MVentory_API>
-      <version>26</version>
+      <version>28</version>
     </MVentory_API>
   </modules>
 
@@ -120,86 +120,6 @@
     </resources>
 
     <events>
-      <catalog_product_save_before>
-        <observers>
-          <mventory_populate_attributes>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>populateAttributes</method>
-          </mventory_populate_attributes>
-
-          <mventory_save_product_create_date>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>saveProductCreateDate</method>
-          </mventory_save_product_create_date>
-
-          <mventory_match_category>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>matchCategory</method>
-          </mventory_match_category>
-
-          <mventory_save_attributes_hash>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>saveAttributesHash</method>
-          </mventory_save_attributes_hash>
-
-          <mventory_remove_similar>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>removeSimilar</method>
-          </mventory_remove_similar>
-
-          <mventory_unassign_from_configurable>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>unassignFromConfigurable</method>
-          </mventory_unassign_from_configurable>
-
-          <mventory_assign_to_configurable_before>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>assignToConfigurableBefore</method>
-          </mventory_assign_to_configurable_before>
-        </observers>
-      </catalog_product_save_before>
-
-      <catalog_product_save_after>
-        <observers>
-           <mventory_save_images_after_merge>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>saveImagesAfterMerge</method>
-          </mventory_save_images_after_merge>
-
-          <mventory_assign_to_configurable_after>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>assignToConfigurableAfter</method>
-          </mventory_assign_to_configurable_after>
-
-          <mventory_update_prices_in_configurable>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>updatePricesInConfigurable</method>
-          </mventory_update_prices_in_configurable>
-
-          <mventory_update_description_in_configurable>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>updateDescriptionInConfigurable</method>
-          </mventory_update_description_in_configurable>
-
-          <mventory_save_additional_skus>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>saveAdditionalSkus</method>
-          </mventory_save_additional_skus>
-        </observers>
-      </catalog_product_save_after>
-
       <catalog_model_product_duplicate>
         <observers>
           <mventory_unset_duplicate_flag_in_product>
@@ -219,23 +139,11 @@
       <!-- Requires M. >= 1.7 -->
       <catalog_product_media_save_before>
         <observers>
-          <mventory_reset_exclude_flag>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>resetExcludeFlag</method>
-          </mventory_reset_exclude_flag>
-
           <mventory_restore_duplicate_flag_in_product>
             <type>singleton</type>
             <class>mventory/observer</class>
             <method>restoreDuplicateFlagInProduct</method>
           </mventory_restore_duplicate_flag_in_product>
-
-          <mventory_sync_images>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>syncImages</method>
-          </mventory_sync_images>
         </observers>
       </catalog_product_media_save_before>
 
@@ -249,6 +157,8 @@
         </observers>
       </catalog_controller_product_init>
 
+      <!-- Temporarily disabled until we will find a proper solution -->
+      <!--
       <cataloginventory_stock_item_save_after>
         <observers>
           <mventory_update_prices_in_configurable_on_stock_change>
@@ -258,6 +168,7 @@
           </mventory_update_prices_in_configurable_on_stock_change>
         </observers>
       </cataloginventory_stock_item_save_after>
+      -->
 
       <adminhtml_catalog_product_grid_prepare_massaction>
         <observers>
@@ -266,12 +177,6 @@
             <class>mventory/observer</class>
             <method>addProductNameRebuildMassaction</method>
           </mventory_add_product_name_rebuild_massaction>
-
-          <mventory_add_product_attributes_populate_massaction>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>addProductAttributesPopulateMassaction</method>
-          </mventory_add_product_attributes_populate_massaction>
 
           <mventory_add_product_category_match_massaction>
             <type>singleton</type>
@@ -441,26 +346,31 @@
       </api>
 
       <metadata>
-        <!-- Empty string = No website selected -->
+        <!-- Empty string = Visible in all -->
         <invisible_for_websites><![CDATA[]]></invisible_for_websites>
 
         <!-- Empty string = No hint -->
         <hint><![CDATA[]]></hint>
 
         <!-- 0 = No -->
-        <use_for_search>0</use_for_search>
+        <readonly>0</readonly>
 
         <!-- 0 = No -->
-        <config_product_identity>0</config_product_identity>
+        <use_for_search>0</use_for_search>
 
-        <!-- 0 = None -->
-        <default_capitalisation>0</default_capitalisation>
+        <!-- 0 = Normal keyboard -->
+        <input_method>0</input_method>
 
-        <!-- 0 = None -->
-        <special_content_type>0</special_content_type>
+        <!--
+          0 = Normal keyboard
+          2 = Scanner
+          4 = Copy from internet search
+          5 = Copy from another product
+        -->
+        <alt_input_method>0,2,4,5</alt_input_method>
 
-        <!-- 0 = No  -->
-        <copy_from_search>0</copy_from_search>
+        <!-- 0 = Text -->
+        <content_type>0</content_type>
 
         <!-- 1 = Yes -->
         <add_new_values>1</add_new_values>
@@ -508,7 +418,7 @@
           <label>Make invisible for</label>
           <note>Select all websites this attribute should NOT appear in</note>
           <tooltip>All non-system attributes appear in the app by default. You can hide some of them from the app. It won't affect their use in Magento or the front-end.</tooltip>
-          <source_model>adminhtml/system_config_source_website</source_model>
+          <source_model>mventory/system_config_source_website</source_model>
         </invisible_for_websites>
 
         <hint>
@@ -518,6 +428,14 @@
           <tooltip>Use hints to help users understand the meaning of the attribute, how to use it and how to format data for clarity and consistency.</tooltip>
         </hint>
 
+        <readonly>
+          <type>select</type>
+          <label>Read-only</label>
+          <note>Yes = disable editing in the app</note>
+          <tooltip>Set to Yes if the user should see, but not edit this attribute. It will be still displayed on product details and editing screens.</tooltip>
+          <source_model>adminhtml/system_config_source_yesno</source_model>
+        </readonly>
+
         <use_for_search>
           <type>select</type>
           <label>Use for search</label>
@@ -526,41 +444,43 @@
           <source_model>adminhtml/system_config_source_yesno</source_model>
         </use_for_search>
 
-        <config_product_identity>
+        <input_method>
           <type>select</type>
-          <label>Config product identity</label>
-          <note>Must match values in associates</note>
-          <tooltip>Configurable products can be created automatically out of simple products with identical details and different configurable attribute. Set to YES if values of this attribute must match on all associate products.</tooltip>
-          <source_model>adminhtml/system_config_source_yesno</source_model>
-          <depends>select</depends>
-        </config_product_identity>
+          <label>Default input method</label>
+          <note>E.g. pressing on the field activates this input method</note>
+          <tooltip>The type of input displayed when the user taps on the input field.</tooltip>
+          <source_model>mventory/system_config_source_inputmethod</source_model>
+          <depends>text,textarea,weight</depends>
+        </input_method>
 
-        <default_capitalisation>
-          <type>select</type>
-          <label>Default capitalisation</label>
-          <note>Auto-correct capitalisation in user input</note>
-          <tooltip>The text can be corrected by the app as the users type it in, but they can go back and edit the corrections.</tooltip>
-          <source_model>mventory/system_config_source_capitalisation</source_model>
-          <depends>text,textarea</depends>
-        </default_capitalisation>
+        <alt_input_method>
+          <type>multiselect</type>
+          <label>Alternative input methods</label>
+          <note>Select one or more</note>
+          <tooltip>The type of input displayed when the user taps and holds on the input field. It can be the same as on-tap or different. A menu is displayed if there is more than one.</tooltip>
+          <source_model>mventory/system_config_source_inputmethod</source_model>
+          <depends>text,textarea,weight</depends>
+        </alt_input_method>
 
-        <special_content_type>
+        <content_type>
           <type>select</type>
-          <label>Special content type</label>
+          <label>Content type</label>
           <note>For content-specific features in the app</note>
-          <tooltip>The content of the attribute has some special meaning and may have additional functionality in the app. E.g. a video link has YouTube search, ISBN number is populated if the scanned barcode is an ISBN.</tooltip>
+          <tooltip>
+            <![CDATA[
+              Some content types have special handling in the app.
+              <ul>
+                <li>YouTube video ID - the app saves YouTube video IDs from internet search. Modify your theme to display it as a video.</li>
+                <li>Web address - the app saves a web address of a page. Modify your theme to display it as a link.</li>
+                <li>ISBN10, ISBN13 - the app will search Google Books for this if a valid ISBN was entered or scanned by the user.</li>
+                <li>Secondary barcode block - this field is populated with the value of a secondary barcode block from the SKU/manufacturer code field.</li>
+                <li>ISSN - this field is populated with a periodical's ISSN.</li>
+              </ul>
+            ]]>
+          </tooltip>
           <source_model>mventory/system_config_source_contenttype</source_model>
-          <depends>text,textarea</depends>
-        </special_content_type>
-
-        <copy_from_search>
-          <type>select</type>
-          <label>Copy from search</label>
-          <note>Copy selected text into this field</note>
-          <tooltip>The app user will be able to copy text from a web search (e.g. search for manufacturer's specs) to this attribute.</tooltip>
-          <source_model>adminhtml/system_config_source_yesno</source_model>
-          <depends>text,textarea</depends>
-        </copy_from_search>
+          <depends>text,textarea,weight</depends>
+        </content_type>
 
         <add_new_values>
           <type>select</type>

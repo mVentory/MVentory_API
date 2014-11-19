@@ -239,10 +239,16 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
   public function createAndReturnInfo ($type, $set, $sku, $data,
                                        $storeId = null) {
 
-    $helper = Mage::helper('mventory/product');
+    $helper = Mage::helper('mventory/product_configurable');
 
-    if (!$id = $helper->getProductId($sku, 'sku')) {
+    $hasProduct = ($id = $helper->getProductId($sku, 'sku'))
+                  && Mage::getModel('catalog/product')
+                       ->load($id)
+                       ->getId();
+
+    if (!$hasProduct) {
       $data['mv_created_userid'] = $helper->getApiUser()->getId();
+      $data['mv_created_date'] = time();
       $data['website_ids'] = $helper->getWebsitesForProduct();
 
       $website = $helper->getCurrentWebsite();
@@ -266,6 +272,31 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         $data,
         Mage_Core_Model_App::ADMIN_STORE_ID
       );
+
+      //Use admin store to save values of attributes in the default scope
+      $product = $this->_getProduct(
+        $id,
+        Mage_Core_Model_App::ADMIN_STORE_ID,
+        'id'
+      );
+
+      //!!!TODO: consider to move it before creating product
+      $saveProduct = $this->_matchCategory($product);
+
+      $saveProduct |= isset($data['_api_link_with_product'])
+                      && ($sid = $data['_api_link_with_product'])
+                      && ($sid = $helper->getProductId($sid))
+                      && $helper->link($product, $sid);
+
+      if ($saveProduct)
+        $product->save();
+
+    } else if (isset($data['_api_update_if_exists'])
+              && $data['_api_update_if_exists']) {
+
+      $data['set'] = $set;
+
+      $this->update($id, $data, null, 'id');
     }
 
     return $this->fullInfo($id, 'id');
@@ -547,6 +578,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $identifierType
     );
 
+    //!!!TODO: do we want to update attr set in linked prods?
     //Update attribute set in the product and set flag to remove old values
     //from the DB if it's set in incoming data and is different
     //from current one.
@@ -574,6 +606,25 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     if (isset($removeOldValues) && $removeOldValues)
       $this->_removeOldValues($product, $oldSet, $newSet);
+
+    $this->_matchCategory($product);
+
+    if (isset($productData['_api_link_with_product'])
+        && $sibling = $productData['_api_link_with_product']) {
+
+      $helper = Mage::helper('mventory/product_configurable');
+
+      if ($sid = $helper->getProductId($sibling)) try {
+        $helper->link($product, $sid);
+      } catch (Exception $e) {
+        $this->_fault('linking_problems', $e->getMessage());
+      }
+    } else {
+      $helper = Mage::helper('mventory/product_configurable');
+
+      if ($cID = $helper->getIdByChild($product))
+        $helper->update($product, $cID);
+    }
 
     try {
       if (is_array($errors = $product->validate())) {
@@ -613,6 +664,28 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         $stock
           ->addQty(count($skus))
           ->save();
+    }
+
+    return true;
+  }
+
+  /**
+   * Delete product
+   *
+   * @param int|string $productId
+   * @return boolean
+   */
+  public function delete ($productId, $identifierType = null) {
+    $product = $this->_getProduct($productId, null, $identifierType);
+    $helper = Mage::helper('mventory/product_configurable');
+
+    try {
+      if ($cID = $helper->getIdByChild($product))
+        $helper->remove($product, $cID);
+
+      $product->delete();
+    } catch (Mage_Core_Exception $e) {
+      $this->_fault('not_deleted', $e->getMessage());
     }
 
     return true;
@@ -680,5 +753,16 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       if (!isset($_newAttrs[$code]))
         $product->setData($code, false);
     }
+  }
+
+  protected function _matchCategory ($product) {
+    $result = Mage::getModel('mventory/matching')->matchCategory($product);
+
+    if ($result === false)
+      return;
+
+    $product->setCategoryIds((string) $result);
+
+    return true;
   }
 }

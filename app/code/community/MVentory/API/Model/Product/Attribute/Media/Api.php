@@ -116,7 +116,115 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         $identifierType
       );
 
+    $helper = Mage::helper('mventory/product_configurable');
+
+    if (($productId = $helper->getProductId($productId, $identifierType))
+        && $cID = $helper->getIdByChild($productId))
+      $this->_sync($productId, $cID, $helper);
+
     return $productApi->fullInfo($productId, $identifierType);
+  }
+
+  /**
+   * Update image data
+   *
+   * @param int|string $id
+   * @param string $file
+   * @param array $data
+   * @param string|int $store
+   * @param string $idType
+   * @return boolean
+   */
+  public function update ($id, $file, $data, $store = null, $idType = null) {
+    $data = $this->_prepareImageData($data);
+
+    //Temp solution, apply image settings globally
+    $store = null;
+    $product = $this->_initProduct($id, $store, $idType);
+    $id = $product->getId();
+
+    $backend = $this
+      ->_getGalleryAttribute($product)
+      ->getBackend();
+
+    if (!$backend->getImage($product, $file))
+      $this->_fault('not_exists');
+
+    if (isset($data['file']['mime']) && isset($data['file']['content'])) {
+      if (!isset($this->_mimeTypes[$data['file']['mime']]))
+        $this->_fault(
+          'data_invalid',
+          Mage::helper('catalog')->__('Invalid image type.')
+        );
+
+      if (!$fileContent = @base64_decode($data['file']['content'], true))
+        $this->_fault(
+          'data_invalid',
+          Mage::helper('catalog')->__('Image content is not valid base64 data.')
+        );
+
+      unset($data['file']['content']);
+
+      $ioAdapter = new Varien_Io_File();
+
+      try {
+        $fileName = Mage::getBaseDir('media')
+                    . DS . 'catalog'
+                    . DS . 'product'
+                    . $file;
+
+        $ioAdapter->open(array('path'=>dirname($fileName)));
+        $ioAdapter->write(basename($fileName), $fileContent, 0666);
+      } catch(Exception $e) {
+        $this->_fault(
+          'not_created',
+          Mage::helper('catalog')->__('Can\'t create image.')
+        );
+      }
+    }
+
+    $backend->updateImage($product, $file, $data);
+
+    if (isset($data['types']) && is_array($data['types'])) {
+      $oldTypes = array();
+
+      foreach ($product->getMediaAttributes() as $attribute)
+        if ($product->getData($attribute->getAttributeCode()) == $file)
+          $oldTypes[] = $attribute->getAttributeCode();
+
+      $clear = array_diff($oldTypes, $data['types']);
+
+      if (count($clear) > 0)
+        $backend->clearMediaAttribute($product, $clear);
+
+      $backend->setMediaAttribute($product, $data['types'], $file);
+
+      $helper = Mage::helper('mventory/product_configurable');
+
+
+      if ($cID = $helper->getIdByChild($id)) {
+        $ids = $helper->getChildrenIds($cID);
+
+        unset($ids[$id]);
+        $ids[$cID] = $cID;
+
+        $mediaVals = array();
+
+        foreach ($product->getMediaAttributes() as $attr)
+          $mediaVals[$attr->getAttributeId()] = $file;
+
+        Mage::getResourceSingleton('catalog/product_action')
+          ->updateAttributes($ids, $mediaVals, $product->getStoreId());
+      }
+    }
+
+    try {
+      $product->save();
+    } catch (Mage_Core_Exception $e) {
+      $this->_fault('not_updated', $e->getMessage());
+    }
+
+    return true;
   }
 
   public function remove_ ($productId, $file, $identifierType = null) {
@@ -125,37 +233,39 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     $this->remove($productId, $file, $identifierType);
     $images = $this->items($productId, null, $identifierType);
 
+    $helper = Mage::helper('mventory/product_configurable');
+
+    if (($productId = $helper->getProductId($productId, $identifierType)))
+      $cID = $helper->getIdByChild($productId);
+
     $productApi = Mage::getModel('mventory/product_api');
 
     if (!$images) {
-      $helper = Mage::helper('mventory/product');
-
-      $productApi->update(
+      if (!(isset($cID) && $cID))
+        $productApi->update(
+          $productId,
+          array('visibility' => (int) $helper->getConfig(
+            MVentory_API_Model_Config::_API_VISIBILITY,
+            $helper->getWebsite($productId)
+          )),
+          null,
+          $identifierType
+        );
+    } else if (in_array('image', $image['types'])) {
+      $this->update(
         $productId,
-        array('visibility' => (int) $helper->getConfig(
-          MVentory_API_Model_Config::_API_VISIBILITY,
-          $helper->getWebsite($productId)
-        )),
+        $images[0]['file'],
+        array(
+          'types' => array('image', 'small_image', 'thumbnail'),
+          'exclude' => 0
+        ),
         null,
         $identifierType
       );
-
-      return $productApi->fullInfo($productId, $identifierType);
     }
 
-    if (!in_array('image', $image['types']))
-      return $productApi->fullInfo($productId, $identifierType);
-
-    $this->update(
-      $productId,
-      $images[0]['file'],
-      array(
-        'types' => array('image', 'small_image', 'thumbnail'),
-        'exclude' => 0
-      ),
-      null,
-      $identifierType
-    );
+    if (isset($cID) && $cID)
+      $this->_sync($productId, $cID, $helper);
 
     return $productApi->fullInfo($productId, $identifierType);
   }
@@ -214,5 +324,27 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     $io->rmdir($tmp, true);
 
     return $data;
+  }
+
+  protected function _sync ($aID, $cID, $helper) {
+    Mage::log('_sync()');
+
+    $ids = $helper->getChildrenIds($cID);
+
+    //Add ID of configurable (C) product to load it; unset ID of currently
+    //updating product because it's been already loaded above
+    $ids[$cID] = $cID;
+
+    $prods = Mage::getResourceModel('catalog/product_collection')
+      ->addAttributeToSelect('*')
+      ->addIdFilter($ids)
+      ->addStoreFilter($helper->getCurrentWebsite()->getDefaultStore())
+      ->getItems();
+
+    $a = $prods[$aID];
+    $c = $prods[$cID];
+    unset($prods[$aID], $prods[$cID]);
+
+    Mage::helper('mventory/image')->sync($a, $c, $prods);
   }
 }
