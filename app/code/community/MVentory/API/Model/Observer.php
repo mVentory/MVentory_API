@@ -27,6 +27,14 @@ class MVentory_API_Model_Observer {
 mVentory configuration URL: <a href="%1$s">%1$s</a> (Can only be used once and is valid for %2$d hours)
 EOT;
 
+  const __LICENCE_INCORRECT_KEY = <<<'EOT'
+Format of API license key is incorrect. Please <a href="mailto:info@mventory.com">contact</a> mVentory (mailto: info@mventory.com).
+EOT;
+
+  const __LICENCE_NOT_ALLOWED_DOMAIN = <<<'EOT'
+The domain name of this Magento store is not part of your license. The app may not be able connect to this store. Please <a href="mailto:info@mventory.com">contact</a> mVentory (mailto: info@mventory.com).
+EOT;
+
   public function productInit ($observer) {
     $product = $observer->getProduct();
 
@@ -295,5 +303,49 @@ EOT;
       $metadata['invisible_for_websites'] = array('');
 
     $attr['mventory_metadata'] = serialize($metadata);
+  }
+
+  /**
+   * Check if licence domains match domain address of store
+   *
+   * @param Varien_Event_Observer $observer Event observer
+   * @return MVentory_TradeMe_Model_Observer
+   */
+  public function checkLicenceUrls ($observer) {
+    $config = $observer['object'];
+
+    if ($config['section'] != 'mventory')
+      return $this;
+
+    $path = explode('/', MVentory_API_Model_Config::_LICENCE_KEY);
+    $key = array('groups', $path[1], 'fields', $path[2], 'value');
+
+    if (!$licenceKey = trim($config->getData(implode('/', $key))))
+      return $this;
+
+    $helper = Mage::helper('mventory/licence');
+    $licenceKey = $helper->parseKey($licenceKey);
+
+    if (!$licenceKey) {
+      Mage::getSingleton('adminhtml/session')->addWarning(
+        $helper->__(self::__LICENCE_INCORRECT_KEY)
+      );
+
+      return $this;
+    }
+
+    if (!$helper->checkDomains($licenceKey)) {
+      Mage::getSingleton('adminhtml/session')->addWarning(
+        $helper->__(self::__LICENCE_NOT_ALLOWED_DOMAIN)
+      );
+
+      return $this;
+    }
+
+    $groups = $config['groups'];
+    $groups[$key[1]][$key[2]]['parsed_key'][$key[4]] = serialize($licenceKey);
+    $config['groups'] = $groups;
+
+    return $this;
   }
 }

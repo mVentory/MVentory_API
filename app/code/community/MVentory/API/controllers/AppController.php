@@ -92,7 +92,8 @@ class MVentory_API_AppController
 
     $output = $user->getUsername() . "\n"
               . $apiKey . "\n"
-              . $store->getBaseUrl() . "\n";
+              . $store->getBaseUrl() . "\n"
+              . Mage::helper('mventory/licence')->prepareKeyForAPI($store);
 
     $response = $this->getResponse();
 

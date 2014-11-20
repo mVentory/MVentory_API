@@ -309,6 +309,16 @@
           </mventory_attr_save_metadata>
         </observers>
       </catalog_entity_attribute_save_before>
+
+      <model_config_data_save_before>
+        <observers>
+          <mventory-check-licence-urls>
+            <type>singleton</type>
+            <class>mventory/observer</class>
+            <method>checkLicenceUrls</method>
+          </mventory-check-licence-urls>
+        </observers>
+      </model_config_data_save_before>
     </events>
 
     <layout>

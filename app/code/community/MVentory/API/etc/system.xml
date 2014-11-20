@@ -39,6 +39,31 @@
       <sort_order>0</sort_order>
 
       <groups>
+        <licence translate="label">
+          <label>API Licence</label>
+          <frontend_type>text</frontend_type>
+
+          <show_in_default>1</show_in_default>
+          <show_in_website>1</show_in_website>
+          <show_in_store>0</show_in_store>
+
+          <sort_order>1</sort_order>
+
+          <fields>
+            <key translate="label comment">
+              <label>API License Key</label>
+              <comment>Copy and paste your API License Key here</comment>
+              <frontend_type>textarea</frontend_type>
+
+              <show_in_default>1</show_in_default>
+              <show_in_website>0</show_in_website>
+              <show_in_store>0</show_in_store>
+
+              <sort_order>1</sort_order>
+            </key>
+          </fields>
+        </licence>
+
         <api translate="label">
           <label>Phone API</label>
           <frontend_type>text</frontend_type>

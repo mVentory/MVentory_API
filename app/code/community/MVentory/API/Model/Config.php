@@ -28,6 +28,8 @@ class MVentory_API_Model_Config
   const API_VERSION = '20140815';
 
   //Config paths
+  const _LICENCE_KEY = 'mventory/licence/key';
+  const _LICENCE_PARSED_KEY = 'mventory/licence/parsed_key';
   const _FETCH_LIMIT = 'mventory/api/products-number-to-fetch';
   const _TAX_CLASS = 'mventory/api/tax_class';
   const _ITEM_LIFETIME = 'mventory/api/cart-item-lifetime';
