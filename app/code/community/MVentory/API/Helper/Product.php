@@ -150,7 +150,7 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
   }
 
   /**
-   * Search product ID by value of product_barcode_ attribute
+   * Search product ID by value of product_barcode_ or sku attributes
    *
    * @param  string $barcode Barcode
    *
@@ -161,7 +161,10 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
       return $this->getIdByEAN13Barcode($barcode);
 
     $ids = Mage::getResourceModel('catalog/product_collection')
-             ->addAttributeToFilter('product_barcode_', $barcode)
+             ->addAttributeToFilter(array(
+                 array('attribute' => 'product_barcode_', 'eq' => $barcode),
+                 array('attribute' => 'sku', 'eq' => $barcode)
+               ))
              ->getAllIds(1);
 
     return $ids ? $ids[0] : null;
@@ -169,7 +172,7 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
 
   /**
    * Search product ID by value (in EAN13 or UPC-A format) of product_barcode_
-   * attribute
+   * or sku attributes
    *
    * @param  string $barcode Barcode in EAN13 or UPC-A format
    * @return int|null
@@ -178,7 +181,10 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
 
     //Get ID by exact match
     $ids = Mage::getResourceModel('catalog/product_collection')
-      ->addAttributeToFilter('product_barcode_', $barcode)
+      ->addAttributeToFilter(array(
+          array('attribute' => 'product_barcode_', 'eq' => $barcode),
+          array('attribute' => 'sku', 'eq' => $barcode)
+        ))
       ->getAllIds();
 
     //Return ID if we found only 1 match
@@ -196,10 +202,10 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
     list($barcode) = explode('-', $barcode);
 
     $ids = Mage::getResourceModel('catalog/product_collection')
-      ->addAttributeToFilter(
-          'product_barcode_',
-          array('like' => $barcode . '%')
-        )
+      ->addAttributeToFilter(array(
+          array('attribute' => 'product_barcode_', 'like' => $barcode . '%'),
+          array('attribute' => 'sku', 'like' => $barcode . '%')
+        ))
       ->getAllIds();
 
     return count($ids) == 1 ? $ids[0] : null;
