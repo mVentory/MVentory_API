@@ -27,7 +27,7 @@ class MVentory_API_Model_System_Config_Source_Allowedshippingtypes {
   protected $_options = array();
 
   public function __construct () {
-    $attribute = Mage::getModel('eav/entity_attribute')
+    $attribute = Mage::getResourceModel('catalog/eav_attribute')
                    ->loadByCode(Mage_Catalog_Model_Product::ENTITY,
                                 'mv_shipping_');
 
