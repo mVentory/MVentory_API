@@ -16,13 +16,7 @@
  */
 
 jQuery(document).ready(function ($) {
-  var new_rule = {
-    'id': null,
-    'categories': [],
-    'attrs' : []
-  };
-
-  var rules = [];
+  var new_rule = getNewRule();
 
   var $rules = $('#mventory-rules');
   var $rule_template = $rules.children('.mventory-rule-template');
@@ -92,33 +86,18 @@ jQuery(document).ready(function ($) {
                     ? 'rule' + new Date().getTime()
                       : MVENTORY_RULE_DEFAULT_ID;
 
-    submit_rule(new_rule);
-
-    for (var i = 0; i < new_rule.attrs.length; i++) {
-      var attr = new_rule.attrs[i];
-
-      $new_rule
-        .find('> .mventory-rule-new-attr')
-        .last()
-        .find('.mventory-rule-new-attr-name > [value="' + attr.id + '"]')
-        .addClass('mventory-state-used-attr');
-
-      $.map($.makeArray(attr.value), function (value, index) {
-        mventory_attrs[attr.id]['used_values'][value * 1] = true;
-      });
-    }
-
     var $default_rule = $('#' + MVENTORY_RULE_DEFAULT_ID);
 
     if (new_rule.id == MVENTORY_RULE_DEFAULT_ID && $default_rule.length) {
       update_categories_names($default_rule);
+      var $rule = $default_rule;
     } else {
       var $rule = $rule_template
                     .clone(true)
                     .removeClass('mventory-rule-template')
                     .attr('id', new_rule.id);
 
-      var $list = $rule.find('> .mventory-rule-attrs > .mventory-inner');
+      var $list = $rule.find('.mventory-rule-attrs > .mventory-inner');
       var $attr_template = $list.find('> :first-child');
 
       update_categories_names($rule);
@@ -152,35 +131,31 @@ jQuery(document).ready(function ($) {
 
       $attr_template.remove();
 
+      setRuleState($rule, 'processing');
+
       if ($default_rule.length)
         $default_rule.before($rule)
       else
         $rules.append($rule);
     }
 
-    rules.push(new_rule);
+    submit_rule(new_rule, $rule);
 
-    clear_attrs();
-    clean_categories();
-
+    resetCurrentRule();
     update_save_rule_button_state();
   });
 
   $('#mventory-rule-reset').on('click', function () {
-    clear_attrs();
-    clean_categories();
-
+    resetCurrentRule()
     update_save_rule_button_state();
   });
 
   $rules
-    .find('> .mventory-rule > .mventory-rule-remove')
+    .find('> .mventory-rule .mventory-rule-remove')
     .on('click', function () {
-      var $rule = $(this).parent();
+      var $rule = $(this).parents('.mventory-rule');
 
-      remove_rule($rule.attr('id'));
-
-      $rule.remove();
+      remove_rule($rule.attr('id'), $rule);
 
       return false;
     });
@@ -218,25 +193,6 @@ jQuery(document).ready(function ($) {
              .end();
   }
 
-  function clear_attrs () {
-    var $attr = clone_attr();
-
-    $new_rule
-      .find('> .mventory-rule-new-attr')
-      .remove();
-
-    reset_attr($attr)
-      .appendTo($new_rule);
-
-    new_rule.attrs = [];
-  }
-
-  function clean_categories () {
-
-    new_rule.categories = [];
-    window.mventory_categories_reset();
-  }
-
   function get_attrs () {
     var attrs = [];
 
@@ -259,84 +215,127 @@ jQuery(document).ready(function ($) {
     }
   }
 
-  function submit_rule (rule) {
-    $.ajax({
-      url: mventory_urls['addrule'],
-      type: 'POST',
-      dataType: 'json',
-      data: { rule: JSON.stringify(rule), form_key: FORM_KEY },
-      success: function (data, text_status, xhr) {
-        var msg = data.message;
+  function submit_rule (rule, $rule) {
+    var data = { rule: JSON.stringify(rule) },
+        onSuccess,
+        onError;
 
-        if (data.success) {
-          //Hide help message if more than 2 rules
-          if ($rules.children('.mventory-rule').filter(':visible').length > 2)
-            $('#mventory-matching-messages').hide();
-        } else {
-          msg = __('Error') + ': ' + msg;
+    onSuccess = function () {
+      if ($rules.children('.mventory-rule').filter(':visible').length > 2)
+        $('#mventory-matching-messages').hide();
 
-          if (data.data.exception) {
-            var e = data.data.exception;
-            msg += '\n\n' + 'Exception: ' + e.message + '\n' + e.trace;
-          }
-        }
+      for (var i = 0, attr; attr = rule.attrs[i++];) {
+        $new_rule
+          .find('> .mventory-rule-new-attr')
+          .last()
+          .find('.mventory-rule-new-attr-name > [value="' + attr.id + '"]')
+          .addClass('mventory-state-used-attr');
 
-        alert(msg);
-      },
-      error: function (xhr, text_status, errorThrown) {
-        alert(__('Error') + ': ' + text_status);
-      },
-    });
+        $.map($.makeArray(attr.value), function (value, index) {
+          mventory_attrs[attr.id]['used_values'][value * 1] = true;
+        });
+      }
+
+      setRuleState($rule, 'success');
+      setTimeout(function () { setRuleState($rule); }, 3500);
+    };
+
+    onError = function (msg) {
+      $rule
+        .children('.mventory-rule-err-msg')
+        .html(msg);
+
+      setRuleState($rule, 'error');
+    }
+
+    action('addrule', data, onSuccess, onError);
   }
 
-  function remove_rule (rule_id) {
-    $.ajax({
-      url: mventory_urls['remove'],
-      type: 'POST',
-      dataType: 'json',
-      data: { rule_id: rule_id, form_key: FORM_KEY },
-      success: function (data, text_status, xhr) {
-        var msg = data.message;
+  function remove_rule (ruleId, $rule) {
+    var data = { rule_id: ruleId },
+        onSuccess,
+        onError;
 
-        if (!data.success) {
-          msg = __('Error') + ': ' + msg;
+    setRuleState($rule, 'processing');
 
-          if (data.data.exception) {
-            var e = data.data.exception;
-            msg += '\n\n' + 'Exception: ' + e.message + '\n' + e.trace;
-          }
-        }
+    onSuccess = function () {
+      $rule.remove();
+    };
 
-        alert(msg);
-      },
-      error: function (xhr, text_status, errorThrown) {
-        alert(__('Error') + ': ' + text_status);
-      },
-    });
+    onError = function (msg) {
+      $rule
+        .children('.mventory-rule-err-msg')
+        .html(msg);
+
+      setRuleState($rule, 'error');
+    };
+
+    action('remove', data, onSuccess, onError);
   }
 
   function reorder_rules (ids) {
+    var data = { ids: ids },
+        $rules,
+        onSuccess,
+        onError;
+
+    $rules = $($.map(ids, function (id) { return '#' + id; }).join(','))
+    setRuleState($rules, 'processing');
+
+    onSuccess = function () {
+      setRuleState($rules, 'success');
+      setTimeout(function () { setRuleState($rules); }, 3500);
+    };
+
+    onError = function (msg) {
+      $rules
+        .children('.mventory-rule-err-msg')
+        .html(msg);
+
+      setRuleState($rules, 'error');
+    }
+
+    action('reorder', data, onSuccess, onError);
+  }
+
+  function action (action, data, onSuccess, onError) {
+    request(
+      mventory_urls[action],
+      data,
+      function (msg, data) {
+        if (typeof onSuccess === 'function')
+          onSuccess();
+      },
+      function (msg, data) {
+        msg = __('Error') + ': ' + msg;
+
+        if (data.exception)
+          msg += '\n\n'
+                 + 'Exception: ' + data.exception.message + '\n'
+                 + data.exception.trace;
+
+        if (typeof onError === 'function')
+          onError(msg);
+      }
+    );
+  }
+
+  function request (url, data, onSuccess, onError) {
+    data['form_key'] = FORM_KEY;
+
     $.ajax({
-      url: mventory_urls['reorder'],
+      url: url,
       type: 'POST',
       dataType: 'json',
-      data: { ids: ids, form_key: FORM_KEY },
-      success: function (data, text_status, xhr) {
-        var msg = data.message;
+      data: data,
+      success: function (response, textStatus, xhr) {
+        var msg = response.message,
+            data = response.data;
 
-        if (!data.success) {
-          msg = __('Error') + ': ' + msg;
-
-          if (data.data.exception) {
-            var e = data.data.exception;
-            msg += '\n\n' + 'Exception: ' + e.message + '\n' + e.trace;
-          }
-        }
-
-        alert(msg);
+        response.success ? onSuccess(msg, data) : onError(msg, data);
       },
-      error: function (xhr, text_status, errorThrown) {
-        alert(__('Error') + ': ' + text_status);
+      error: function (xhr, textStatus, errorThrown) {
+        alert(__('Error') + ': ' + textStatus);
       },
     });
   }
@@ -350,7 +349,7 @@ jQuery(document).ready(function ($) {
 
   function update_categories_names ($rule) {
     $category = $rule
-      .find('> .mventory-rule-categories .mventory-rule-category')
+      .find('.mventory-rule-categories .mventory-rule-category')
       .text(
         window.mventory_categories_get_names(new_rule.categories).join(', ')
       );
@@ -373,6 +372,38 @@ jQuery(document).ready(function ($) {
       new_rule.categories.splice(pos, 1);
 
     update_save_rule_button_state();
+  }
+
+  function getNewRule () {
+    return {
+      'id': null,
+      'categories': [],
+      'attrs' : []
+    };
+  }
+
+  function resetCurrentRule () {
+    var $attr = clone_attr();
+
+    $new_rule
+      .find('> .mventory-rule-new-attr')
+      .remove();
+
+    reset_attr($attr)
+      .appendTo($new_rule);
+
+    window.mventory_categories_reset();
+
+    new_rule = getNewRule();
+  }
+
+  function setRuleState ($rule, state) {
+    $rule.removeClass(
+      'mventory-state-success mventory-state-error mventory-state-processing'
+    );
+
+    if (state)
+      $rule.addClass('mventory-state-' + state);
   }
 
   function __ (text) {

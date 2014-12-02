@@ -20,6 +20,10 @@
 $_rules = $this->_getRules();
 $_attrs = $this->_attrs;
 
+$_loaderUrl = $this->getSkinUrl('images/ajax-loader-tr.gif');
+
+$__loading = Mage::helper('adminhtml')->__('Loading...');
+
 ?>
 
 <div class="content-header">
@@ -58,60 +62,67 @@ $_attrs = $this->_attrs;
 <?php foreach ($_rules as $id => $_rule): ?>
   <?php $rule = $this->_prepareRule($_rule); ?>
 
-  <div id="<?php echo $id; ?>" class="mventory-rule box clear">
+  <div id="<?php echo $id; ?>" class="mventory-rule clear">
+    <div class="mventory-rule-content clear">
+      <div class="mventory-rule-remove">&#x274C;</div>
 
-    <div class="mventory-rule-remove">&#x274C;</div>
+      <div class="mventory-rule-attrs">
+        <div class="mventory-inner">
 
-    <div class="mventory-rule-attrs">
-      <div class="mventory-inner">
+          <?php if ($rule['default']): ?>
 
-      <?php if ($rule['default']): ?>
-        <div class="mventory-rule-attr clear"><?php echo $this->__('Default rule'); ?></div>
-      <?php else: ?>
-        <?php foreach ($rule['attrs'] as $label => $values): ?>
+          <div class="mventory-rule-attr clear"><?php echo $this->__('Default rule'); ?></div>
+
+          <?php else: ?>
+
+          <?php foreach ($rule['attrs'] as $label => $values): ?>
           <div class="mventory-rule-attr clear">
             <div class="mventory-rule-attr-name"><?php echo $label; ?></div>
             <div class="mventory-rule-attr-value"><?php echo $values; ?></div>
           </div>
-        <?php endforeach; ?>
-      <?php endif; ?>
+          <?php endforeach; ?>
 
+          <?php endif; ?>
+
+        </div>
+      </div>
+
+      <div class="mventory-rule-categories">
+        <div class="mventory-inner">
+          <div class="mventory-rule-category<?php if (!$rule['has_categories']) echo ' mventory-state-no-category'; ?>"><?php echo implode(', ', $rule['categories']); ?></div>
+        </div>
       </div>
     </div>
 
-    <div class="mventory-rule-categories">
-      <div class="mventory-inner">
-        <div class="mventory-rule-category<?php if (!$rule['has_categories']) echo ' mventory-state-no-category'; ?>"><?php echo implode(', ', $rule['categories']); ?></div>
-      </div>
-    </div>
-
+    <div class="mventory-rule-err-msg"></div>
   </div>
 
 <?php endforeach; ?>
 
-  <div class="mventory-rule box clear mventory-rule-template">
+  <div class="mventory-rule clear mventory-rule-template">
+    <div class="mventory-rule-content clear">
+      <div class="mventory-rule-remove">&#x274C;</div>
 
-    <div class="mventory-rule-remove">&#x274C;</div>
+      <div class="mventory-rule-attrs">
+        <div class="mventory-inner">
 
-    <div class="mventory-rule-attrs">
-      <div class="mventory-inner">
+          <div class="mventory-rule-attr clear">
+            <div class="mventory-rule-attr-name"></div>
+            <div class="mventory-rule-attr-value"></div>
+          </div>
 
-        <div class="mventory-rule-attr clear">
-          <div class="mventory-rule-attr-name"></div>
-          <div class="mventory-rule-attr-value"></div>
         </div>
+      </div>
 
+      <div class="mventory-rule-categories">
+        <div class="mventory-inner">
+          <div class="mventory-rule-category"></div>
+        </div>
       </div>
     </div>
 
-    <div class="mventory-rule-categories">
-      <div class="mventory-inner">
-        <div class="mventory-rule-category"></div>
-      </div>
-    </div>
-
+    <div class="mventory-rule-err-msg"></div>
   </div>
-
 </div>
 
 <div class="box clear">

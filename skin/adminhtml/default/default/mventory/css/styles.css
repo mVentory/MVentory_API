@@ -24,12 +24,28 @@
 }
 
 .mventory-rule {
-  position: relative;
+  border: 1px solid #d6d6d6;
+  margin: 0 0 15px;
 }
 
 .mventory-rule-placeholder {
   border-style: dashed;
   opacity: 0.5;
+}
+
+.mventory-rule-content {
+  position: relative;
+  padding: 10px 15px;
+  background: #fafafa;
+}
+
+.mventory-rule-err-msg {
+  padding: 10px 15px;
+  border-top: 4px solid #f16048;
+  margin: 0px 0px 0px 50px;
+  background: #fefefe;
+  white-space: pre-wrap;
+  display: none;
 }
 
 .mventory-rule .mventory-rule-remove {
@@ -150,8 +166,33 @@
   margin: 0;
 }
 
+/* States */
+
 .mventory-state-no-category {
   color: lightgray;
+}
+
+.mventory-rule.mventory-state-success {
+  background: url(../../images/success_msg_icon.gif) no-repeat 17px 50% #eff5ea;
+}
+
+.mventory-rule.mventory-state-error {
+  background: url(../../images/error_msg_icon.gif) no-repeat 17px 50% #faebe7;
+}
+
+.mventory-rule.mventory-state-processing {
+  opacity: 0.4;
+  background: url(../../images/ajax-loader-tr.gif) no-repeat 10px 50% #fff4e9;
+}
+
+.mventory-state-success .mventory-rule-content,
+.mventory-state-error .mventory-rule-content,
+.mventory-state-processing .mventory-rule-content {
+  margin: 0 0 0 50px;
+}
+
+.mventory-state-error .mventory-rule-err-msg {
+  display: block;
 }
 
 #mventory-categories-wrapper {
