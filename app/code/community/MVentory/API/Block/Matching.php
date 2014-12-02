@@ -181,6 +181,11 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
     $attrs = array();
 
     foreach ($data['attrs'] as $attr) {
+
+      //Ignore attribute which doesn't exists in Magento
+      if (!isset($this->_attrs[$attr['id']]))
+        continue;
+
       $_attr = &$this->_attrs[$attr['id']];
 
       $_attr['used'] = true;

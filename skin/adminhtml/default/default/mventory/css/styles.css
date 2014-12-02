@@ -49,6 +49,7 @@
 
 .mventory-rule-attrs .mventory-inner {
   border-right: 2px solid #D6D6D6;
+  padding: 0 15px 0 0;
 }
 
 .mventory-rule-categories {
@@ -69,7 +70,7 @@
 
 .mventory-rule-attr:first-child,
 .mventory-rule-category:first-child,
-#mventory-rule-new > .mventory-inner > *:first-child {
+#mventory-rule-new > .mventory-inner > .mventory-rule-new-attr:first-child {
   border: none;
 }
 
@@ -78,23 +79,23 @@
   float: left;
 }
 
-#mventory-rule-new {
-  margin-bottom: 10px;
-}
-
-#mventory-rule-new > .mventory-inner > * {
+#mventory-rule-new > .mventory-inner > .mventory-rule-new-attr {
   float: left;
-  border-left: 1px dashed #D6D6D6;
-  margin-right: 15px;
-  padding-left: 15px;
+  margin: 0 0 10px 15px;
 }
 
-#mventory-rule-new > .mventory-inner > *:first-child {
-  padding-left: 0px;
+#mventory-rule-new > .mventory-inner > .mventory-rule-new-attr:first-child {
+  margin: 0 0 10px 0;
+}
+
+.mventory-rule-new-attr-column {
+  display: table-cell;
 }
 
 .mventory-rule-new-arrow {
   text-align: center;
+  text-transform: lowercase;
+  font-variant: small-caps;
 }
 
 .mventory-rule-new-attr-name,
@@ -116,6 +117,17 @@
 
 .mventory-rule-new-attr-value > .mventory-state-used-value {
   color: lightgray;
+}
+
+.mventory-rule-attr-and {
+  vertical-align: middle;
+  padding: 0 15px 0 0;
+  text-transform: lowercase;
+  font-variant: small-caps;
+}
+
+.mventory-rule-new-attr:first-child .mventory-rule-attr-and {
+  display: none;
 }
 
 #mventory-rule-new-buttons {
@@ -145,6 +157,14 @@
 #mventory-categories-wrapper {
   display: none;
   position: absolute;
+}
+
+#mventory-matching-attribute-messages {
+  margin: 0 0 10px 0;
+}
+
+#mventory-matching-attribute-messages li {
+  margin: 0 !important;
 }
 
 /* Tooltips on attribute's metadata tab */

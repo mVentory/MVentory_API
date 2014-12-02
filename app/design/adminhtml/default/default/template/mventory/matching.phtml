@@ -18,6 +18,7 @@
  */
 
 $_rules = $this->_getRules();
+$_attrs = $this->_attrs;
 
 ?>
 
@@ -26,12 +27,31 @@ $_rules = $this->_getRules();
     <tr>
       <td style="width:100%;">
         <h3 class="icon-head head-product-attribute-sets">
-          <?php echo $this->__('Categories Matching'); ?>
+          <?php echo $this->__('Magento Categories Matching'); ?>
         </h3>
       </td>
     </tr>
   </table>
 </div>
+
+<?php
+
+//Show help message if there's attributes and user has added more
+//than 2 rules
+
+?>
+
+<?php if (count($_rules) < 3 && $_attrs): ?>
+<ul id="mventory-matching-messages" class="messages">
+  <li class="notice-msg">
+    <ul>
+      <li>
+        <span><?php echo $this->__('These matching rules are applied when a product is saved in mVentory App or by Bulk category matching in the list of products.</br />Use one or more attributes and any number of attribute values to create a rule and map their values to one or more categories.</br />The rules apply from top down and only the first matching rule can be used. Arrange them from most specific to most generic. The default rule has no attributes listed and is applied if no other rule matched.')?></span>
+      </li>
+    </ul>
+  </li>
+</ul>
+<?php endif; ?>
 
 <div id="mventory-rules">
 
@@ -97,27 +117,55 @@ $_rules = $this->_getRules();
 <div class="box clear">
   <div id="mventory-rule-new" class="mventory-rule-attrs">
     <div class="mventory-inner clear">
+
+      <?php //Hide attribute selector if there is no attribute and show warning message ?>
+      <?php if (count($_attrs) < 2): ?>
+
+      <ul id="mventory-matching-attribute-messages" class="messages">
+        <li class="warning-msg">
+          <ul>
+            <li>
+              <span><?php echo $this->__('Non-system attributes can be used to construct mapping rules between product properties and categories. E.g. Product type: watch, Gender: men can be mapped to category Fashion/Men/Accessories.<br />Add attributes to this attribute set to add the mapping. You can set default mapping for any product from this attribute set without adding any attributes.')?></span>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <?php else: ?>
+
       <div class="mventory-rule-new-attr mventory-state-not-completed">
 
-        <div class="mventory-rule-new-attr-buttons">
-          <a class="mventory-rule-remove">&#x274C;</a>
+        <div class="mventory-rule-new-attr-column mventory-rule-attr-and"><?php echo $this->__('And')?></div>
+
+        <div class="mventory-rule-new-attr-column">
+          <div class="mventory-rule-new-attr-buttons">
+            <a class="mventory-rule-remove">&#x274C;</a>
+          </div>
+
+          <div>
+            <select class="mventory-rule-new-attr-name">
+
+              <?php foreach ($_attrs as $id => $attr): ?>
+              <option <?php if ($attr['used']) echo 'class="mventory-state-used-attr"'; ?> value="<?php echo $id; ?>"><?php echo $attr['label']; ?></option>
+              <?php endforeach; ?>
+
+            </select>
+          </div>
+
+          <div class="mventory-rule-new-arrow">
+            <?php echo $this->__('Any of')?>
+            <br />
+            &#8681;
+          </div>
+
+          <div>
+            <select class="mventory-rule-new-attr-value" multiple="multiple"></select>
+          </div>
         </div>
-
-        <div>
-          <select class="mventory-rule-new-attr-name">
-            <?php foreach ($this->_attrs as $id => $attr): ?>
-            <option <?php if ($attr['used']) echo 'class="mventory-state-used-attr"'; ?> value="<?php echo $id; ?>"><?php echo $attr['label']; ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="mventory-rule-new-arrow">&#8681;</div>
-
-        <div>
-          <select class="mventory-rule-new-attr-value" multiple="multiple"></select>
-        </div>
-
       </div>
+
+      <?php endif;?>
+
     </div>
   </div>
 

@@ -24,7 +24,7 @@ jQuery(document).ready(function ($) {
 
   var rules = [];
 
-  var $rules = $('#mventory-rules')
+  var $rules = $('#mventory-rules');
   var $rule_template = $rules.children('.mventory-rule-template');
   var $new_rule = $('#mventory-rule-new').children('.mventory-inner');
   var $new_attr = $new_rule.children('.mventory-rule-new-attr');
@@ -33,10 +33,8 @@ jQuery(document).ready(function ($) {
   var $save_rule_button = $('#mventory-rule-save');
   var $magento_category = $('#mventory-categories');
 
-  var default_magento_category_text = $magento_category.html();
-
   $new_attr
-    .find('> div > .mventory-rule-new-attr-name')
+    .find('> .mventory-rule-new-attr-column .mventory-rule-new-attr-name')
     .on('change', function () {
       var $this = $(this);
       var attr_id = $this.val();
@@ -50,7 +48,7 @@ jQuery(document).ready(function ($) {
 
       var $values = $parent
                       .removeClass('mventory-state-not-completed')
-                      .find('> div > .mventory-rule-new-attr-value')
+                      .find('.mventory-rule-new-attr-value')
                       .empty();
 
       for (var i in attr.values)
@@ -64,14 +62,14 @@ jQuery(document).ready(function ($) {
     });
 
   $new_attr
-    .find('> div > .mventory-rule-new-attr-value')
+    .find('> .mventory-rule-new-attr-column .mventory-rule-new-attr-value')
     .on('change', function () {
       new_rule.attrs = get_attrs();
       update_save_rule_button_state();
     });
 
   $new_attr
-    .find('> .mventory-rule-new-attr-buttons > .mventory-rule-remove')
+    .find('.mventory-rule-new-attr-buttons > .mventory-rule-remove')
     .on('click', function () {
       var $parent = $(this).parents('.mventory-rule-new-attr');
 
@@ -102,7 +100,7 @@ jQuery(document).ready(function ($) {
       $new_rule
         .find('> .mventory-rule-new-attr')
         .last()
-        .find('> div > .mventory-rule-new-attr-name > [value="' + attr.id + '"]')
+        .find('.mventory-rule-new-attr-name > [value="' + attr.id + '"]')
         .addClass('mventory-state-used-attr');
 
       $.map($.makeArray(attr.value), function (value, index) {
@@ -256,8 +254,8 @@ jQuery(document).ready(function ($) {
 
   function get_attr ($attrs) {
     return {
-      id: $attrs.find('> div > .mventory-rule-new-attr-name').val(),
-      value: $attrs.find('> div > .mventory-rule-new-attr-value').val()
+      id: $attrs.find('.mventory-rule-new-attr-name').val(),
+      value: $attrs.find('.mventory-rule-new-attr-value').val()
     }
   }
 
@@ -265,12 +263,29 @@ jQuery(document).ready(function ($) {
     $.ajax({
       url: mventory_urls['addrule'],
       type: 'POST',
+      dataType: 'json',
       data: { rule: JSON.stringify(rule), form_key: FORM_KEY },
       success: function (data, text_status, xhr) {
-        console.log(data);
+        var msg = data.message;
+
+        if (data.success) {
+          //Hide help message if more than 2 rules
+          if ($rules.children('.mventory-rule').filter(':visible').length > 2)
+            $('#mventory-matching-messages').hide();
+        } else {
+          msg = __('Error') + ': ' + msg;
+
+          if (data.data.exception) {
+            var e = data.data.exception;
+            msg += '\n\n' + 'Exception: ' + e.message + '\n' + e.trace;
+          }
+        }
+
+        alert(msg);
       },
-      complete: function (xhr, text_status) {
-      }
+      error: function (xhr, text_status, errorThrown) {
+        alert(__('Error') + ': ' + text_status);
+      },
     });
   }
 
@@ -278,12 +293,25 @@ jQuery(document).ready(function ($) {
     $.ajax({
       url: mventory_urls['remove'],
       type: 'POST',
+      dataType: 'json',
       data: { rule_id: rule_id, form_key: FORM_KEY },
       success: function (data, text_status, xhr) {
-        console.log(data);
+        var msg = data.message;
+
+        if (!data.success) {
+          msg = __('Error') + ': ' + msg;
+
+          if (data.data.exception) {
+            var e = data.data.exception;
+            msg += '\n\n' + 'Exception: ' + e.message + '\n' + e.trace;
+          }
+        }
+
+        alert(msg);
       },
-      complete: function (xhr, text_status) {
-      }
+      error: function (xhr, text_status, errorThrown) {
+        alert(__('Error') + ': ' + text_status);
+      },
     });
   }
 
@@ -291,12 +319,25 @@ jQuery(document).ready(function ($) {
     $.ajax({
       url: mventory_urls['reorder'],
       type: 'POST',
+      dataType: 'json',
       data: { ids: ids, form_key: FORM_KEY },
       success: function (data, text_status, xhr) {
-        console.log(data);
+        var msg = data.message;
+
+        if (!data.success) {
+          msg = __('Error') + ': ' + msg;
+
+          if (data.data.exception) {
+            var e = data.data.exception;
+            msg += '\n\n' + 'Exception: ' + e.message + '\n' + e.trace;
+          }
+        }
+
+        alert(msg);
       },
-      complete: function (xhr, text_status) {
-      }
+      error: function (xhr, text_status, errorThrown) {
+        alert(__('Error') + ': ' + text_status);
+      },
     });
   }
 
@@ -323,6 +364,10 @@ jQuery(document).ready(function ($) {
     $categories_wrapper.toggle();
 
     update_save_rule_button_state();
+  }
+
+  function __ (text) {
+    return Translator.translate(text);
   }
 
   window.mventory_select_category = select_category;
