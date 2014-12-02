@@ -18,7 +18,7 @@
 jQuery(document).ready(function ($) {
   var new_rule = {
     'id': null,
-    'category': null,
+    'categories': [],
     'attrs' : []
   };
 
@@ -161,14 +161,14 @@ jQuery(document).ready(function ($) {
     rules.push(new_rule);
 
     clear_attrs();
-    uncheck_category();
+    clean_categories();
 
     update_save_rule_button_state();
   });
 
   $('#mventory-rule-reset').on('click', function () {
     clear_attrs();
-    uncheck_category();
+    clean_categories();
 
     update_save_rule_button_state();
   });
@@ -231,10 +231,10 @@ jQuery(document).ready(function ($) {
     new_rule.attrs = [];
   }
 
-  function uncheck_category () {
-    $magento_category.text(default_magento_category_text);
+  function clean_categories () {
 
-    new_rule.category = null;
+    new_rule.categories = [];
+    window.mventory_categories_reset();
   }
 
   function get_attrs () {
@@ -342,7 +342,7 @@ jQuery(document).ready(function ($) {
   }
 
   function update_save_rule_button_state () {
-    if (new_rule.category)
+    if (new_rule.categories.length)
       $save_rule_button.removeClass('disabled');
     else
       $save_rule_button.addClass('disabled');
@@ -351,17 +351,26 @@ jQuery(document).ready(function ($) {
   function update_categories_names ($rule) {
     $category = $rule
       .find('> .mventory-rule-categories .mventory-rule-category')
-      .text($magento_category.text())
+      .text(
+        window.mventory_categories_get_names(new_rule.categories).join(', ')
+      );
 
-    if (!new_rule.category)
+    if (!new_rule.categories.length)
       $category.addClass('mventory-state-no-category');
   }
 
-  function select_category (id, name) {
-    new_rule.category = id;
+  function select_category (id) {
+    if (new_rule.categories.indexOf(id) == -1)
+      new_rule.categories.push(id);
 
-    $magento_category.text(name);
-    $categories_wrapper.toggle();
+    update_save_rule_button_state();
+  }
+
+  function unselect_category (id) {
+    var pos = new_rule.categories.indexOf(id);
+
+    if (pos > -1)
+      new_rule.categories.splice(pos, 1);
 
     update_save_rule_button_state();
   }
@@ -371,4 +380,5 @@ jQuery(document).ready(function ($) {
   }
 
   window.mventory_select_category = select_category;
+  window.mventory_unselect_category = unselect_category;
 });

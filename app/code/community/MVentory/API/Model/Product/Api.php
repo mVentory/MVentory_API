@@ -755,10 +755,10 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
   protected function _matchCategory ($product) {
     $result = Mage::getModel('mventory/matching')->matchCategory($product);
 
-    if ($result === false)
+    if (!$result)
       return;
 
-    $product->setCategoryIds((string) $result);
+    $product->setCategoryIds($result);
 
     return true;
   }

@@ -81,7 +81,7 @@ $_attrs = $this->_attrs;
 
     <div class="mventory-rule-categories">
       <div class="mventory-inner">
-        <div class="mventory-rule-category<?php if (!$rule['has_category']) echo ' mventory-state-no-category'; ?>"><?php echo $rule['category']; ?></div>
+        <div class="mventory-rule-category<?php if (!$rule['has_categories']) echo ' mventory-state-no-category'; ?>"><?php echo implode(', ', $rule['categories']); ?></div>
       </div>
     </div>
 
