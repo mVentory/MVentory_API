@@ -33,7 +33,6 @@
 
       <catalog>
         <rewrite>
-          <product_view_attributes>MVentory_API_Block_Product_View_Attributes</product_view_attributes>
           <product_view_tabs>MVentory_API_Block_Product_View_Tabs</product_view_tabs>
         </rewrite>
       </catalog>
