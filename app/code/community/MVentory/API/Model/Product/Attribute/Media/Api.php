@@ -120,7 +120,14 @@ class MVentory_API_Model_Product_Attribute_Media_Api
 
     if (($productId = $helper->getProductId($productId, $identifierType))
         && $cID = $helper->getIdByChild($productId))
-      $this->_sync($productId, $cID, $helper);
+      $this->_sync(
+        $productId,
+        $cID,
+        $helper,
+        !$hasSmallImage
+          ? Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
+          : null
+      );
 
     return $productApi->fullInfo($productId, $identifierType);
   }
@@ -241,14 +248,14 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     $productApi = Mage::getModel('mventory/product_api');
 
     if (!$images) {
+      $defVisibility = $helper->getDefaultVisibility(
+        $helper->getWebsite($productId)
+      );
+
       if (!(isset($cID) && $cID))
         $productApi->update(
           $productId,
-          array(
-            'visibility' => $helper->getDefaultVisibility(
-              $helper->getWebsite($productId)
-            )
-          ),
+          array('visibility' => $defVisibility),
           null,
           $identifierType
         );
@@ -266,7 +273,12 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     }
 
     if (isset($cID) && $cID)
-      $this->_sync($productId, $cID, $helper);
+      $this->_sync(
+        $productId,
+        $cID,
+        $helper,
+        !$images ? $defVisibility : null
+      );
 
     return $productApi->fullInfo($productId, $identifierType);
   }
@@ -327,7 +339,11 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     return $data;
   }
 
-  protected function _sync ($aID, $cID, $helper) {
+  protected function _sync ($aID, $cID, $helper, $visibility = null) {
+    $store = $helper
+      ->getCurrentWebsite()
+      ->getDefaultStore();
+
     $ids = $helper->getChildrenIds($cID);
 
     //Add ID of configurable (C) product to load it
@@ -336,7 +352,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     $prods = Mage::getResourceModel('catalog/product_collection')
       ->addAttributeToSelect('*')
       ->addIdFilter($ids)
-      ->addStoreFilter($helper->getCurrentWebsite()->getDefaultStore())
+      ->addStoreFilter($store)
       ->getItems();
 
     $a = $prods[$aID];
@@ -344,5 +360,19 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     unset($prods[$aID], $prods[$cID]);
 
     Mage::helper('mventory/image')->sync($a, $c, $prods);
+
+    if ($visibility !== null) {
+
+      //Update only configurable product if type of visibility is both, because
+      //we don't show children of configurable product when it's fully visible
+      if ($visibility == Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH)
+        $ids = array($cID);
+
+      Mage::getResourceSingleton('catalog/product_action')->updateAttributes(
+        $ids,
+        array('visibility' => $visibility),
+        $store->getId()
+      );
+    }
   }
 }
