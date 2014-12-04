@@ -254,10 +254,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $website = $helper->getCurrentWebsite();
 
       //Set visibility to website's default value
-      $data['visibility'] = (int) $helper->getConfig(
-        MVentory_API_Model_Config::_API_VISIBILITY,
-        $website
-      );
+      $data['visibility'] = $helper->getDefaultVisibility($website);
 
       $data['tax_class_id'] = (int) $helper->getConfig(
         MVentory_API_Model_Config::_TAX_CLASS,

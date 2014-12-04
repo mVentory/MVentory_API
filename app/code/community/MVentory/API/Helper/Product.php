@@ -434,4 +434,24 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
              ? $attributes[$attributeCode]->getFrontend()->getValue($product)
                : null;
   }
+
+  /**
+   * Return default product visibility for product processed via API
+   *
+   * @see Mage_Catalog_Model_Product_Visibility
+   *   For list of possible values
+   *
+   * @param Mage_Core_Model_Website $website
+   *   Website scope used to retrieve value of Default product visibility
+   *   setting
+   *
+   * @return int
+   *   Value of default product visibility
+   */
+  public function getDefaultVisibility ($website) {
+    return (int) $this->getConfig(
+      MVentory_API_Model_Config::_API_VISIBILITY,
+      $website
+    );
+  }
 }

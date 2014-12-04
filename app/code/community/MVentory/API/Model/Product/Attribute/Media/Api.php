@@ -244,10 +244,11 @@ class MVentory_API_Model_Product_Attribute_Media_Api
       if (!(isset($cID) && $cID))
         $productApi->update(
           $productId,
-          array('visibility' => (int) $helper->getConfig(
-            MVentory_API_Model_Config::_API_VISIBILITY,
-            $helper->getWebsite($productId)
-          )),
+          array(
+            'visibility' => $helper->getDefaultVisibility(
+              $helper->getWebsite($productId)
+            )
+          ),
           null,
           $identifierType
         );
