@@ -331,8 +331,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
 
     $ids = $helper->getChildrenIds($cID);
 
-    //Add ID of configurable (C) product to load it; unset ID of currently
-    //updating product because it's been already loaded above
+    //Add ID of configurable (C) product to load it
     $ids[$cID] = $cID;
 
     $prods = Mage::getResourceModel('catalog/product_collection')
