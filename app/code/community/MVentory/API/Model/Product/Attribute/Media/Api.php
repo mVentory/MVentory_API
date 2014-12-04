@@ -327,8 +327,6 @@ class MVentory_API_Model_Product_Attribute_Media_Api
   }
 
   protected function _sync ($aID, $cID, $helper) {
-    Mage::log('_sync()');
-
     $ids = $helper->getChildrenIds($cID);
 
     //Add ID of configurable (C) product to load it
