@@ -102,11 +102,19 @@ class MVentory_API_Model_Product_Attribute_Media_Api
 
     $this->create($productId, $data, $storeId, $identifierType);
 
+    $helper = Mage::helper('mventory/product_configurable');
     $productApi = Mage::getModel('mventory/product_api');
 
+    /**
+     * @todo Move getting of product ID into beginning of the function
+     */
+    if (($productId = $helper->getProductId($productId, $identifierType)))
+      $cID = $helper->getIdByChild($productId);
+
     //Set product's visibility to 'catalog and search' if product doesn't have
-    //small image before addind the image
-    if (!$hasSmallImage)
+    //small image before addind the image and is not assigned to configurable
+    //product
+    if (!$hasSmallImage && empty($cID))
       $productApi->update(
         $productId,
         array(
@@ -116,10 +124,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         $identifierType
       );
 
-    $helper = Mage::helper('mventory/product_configurable');
-
-    if (($productId = $helper->getProductId($productId, $identifierType))
-        && $cID = $helper->getIdByChild($productId))
+    if (!empty($cID))
       $this->_sync(
         $productId,
         $cID,
@@ -242,6 +247,9 @@ class MVentory_API_Model_Product_Attribute_Media_Api
 
     $helper = Mage::helper('mventory/product_configurable');
 
+    /**
+     * @todo Move getting of product ID into beginning of the function
+     */
     if (($productId = $helper->getProductId($productId, $identifierType)))
       $cID = $helper->getIdByChild($productId);
 
