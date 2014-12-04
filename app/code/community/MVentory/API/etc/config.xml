@@ -33,7 +33,6 @@
 
       <catalog>
         <rewrite>
-          <layer_view>MVentory_API_Block_Layer_View</layer_view>
           <product_view_attributes>MVentory_API_Block_Product_View_Attributes</product_view_attributes>
           <product_view_tabs>MVentory_API_Block_Product_View_Tabs</product_view_tabs>
         </rewrite>
@@ -85,8 +84,6 @@
 
       <catalog>
         <rewrite>
-          <layer>MVentory_API_Model_Layer</layer>
-          <layer_filter_attribute>MVentory_API_Model_Layer_Filter_Attribute</layer_filter_attribute>
           <product_url>MVentory_API_Model_Product_Url</product_url>
         </rewrite>
       </catalog>
