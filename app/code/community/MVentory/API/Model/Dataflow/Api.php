@@ -131,7 +131,7 @@ class MVentory_API_Model_Dataflow_Api extends Mage_Api_Model_Resource_Abstract {
     	return $this->getProfileErrorMessage(self::PROFILE_ERR_FAILED, $profile, $user, "Unable to convert the profile.", $e);
     }
 
-    $actions = $convertProfile->getActions();
+    $actions = $this->_getProfileActions($convertProfile);
     $actionsCount = count($actions);
 
     if ($actionsCount == 0)
@@ -265,5 +265,32 @@ class MVentory_API_Model_Dataflow_Api extends Mage_Api_Model_Resource_Abstract {
     }
 
     return $result;
+  }
+
+  /**
+   * Return list of actions from supplied profile
+   *
+   * It uses reflections to get values of protected field because
+   * Mage_Dataflow_Model_Convert_Profile_Abstract doesn't provide getter method
+   * for the field and we don't want to overwrite a couple of classes to add
+   * getter method
+   *
+   * @param Mage_Dataflow_Model_Convert_Profile_Abstract $profile
+   *   Dataflow profile model
+   *
+   * @return array
+   *   List of actions from supplied profile. It returns empty array in case
+   *   some error happens while getting actions via reflections
+   */
+  protected function _getProfileActions ($profile) {
+    try {
+      $ref = new ReflectionObject($profile);
+      $prop = $ref->getProperty('_actions');
+      $prop->setAccessible(true);
+
+      return $prop->getValue($profile);
+    } catch (Exception $e) {
+      return array();
+    }
   }
 }

@@ -62,12 +62,6 @@
           </additional_skus>
         </entities>
       </mventory_resources>
-
-      <core>
-        <rewrite>
-          <convert>MVentory_API_Model_Core_Convert</convert>
-        </rewrite>
-      </core>
     </models>
 
     <helpers>
