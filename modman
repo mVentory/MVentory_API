@@ -3,10 +3,7 @@ app/code/community/MVentory/API                         app/code/community/MVent
 app/design/adminhtml/default/default/layout/*           app/design/adminhtml/default/default/layout/
 app/design/adminhtml/default/default/template/mventory  app/design/adminhtml/default/default/template/mventory
 
-app/design/frontend/base/default/layout/*               app/design/frontend/base/default/layout/
-
 skin/adminhtml/default/default/*                        skin/adminhtml/default/default/
-skin/frontend/base/default/mventory                     skin/frontend/base/default/mventory
 
 js/*                                                    js/
 
