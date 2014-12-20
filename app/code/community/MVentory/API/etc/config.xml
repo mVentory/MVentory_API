@@ -63,12 +63,6 @@
         </entities>
       </mventory_resources>
 
-      <catalog>
-        <rewrite>
-          <product_url>MVentory_API_Model_Product_Url</product_url>
-        </rewrite>
-      </catalog>
-
       <core>
         <rewrite>
           <convert>MVentory_API_Model_Core_Convert</convert>
