@@ -31,12 +31,6 @@
         <class>MVentory_API_Block</class>
       </mventory>
 
-      <catalog>
-        <rewrite>
-          <product_view_tabs>MVentory_API_Block_Product_View_Tabs</product_view_tabs>
-        </rewrite>
-      </catalog>
-
       <adminhtml>
         <rewrite>
           <dashboard_grids>MVentory_API_Block_Adminhtml_Dashboard_Grids</dashboard_grids>
