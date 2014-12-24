@@ -29,40 +29,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
   const CONF_TYPE = Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE;
 
-  protected $_excludeFromProduct = array(
-    'type' => true,
-    'type_id' => true,
-    'old_id' => true,
-    'news_from_date' => true,
-    'news_to_date' => true,
-    'country_of_manufacture' => true,
-    'categories' => true,
-    'required_options' => true,
-    'has_options' => true,
-    'image_label' => true,
-    'small_image_label' => true,
-    'thumbnail_label' => true,
-    'group_price' => true,
-    'tier_price' => true,
-    'msrp_enabled' => true,
-    'minimal_price' => true,
-    'msrp_display_actual_price_type' => true,
-    'msrp' => true,
-    'enable_googlecheckout' => true,
-    'meta_title' => true,
-    'meta_keyword' => true,
-    'meta_description' => true,
-    'is_recurring' => true,
-    'recurring_profile' => true,
-    'custom_design' => true,
-    'custom_design_from' => true,
-    'custom_design_to' => true,
-    'custom_layout_update' => true,
-    'page_layout' => true,
-    'options_container' => true,
-    'gift_message_available' => true,
-    'url_key' => true,
-    'visibility' => true
+  protected $_allowUpdate = array(
+    //!!!TODO: remove it after the app will treat status as normal attribute
+    //         Add to whitelist in MVentory_API_Helper_Product_Attribute
+    'status' => true,
+
+    'stock_data' => true
   );
 
   public function fullInfo ($productId,
@@ -80,7 +52,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $identifierType = 'sku';
     }
 
-    $helper = Mage::helper('mventory/product');
+    $helper = Mage::helper('mventory/product_attribute');
 
     $productId = $helper->getProductId($productId, $identifierType);
 
@@ -98,12 +70,25 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     //product is configurable one
     $productId = $_result['product_id'];
 
-    foreach ($_result as $key => $value) {
-      if (isset($this->_excludeFromProduct[$key]))
-        continue;
-
-      $result[$key] = $value;
-    }
+    $result = array_intersect_key(
+      $_result,
+      array_merge(
+        array(
+          'product_id' => true,
+          'set' => true,
+          'websites' => true,
+          'url_path' => true,
+          'status' => true,
+          'category_ids' => true,
+          'mv_created_date' => true,
+          'mv_created_userid' => true,
+          'mv_stock_journal' => true,
+          'created_at' => true,
+          'updated_at' => true
+        ),
+        $helper->getEditables($_result['set'])
+      )
+    );
 
     $stockItem = Mage::getModel('mventory/stock_item_api');
 
@@ -247,6 +232,17 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
                        ->getId();
 
     if (!$hasProduct) {
+      $sid = isset($data['_api_link_with_product'])
+               ? $data['_api_link_with_product']
+                 : false;
+
+      $data = $this->_filterData($data, $set);
+
+      //Set status to Enabled if it's not set, because Magento doesn't show
+      //newly created product in the admin interface if it's omitted
+      if (!isset($data['status']))
+        $data['status'] = 1;
+
       $data['mv_created_userid'] = $helper->getApiUser()->getId();
       $data['mv_created_date'] = time();
       $data['website_ids'] = $helper->getWebsitesForProduct();
@@ -280,14 +276,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       //!!!TODO: consider to move it before creating product
       $saveProduct = $this->_matchCategory($product);
 
-      $saveProduct |= isset($data['_api_link_with_product'])
-                      && ($sid = $data['_api_link_with_product'])
+      $saveProduct |= $sid
                       && ($sid = $helper->getProductId($sid))
                       && $helper->link($product, $sid);
 
       if ($saveProduct)
         $product->save();
-
     } else if (isset($data['_api_update_if_exists'])
               && $data['_api_update_if_exists']) {
 
@@ -332,6 +326,8 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
       unset($stock);
     }
+
+    $data = $this->_filterData($data, $old->getAttributeSetId());
 
     if (!isset($data['sku']))
       $data['sku'] = $newSku;
@@ -599,6 +595,15 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     if ($skus)
       unset($productData['stock_data']);
 
+    $sid = isset($productData['_api_link_with_product'])
+             ? $productData['_api_link_with_product']
+               : false;
+
+    $productData = $this->_filterData(
+      $productData,
+      $product->getAttributeSetId()
+    );
+
     $this->_prepareDataForSave($product, $productData);
 
     if (isset($removeOldValues) && $removeOldValues)
@@ -606,12 +611,10 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     $this->_matchCategory($product);
 
-    if (isset($productData['_api_link_with_product'])
-        && $sibling = $productData['_api_link_with_product']) {
-
+    if ($sid) {
       $helper = Mage::helper('mventory/product_configurable');
 
-      if ($sid = $helper->getProductId($sibling)) try {
+      if ($sid = $helper->getProductId($sid)) try {
         $helper->link($product, $sid);
       } catch (Exception $e) {
         $this->_fault('linking_problems', $e->getMessage());
@@ -761,5 +764,18 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     $product->setCategoryIds((string) $result);
 
     return true;
+  }
+
+  protected function _filterData ($data, $setId) {
+    if (!$data)
+      return $data;
+
+    return array_intersect_key(
+      $data,
+      array_merge(
+        Mage::helper('mventory/product_attribute')->getWritables($setId),
+        $this->_allowUpdate
+      )
+    );
   }
 }
