@@ -166,12 +166,12 @@ class MVentory_API_Model_Product_Action extends Mage_Core_Model_Abstract {
       if (!$product->getId())
         continue;
 
-      $category = Mage::getModel('mventory/matching')
+      $categoryIds = Mage::getModel('mventory/matching')
         ->matchCategory($product);
 
-      if ($category) {
+      if ($categoryIds) {
         $product
-          ->setCategoryIds((string) $category)
+          ->setCategoryIds($categoryIds)
           ->save();
 
         $n++;

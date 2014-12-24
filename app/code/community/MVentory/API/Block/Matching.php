@@ -166,21 +166,14 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
     $id = $data['id'];
     $default = ($id == MVentory_API_Model_Matching::DEFAULT_RULE_ID);
 
-    $category = $data['category'];
-    $hasCategory = false;
-
-    if ($category == null)
-      $category = $this->__('Category not selected');
-    else if (!isset($this->_categories[$category]))
-      $category = $this->__('Category doesn\'t exist anymore');
-    else {
-      $hasCategory = true;
-      $category = $this->_categories[$category]['name'];
-    }
-
     $attrs = array();
 
     foreach ($data['attrs'] as $attr) {
+
+      //Ignore attribute which doesn't exists in Magento
+      if (!isset($this->_attrs[$attr['id']]))
+        continue;
+
       $_attr = &$this->_attrs[$attr['id']];
 
       $_attr['used'] = true;
@@ -205,12 +198,38 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
                                     : '';
     }
 
+    return $this->_getRuleCategories($data)
+           + array(
+               'id' => $id,
+               'default' => $default,
+               'attrs' => $attrs
+             );
+  }
+
+  protected function _getRuleCategories ($rule) {
+    if (empty($rule['categories']))
+      return array(
+        'has_categories' => false,
+        'categories' => array($this->__('Categories not selected'))
+      );
+
+    $categories = $rule['categories'];
+
+    foreach ($categories as $i => $id)
+      if (isset($this->_categories[$id]))
+        $categories[$i] = $this->_categories[$id]['name'];
+      else
+        unset($categories[$i]);
+
+    if (!$categories)
+      return array(
+        'has_categories' => false,
+        'categories' => array($this->__('All categories don\'t exist anymore'))
+      );
+
     return array(
-      'id' => $id,
-      'default' => $default,
-      'category' => $category,
-      'has_category' => $hasCategory,
-      'attrs' => $attrs
-    );
+        'has_categories' => true,
+        'categories' => $categories
+      );
   }
 }

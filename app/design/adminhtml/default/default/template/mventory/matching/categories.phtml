@@ -27,6 +27,10 @@
 Ext.EventManager.onDocumentReady (function () {
   function buildCategoryTree (parent, config) {
     for (var i = 0; i < config.length; i++) {
+
+      //Add checkbox to node
+      config[i].uiProvider = Ext.tree.CheckboxNodeUI;
+
       var node = new Ext.tree.TreeNode(config[i]);
 
       parent.appendChild(node);
@@ -50,14 +54,61 @@ Ext.EventManager.onDocumentReady (function () {
 
   tree.setRootNode(root);
 
-  tree.addListener('click', function (node, e) {
-    if (typeof window.mventory_select_category == 'function')
-      mventory_select_category(node.id, node.text);
+  tree.addListener({
+    'click': onClick,
+    'check': onCheck
   });
 
   buildCategoryTree(root, <?php echo $this->getTreeJson() ?>);
 
   tree.render();
+
+  function getNames (ids) {
+    var names = [],
+        nodes = tree.nodeHash;
+
+    for (var i = 0, id; id = ids[i++];)
+      names.push(nodes[id].text);
+
+    return names;
+  };
+
+  /**
+   * Uncheck all categories.
+   */
+  function reset () {
+    var id,
+        checkbox,
+        nodes = tree.nodeHash;
+
+    for (id in nodes)
+      if (nodes.hasOwnProperty(id)) {
+        checkbox = nodes[id].getUI();
+
+        if (checkbox.rendered)
+          checkbox.check(false, false, true);
+      }
+  }
+
+  function onClick (node, e) {
+    var checkbox;
+
+    checkbox = node.getUI(),
+    checkbox.check(!checkbox.checked(), false);
+  }
+
+  function onCheck (node, e) {
+    if (!(typeof window.mventory_select_category == 'function'
+          && typeof window.mventory_unselect_category == 'function'))
+      return;
+
+    node.getUI().checked()
+      ? mventory_select_category(node.id)
+      : mventory_unselect_category(node.id);
+  }
+
+  window.mventory_categories_reset = reset;
+  window.mventory_categories_get_names = getNames;
 });
 
 //]]>

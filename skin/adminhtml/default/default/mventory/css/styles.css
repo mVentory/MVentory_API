@@ -24,12 +24,28 @@
 }
 
 .mventory-rule {
-  position: relative;
+  border: 1px solid #d6d6d6;
+  margin: 0 0 15px;
 }
 
 .mventory-rule-placeholder {
   border-style: dashed;
   opacity: 0.5;
+}
+
+.mventory-rule-content {
+  position: relative;
+  padding: 10px 15px;
+  background: #fafafa;
+}
+
+.mventory-rule-err-msg {
+  padding: 10px 15px;
+  border-top: 4px solid #f16048;
+  margin: 0px 0px 0px 50px;
+  background: #fefefe;
+  white-space: pre-wrap;
+  display: none;
 }
 
 .mventory-rule .mventory-rule-remove {
@@ -49,6 +65,7 @@
 
 .mventory-rule-attrs .mventory-inner {
   border-right: 2px solid #D6D6D6;
+  padding: 0 15px 0 0;
 }
 
 .mventory-rule-categories {
@@ -69,7 +86,7 @@
 
 .mventory-rule-attr:first-child,
 .mventory-rule-category:first-child,
-#mventory-rule-new > .mventory-inner > *:first-child {
+#mventory-rule-new > .mventory-inner > .mventory-rule-new-attr:first-child {
   border: none;
 }
 
@@ -78,23 +95,23 @@
   float: left;
 }
 
-#mventory-rule-new {
-  margin-bottom: 10px;
-}
-
-#mventory-rule-new > .mventory-inner > * {
+#mventory-rule-new > .mventory-inner > .mventory-rule-new-attr {
   float: left;
-  border-left: 1px dashed #D6D6D6;
-  margin-right: 15px;
-  padding-left: 15px;
+  margin: 0 0 10px 15px;
 }
 
-#mventory-rule-new > .mventory-inner > *:first-child {
-  padding-left: 0px;
+#mventory-rule-new > .mventory-inner > .mventory-rule-new-attr:first-child {
+  margin: 0 0 10px 0;
+}
+
+.mventory-rule-new-attr-column {
+  display: table-cell;
 }
 
 .mventory-rule-new-arrow {
   text-align: center;
+  text-transform: lowercase;
+  font-variant: small-caps;
 }
 
 .mventory-rule-new-attr-name,
@@ -118,6 +135,17 @@
   color: lightgray;
 }
 
+.mventory-rule-attr-and {
+  vertical-align: middle;
+  padding: 0 15px 0 0;
+  text-transform: lowercase;
+  font-variant: small-caps;
+}
+
+.mventory-rule-new-attr:first-child .mventory-rule-attr-and {
+  display: none;
+}
+
 #mventory-rule-new-buttons {
   clear: both;
   border-top: 2px solid #D6D6D6;
@@ -138,13 +166,46 @@
   margin: 0;
 }
 
+/* States */
+
 .mventory-state-no-category {
   color: lightgray;
+}
+
+.mventory-rule.mventory-state-success {
+  background: url(../../images/success_msg_icon.gif) no-repeat 17px 50% #eff5ea;
+}
+
+.mventory-rule.mventory-state-error {
+  background: url(../../images/error_msg_icon.gif) no-repeat 17px 50% #faebe7;
+}
+
+.mventory-rule.mventory-state-processing {
+  opacity: 0.4;
+  background: url(../../images/ajax-loader-tr.gif) no-repeat 10px 50% #fff4e9;
+}
+
+.mventory-state-success .mventory-rule-content,
+.mventory-state-error .mventory-rule-content,
+.mventory-state-processing .mventory-rule-content {
+  margin: 0 0 0 50px;
+}
+
+.mventory-state-error .mventory-rule-err-msg {
+  display: block;
 }
 
 #mventory-categories-wrapper {
   display: none;
   position: absolute;
+}
+
+#mventory-matching-attribute-messages {
+  margin: 0 0 10px 0;
+}
+
+#mventory-matching-attribute-messages li {
+  margin: 0 !important;
 }
 
 /* Tooltips on attribute's metadata tab */
