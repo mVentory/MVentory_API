@@ -36,7 +36,8 @@ Visit http://mventory.com for more info.</description>
    <license_uri>http://creativecommons.org/licenses/by-nc-nd/4.0/</license_uri>
    <version>1.2.0</version>
    <stability>devel</stability>
-   <notes>* Remove redefined models and blocks (non-related to API functionality) and frontend CSS styles which can affect existing Magento installation
+   <notes>* New feature: image review
+* Remove redefined models and blocks (non-related to API functionality) and frontend CSS styles which can affect existing Magento installation
 * Move jQuery and jQueryUI libraries into the extension from MVentory_JQuery extension. This extension will be removed</notes>
    <authors>
       <name>
@@ -97,6 +98,9 @@ Visit http://mventory.com for more info.</description>
          <target>mageskin</target>
          <target>mageweb</target>
          <target>mageweb</target>
+         <target>mage</target>
+         <target>magecommunity</target>
+         <target>mageetc</target>
       </target>
       <path>
          <path/>
@@ -108,6 +112,9 @@ Visit http://mventory.com for more info.</description>
          <path>adminhtml/default/default/mventory</path>
          <path>js/mventory</path>
          <path>js/jquery</path>
+         <path>lib/Dropbox</path>
+         <path>Hackathon/PSR0Autoloader</path>
+         <path>modules/Hackathon_PSR0Autoloader.xml</path>
       </path>
       <type>
          <type>file</type>
@@ -119,6 +126,9 @@ Visit http://mventory.com for more info.</description>
          <type>dir</type>
          <type>dir</type>
          <type>dir</type>
+         <type>dir</type>
+         <type>dir</type>
+         <type>file</type>
       </type>
       <include>
          <include/>
@@ -130,8 +140,14 @@ Visit http://mventory.com for more info.</description>
          <include/>
          <include/>
          <include/>
+         <include/>
+         <include/>
+         <include/>
       </include>
       <ignore>
+         <ignore/>
+         <ignore/>
+         <ignore/>
          <ignore/>
          <ignore/>
          <ignore/>

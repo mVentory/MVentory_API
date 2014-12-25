@@ -212,3 +212,16 @@
 #product_attribute_tabs_mventory_content .field-tooltip > div ul {
   list-style: disc inside;
 }
+
+.fieldset-footer {
+  margin: 20px 5px 5px;;
+}
+
+.fieldset-footer h4 {
+  margin: 0 0 10px;
+}
+
+.fieldset-footer ol {
+  list-style: decimal inside;
+  margin: 0 0 0.5em;
+}

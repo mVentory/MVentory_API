@@ -75,4 +75,10 @@
       <action method="addCss"><css>mventory/css/styles.css</css></action>
     </reference>
   </adminhtml_catalog_product_attribute_edit>
+
+  <adminhtml_system_config_edit>
+    <reference name="head">
+      <action method="addCss"><css>mventory/css/styles.css</css></action>
+    </reference>
+  </adminhtml_system_config_edit>
 </layout>

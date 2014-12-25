@@ -44,6 +44,8 @@ class MVentory_API_Model_Config
   const _QR_CSS = 'mventory/qr/css';
   const _QR_URL = 'mventory/qr/base_url';
   const _QR_COPIES = 'mventory/qr/copies';
+  const _DBX_TKN = 'mventory/image_clips/dropbox_token';
+  const _DBX_PATH = 'mventory/image_clips/dropbox_path';
 
   //Attribute metadata values
   const MT_INPUT_KBD = 0;

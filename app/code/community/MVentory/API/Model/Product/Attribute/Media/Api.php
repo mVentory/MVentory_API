@@ -96,11 +96,37 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     //We don't use exclude feature
     $data['exclude'] = 0;
 
-    $file['content'] = base64_encode(
-      $this->_fixOrientation($name, $file['content'])
-    );
+    $content = $this->_fixOrientation($name, $file['content']);
+    $file['content'] = base64_encode($content);
 
-    $this->create($productId, $data, $storeId, $identifierType);
+    $isClipEnabled = Mage::getStoreConfig('mventory/image_clips/enable');
+
+    //Exclude image from frontend
+    if ($isClipEnabled
+        && Mage::getStoreConfig('mventory/image_clips/exclude_new'))
+      $data['exclude'] = '1';
+
+    $img = $this->create($productId, $data, $storeId, $identifierType);
+
+    if ($isClipEnabled) try {
+      $clipHelper = Mage::helper('mventory/imageclipper');
+      $ioAdapter = new Varien_Io_File();
+
+      $_img = basename($img);
+      $backupFolder = $clipHelper->getBackupFolder();
+
+      if ($backupFolder && file_exists($backupFolder)) {
+        $ioAdapter->open(array('path'=> $backupFolder));
+        $ioAdapter->write($_img, $content);
+      }
+
+      Mage::helper('mventory/imageclipper')->uploadFileFromString(
+        $_img,
+        $content
+      );
+    } catch (Exception $e) {
+      Mage::logException($e);
+    }
 
     $helper = Mage::helper('mventory/product_configurable');
     $productApi = Mage::getModel('mventory/product_api');
@@ -114,7 +140,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     //Set product's visibility to 'catalog and search' if product doesn't have
     //small image before addind the image and is not assigned to configurable
     //product
-    if (!$hasSmallImage && empty($cID))
+    if (!($hasSmallImage || $data['exclude']) && empty($cID))
       $productApi->update(
         $productId,
         array(
@@ -129,9 +155,9 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         $productId,
         $cID,
         $helper,
-        !$hasSmallImage
-          ? Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
-          : null
+        ($hasSmallImage || $data['exclude'])
+          ? null
+          : Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
       );
 
     return $productApi->fullInfo($productId, $identifierType);
@@ -287,6 +313,12 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         $helper,
         !$images ? $defVisibility : null
       );
+
+    if (Mage::getStoreConfig('mventory/image_clips/enable')) try {
+      Mage::helper('mventory/imageclipper')->deleteFromDropbox(basename($file));
+    } catch (Exception $e) {
+      Mage::logException($e);
+    }
 
     return $productApi->fullInfo($productId, $identifierType);
   }
