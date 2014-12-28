@@ -12,7 +12,7 @@
  * See http://mventory.com/legal/licensing/ for other licensing options.
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -120,12 +120,33 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         $ioAdapter->write($_img, $content);
       }
 
-      Mage::helper('mventory/imageclipper')->uploadFileFromString(
+      $md = Mage::helper('mventory/imageclipper')->uploadFileFromString(
         $_img,
         $content
       );
+
+      if (!empty($md['bytes']))
+        $clipHelper->log(array(
+          'date' => $clipHelper->getCurrentDate(),
+          'time' => $clipHelper->getCurrentTime(),
+          'event' => 'image-upload',
+          'file' => $_img,
+          'sku' => $this
+            ->_initProduct($productId, $storeId,$identifierType)
+            ->getSku()
+        ));
     } catch (Exception $e) {
       Mage::logException($e);
+
+      $clipHelper->log(array(
+        'date' => $clipHelper->getCurrentDate(),
+        'time' => $clipHelper->getCurrentTime(),
+        'event' => 'image-upload-failed',
+        'file' => $_img,
+        'sku' => $this
+          ->_initProduct($productId, $storeId,$identifierType)
+          ->getSku()
+      ));
     }
 
     $helper = Mage::helper('mventory/product_configurable');
@@ -314,10 +335,29 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         !$images ? $defVisibility : null
       );
 
+    $helper = Mage::helper('mventory/imageclipper');
+
     if (Mage::getStoreConfig('mventory/image_clips/enable')) try {
-      Mage::helper('mventory/imageclipper')->deleteFromDropbox(basename($file));
+      $helper->deleteFromDropbox(basename($file));
+
+      if ($md['is_deleted'])
+        $helper->log(array(
+          'date' => $helper->getCurrentDate(),
+          'time' => $helper->getCurrentTime(),
+          'event' => 'image-delete',
+          'file' => $_img,
+          'sku' => $product->getSku()
+        ));
     } catch (Exception $e) {
       Mage::logException($e);
+
+      $helper->log(array(
+        'date' => $helper->getCurrentDate(),
+        'time' => $helper->getCurrentTime(),
+        'event' => 'image-delete-failed',
+        'file' => $_img,
+        'sku' => $product->getSku()
+      ));
     }
 
     return $productApi->fullInfo($productId, $identifierType);

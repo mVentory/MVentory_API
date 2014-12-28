@@ -12,7 +12,7 @@
  * See http://mventory.com/legal/licensing/ for other licensing options.
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -24,6 +24,16 @@
  */
 class MVentory_API_Helper_Imageclipper extends MVentory_API_Helper_Data
 {
+
+  protected $_csvHeaders = array(
+    'date' => 'Date',
+    'time' => 'Time',
+    'event' => 'Event',
+    'file' => 'File',
+    'sku' => 'sku'
+  );
+
+  protected $_logfile = 'var/log/imglog.csv';
 
   /**
    * Download and copy image to media/catalog/product/i/m/imag1.jpg
@@ -47,6 +57,16 @@ class MVentory_API_Helper_Imageclipper extends MVentory_API_Helper_Data
     if (filesize($imgDst) == $bytes)
       return false;
 
+    $ids = $this->getProductIdsByImage($image);
+    $skus = array();
+
+    foreach ($ids as $id)
+      $skus[] = Mage::getModel('catalog/product')
+        ->load($id)
+        ->getSku();
+
+    $skus = implode(', ', $skus);
+
     try {
       $fd = fopen($imgDst, 'cb');
       $md = $this->getDbxClient()->getFile($dropboxFile, $fd);
@@ -59,6 +79,15 @@ class MVentory_API_Helper_Imageclipper extends MVentory_API_Helper_Data
       fclose($fd);
     } catch (Exception $e) {
       Mage::throwException($e);
+
+      $this->log(array(
+        'date' => $this->getCurrentDate(),
+        'time' => $this->getCurrentTime(),
+        'event' => 'image-download-failed',
+        'file' => $image,
+        'sku'  => $skus
+      ));
+
       return false;
     }
 
@@ -81,6 +110,14 @@ class MVentory_API_Helper_Imageclipper extends MVentory_API_Helper_Data
     foreach ($iteratorRegex as $filepath => $fileinfo)
       if (is_file($filepath))
         @unlink($filepath);
+
+    $this->log(array(
+      'date' => $this->getCurrentDate(),
+      'time' => $this->getCurrentTime(),
+      'event' => 'image-download',
+      'file' => $image,
+      'sku'  => $skus
+    ));
 
     return true;
   }
@@ -110,6 +147,45 @@ class MVentory_API_Helper_Imageclipper extends MVentory_API_Helper_Data
 
       $this->setProductVisibility($_id);
     }
+  }
+
+  /**
+   * @param $event array
+   */
+  public function log ($event) {
+    $file = $this->getLogFile();
+
+    $io = new Varien_Io_File();
+    $io->open(array('path' => pathinfo($file, PATHINFO_DIRNAME)));
+    $io->streamOpen($file, 'a+');
+
+    if (!$io->fileExists($file) || filesize($file) <= 1)
+      $io->streamWriteCsv($this->_csvHeaders);
+
+    $row = array();
+
+    foreach ($this->_csvHeaders as $colName => $v)
+      $row[$colName] = $event[$colName];
+
+    $io->streamWriteCsv($row);
+  }
+
+  public function getCurrentDate () {
+    return Mage::getModel('core/date')->date(
+      'd/m/Y',
+      Mage::getModel('core/date')->timestamp(time())
+    );
+  }
+
+  public function getCurrentTime () {
+    return Mage::getModel('core/date')->date(
+      'H:i:s',
+      Mage::getModel('core/date')->timestamp(time())
+    );
+  }
+
+  public function getLogFile () {
+    return Mage::getBaseDir() . DS . $this->_logfile;
   }
 
   /**

@@ -371,6 +371,24 @@
               <sort_order>4</sort_order>
             </auto_replace>
 
+            <log_file translate="label comment tooltip">
+              <label>Log file</label>
+              <comment>For all extension activity.</comment>
+              <tooltip>All actions performed via the extension are logged into this file. You must remove stale records or enable automated clean up using system tools.</tooltip>
+              <frontend_model>mventory/system_config_form_field_imgcliplog</frontend_model>
+              <backend_model>mventory/system_config_backend_imgclip_csvlog</backend_model>
+
+              <depends>
+                <enable>1</enable>
+              </depends>
+
+              <show_in_default>1</show_in_default>
+              <show_in_website>0</show_in_website>
+              <show_in_store>0</show_in_store>
+
+              <sort_order>5</sort_order>
+            </log_file>
+
             <dropbox_heading translate="label">
               <label>Dropbox options</label>
               <frontend_model>adminhtml/system_config_form_field_heading</frontend_model>
@@ -383,7 +401,7 @@
               <show_in_website>0</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>5</sort_order>
+              <sort_order>6</sort_order>
             </dropbox_heading>
 
             <dropbox_token translate="label comment tooltip">
@@ -401,7 +419,7 @@
               <show_in_website>0</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>6</sort_order>
+              <sort_order>7</sort_order>
             </dropbox_token>
 
             <dropbox_path translate="label comment tooltip">
@@ -420,7 +438,7 @@
               <show_in_website>0</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>7</sort_order>
+              <sort_order>8</sort_order>
             </dropbox_path>
 
             <image_requirements translate="label">
@@ -435,7 +453,7 @@
               <show_in_website>0</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>8</sort_order>
+              <sort_order>9</sort_order>
             </image_requirements>
 
             <ideal_width translate="label tooltip">
@@ -451,7 +469,7 @@
               <show_in_website>0</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>9</sort_order>
+              <sort_order>10</sort_order>
             </ideal_width>
 
             <ideal_height translate="label comment">
@@ -467,7 +485,7 @@
               <show_in_website>0</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>10</sort_order>
+              <sort_order>11</sort_order>
             </ideal_height>
 
             <feedback_email translate="label comment tooltip">
@@ -484,7 +502,7 @@
               <show_in_website>0</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>11</sort_order>
+              <sort_order>12</sort_order>
             </feedback_email>
           </fields>
         </image_clips>

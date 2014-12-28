@@ -225,3 +225,9 @@
   list-style: decimal inside;
   margin: 0 0 0.5em;
 }
+
+/* System config */
+.section-config .value .buttons-set {
+  display: inline-block;
+  margin: 0;
+}
