@@ -1,5 +1,5 @@
 <_>
-   <form_key>Gikc2iLJ9xEubLgV</form_key>
+   <form_key>YwOz927Fe0jqJayA</form_key>
    <name>MVentory_API</name>
    <channel>community</channel>
    <version_ids>
@@ -35,17 +35,11 @@ Visit http://mventory.com for more info.</description>
    <license>CC BY-NC-ND 4.0</license>
    <license_uri>http://creativecommons.org/licenses/by-nc-nd/4.0/</license_uri>
    <version>1.2.0</version>
-   <stability>beta</stability>
-   <notes>* Set min requirement to Magento 1.8 and greater
-* Implement attribute metadata
-* Allow to change product&apos;s attribute set via API
-* Support for UPC-A &amp; EAN-13 barcodes
-* Re-worked creating/updating of configurable products
-* Sync images only when uploading/updating/removing them via API
-* Fix generating links for attribute values on product page
-* Move all product related event observers to API
-* Remove functionality for populating attribute values
-* Remove button for adding or removing attribute to/from mVentory
+   <stability>devel</stability>
+   <notes>* Use also SKU attribute when searching product by barcode
+* Support for multicategories in category matching editor
+* Category matching editor improvements (better help and error messages)
+* Dropped functionality for sorting attributes in catalog filter, functionality for better product details on frontend
 * Other small improvements and bug fixes</notes>
    <authors>
       <name>
@@ -83,9 +77,9 @@ Visit http://mventory.com for more info.</description>
             <max/>
          </max>
          <files>
-            <files>                                                                                        </files>
-            <files>                                                                                        </files>
-            <files>                                                                                        </files>
+            <files>                                                                                           </files>
+            <files>                                                                                           </files>
+            <files>                                                                                           </files>
          </files>
       </package>
       <extension>
