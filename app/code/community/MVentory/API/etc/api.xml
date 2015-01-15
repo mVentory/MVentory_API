@@ -19,72 +19,81 @@
 <config>
   <api>
     <resources>
-      <mventory_tm_dataflow translate="title" module="mventory">
+      <mventory_dataflow_profile translate="title" module="mventory">
         <title>Dataflow API</title>
         <model>mventory/dataflow_api</model>
         <acl>mventory/dataflow</acl>
 
         <methods>
-          <getProfilesList translate="title" module="mventory">
+          <list translate="title" module="mventory">
             <title>Get a list of profiles</title>
             <acl>mventory/dataflow</acl>
-          </getProfilesList>
+            <method>getProfilesList</method>
+          </list>
 
-          <executeProfile translate="title" module="mventory">
+          <execute translate="title" module="mventory">
             <title>Execute a profile</title>
             <acl>mventory/dataflow</acl>
-          </executeProfile>
+            <method>executeProfile</method>
+          </execute>
         </methods>
-      </mventory_tm_dataflow>
+      </mventory_dataflow_profile>
 
-      <catalog_category>
-        <model>mventory/category_api</model>
+      <mventory_category translate="title" module="catalog">
+        <title>Category API</title>
         <acl>mventory/catalog/category</acl>
+        <model>mventory/category_api</model>
 
         <methods>
-          <treeActiveOnly translate="title" module="mventory">
+          <tree translate="title" module="mventory">
             <title>Retrieve a tree of active categories</title>
             <acl>mventory/catalog/category/active_tree</acl>
-          </treeActiveOnly>
+            <method>treeActiveOnly</method>
+          </tree>
         </methods>
-      </catalog_category>
+      </mventory_category>
 
-      <catalog_product>
+      <mventory_product>
         <model>mventory/product_api</model>
         <acl>mventory/catalog/product</acl>
 
         <methods>
-          <fullInfo translate="title" module="catalog">
+          <info translate="title" module="catalog">
             <title>Retrieve product</title>
             <acl>mventory/catalog/product/info</acl>
-          </fullInfo>
+            <method>fullInfo</method>
+          </info>
 
-          <limitedList translate="title" module="mventory">
+          <list translate="title" module="mventory">
             <title>Retrieve limited list of products</title>
-            <method>limitedList</method>
             <acl>mventory/catalog/product/info</acl>
-          </limitedList>
+            <method>limitedList</method>
+          </list>
 
-          <createAndReturnInfo translate="title" module="catalog">
+          <create translate="title" module="catalog">
             <title>Create new product</title>
             <acl>mventory/catalog/product/create</acl>
-          </createAndReturnInfo>
+            <method>createAndReturnInfo</method>
+          </create>
 
-          <duplicateAndReturnInfo translate="title" module="mventory">
+          <duplicate translate="title" module="mventory">
             <title>Duplicate product</title>
             <acl>mventory/catalog/product/create</acl>
-          </duplicateAndReturnInfo>
+            <method>duplicateAndReturnInfo</method>
+          </duplicate>
 
           <statistics translate="title" module="mventory">
             <title>Get info about new products, sales and stock</title>
             <acl>mventory/statistics</acl>
           </statistics>
 
-          <update>
+          <update translate="title" module="catalog">
+            <title>Update product</title>
             <acl>mventory/catalog/product/update</acl>
           </update>
 
-          <delete>
+          <delete translate="title" module="catalog">
+            <title>Delete product</title>
             <acl>mventory/catalog/product/delete</acl>
           </delete>
         </methods>
@@ -95,103 +104,90 @@
             <message>Can't link or update linked products.</message>
           </linking_problems>
         </faults>
-      </catalog_product>
+      </mventory_product>
 
-      <catalog_product_attribute>
+      <mventory_product_attribute>
         <model>mventory/product_attribute_api</model>
         <acl>mventory/catalog/product/attribute</acl>
 
         <methods>
-          <fullInfoList translate="title" module="mventory">
+          <list translate="title" module="mventory">
             <title>Retrieve attribute list with full info</title>
-            <method>fullInfoList</method>
             <acl>mventory/catalog/product/attribute/read</acl>
-          </fullInfoList>
+            <method>fullInfoList</method>
+          </list>
 
-          <addOptionAndReturnInfo translate="title" module="mventory">
+          <addOption translate="title" module="mventory">
             <title>Add option and return full info</title>
             <acl>mventory/catalog/product/attribute/option/add</acl>
-          </addOptionAndReturnInfo>
+            <method>addOptionAndReturnInfo</method>
+          </addOption>
         </methods>
-      </catalog_product_attribute>
+      </mventory_product_attribute>
 
-      <catalog_product_attribute_set>
+      <mventory_product_attribute_set>
         <model>mventory/product_attribute_set_api</model>
         <acl>mventory/catalog/product/attribute/set</acl>
 
         <methods>
-          <fullInfoList translate="title" module="mventory">
+          <list translate="title" module="mventory">
             <title>Retrieve product attribute sets with full info</title>
-            <method>fullInfoList</method>
             <acl>mventory/catalog/product/attribute/set/list</acl>
-          </fullInfoList>
+            <method>fullInfoList</method>
+          </list>
         </methods>
-      </catalog_product_attribute_set>
+      </mventory_product_attribute_set>
 
-      <catalog_product_attribute_media>
+      <mventory_product_attribute_media>
         <model>mventory/product_attribute_media_api</model>
         <acl>mventory/catalog/product/media</acl>
 
         <methods>
-          <createAndReturnInfo translate="title" module="mventory">
+          <create translate="title" module="mventory">
             <title>Upload new product image and return full info</title>
             <acl>mventory/catalog/product/media/create</acl>
-          </createAndReturnInfo>
+            <method>createAndReturnInfo</method>
+          </create>
 
-          <update>
+          <update translate="title" module="catalog">
+            <title>Update product image</title>
             <acl>mventory/catalog/product/media/update</acl>
           </update>
 
-          <!--
-            DEPRECATED
-
-            Original remove method for the old app versions.
-            Remove it after all customers will have updated their apps
-           -->
-          <remove>
-            <acl>mventory/catalog/product/media/remove</acl>
-          </remove>
-
-          <!--
-            Rename back to 'remove' when the app will be updated to support it
-            and after all customers will have updated their apps
-          -->
-          <removeAndReturnInfo translate="title" module="mventory">
+          <remove translate="title" module="mventory">
             <title>Upload new product image and return full info</title>
-            <method>remove_</method>
             <acl>mventory/catalog/product/media/remove</acl>
-          </removeAndReturnInfo>
+            <method>remove_</method>
+          </remove>
         </methods>
-      </catalog_product_attribute_media>
+      </mventory_product_attribute_media>
 
-      <cart>
+      <mventory_cart>
         <model>mventory/cart_api</model>
         <acl>mventory/cart</acl>
 
         <methods>
           <createOrderForProduct translate="title" module="mventory">
             <title>Create order for specified SKU</title>
-            <method>createOrderForProduct</method>
             <acl>mventory/cart/order</acl>
           </createOrderForProduct>
 
           <createOrderForMultipleProducts translate="title" module="mventory">
             <title>Create order for multiple products</title>
-            <method>createOrderForMultipleProducts</method>
             <acl>mventory/cart/order</acl>
           </createOrderForMultipleProducts>
 
-          <addToCart translate="title" module="mventory">
+          <addItem translate="title" module="mventory">
             <title>Add an item to cart</title>
+            <acl>mventory/cart</acl>
             <method>addToCart</method>
-            <acl>mventory/cart</acl>
-          </addToCart>
+          </addItem>
 
-          <getCart translate="title" module="mventory">
+          <info translate="title" module="mventory">
             <title>Get contents of the whole cart</title>
-            <method>getCart</method>
             <acl>mventory/cart</acl>
-          </getCart>
+            <method>getCart</method>
+          </info>
         </methods>
 
         <faults module="checkout">
@@ -243,36 +239,39 @@
             <message>No such transaction ID</message>
           </transaction_not_exists>
         </faults>
-      </cart>
+      </mventory_cart>
 
-      <sales_order>
+      <mventory_order>
         <model>mventory/order_api</model>
         <acl>mventory/sales/order</acl>
 
         <methods>
-          <listByStatus translate="title" module="mventory">
+          <list translate="title" module="mventory">
             <title>Retrieve list of orders by status and store</title>
             <acl>mventory/sales/order/info</acl>
-          </listByStatus>
+            <method>listByStatus</method>
+          </list>
 
-          <fullInfo translate="title" module="mventory">
+          <info translate="title" module="mventory">
             <title>Retrieve full order information</title>
             <acl>mventory/sales/order/info</acl>
-          </fullInfo>
+            <method>fullInfo</method>
+          </info>
         </methods>
-      </sales_order>
+      </mventory_order>
 
-      <sales_order_shipment>
+      <mventory_order_shipment>
         <model>mventory/order_shipment_api</model>
         <acl>mventory/sales/shipment</acl>
 
         <methods>
-          <createShipmentWithTracking translate="title" module="mventory">
+          <create translate="title" module="mventory">
             <title>Create shipment with tracking and retrieve full order information</title>
             <acl>mventory/sales/shipment/create_with_tracking</acl>
-          </createShipmentWithTracking>
+            <method>createShipmentWithTracking</method>
+          </create>
         </methods>
-      </sales_order_shipment>
+      </mventory_order_shipment>
     </resources>
 
     <acl>
