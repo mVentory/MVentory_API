@@ -20,6 +20,22 @@
 -->
 
 <layout>
+  <jquery>
+    <reference name="head">
+      <action method="addJs">
+        <script>jquery/jquery-min.js</script>
+      </action>
+    </reference>
+  </jquery>
+
+  <jquery_ui>
+    <reference name="head">
+      <action method="addJs">
+        <script>jquery/jquery-ui-custom-min.js</script>
+      </action>
+    </reference>
+  </jquery_ui>
+
   <adminhtml_catalog_product_attribute_edit>
     <reference name="attribute_edit_tabs">
       <block type="mventory/metadata" name="mventory.tab" as="mventory" template="mventory/metadata.phtml" />

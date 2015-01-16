@@ -208,6 +208,14 @@
         </args>
       </mventory>
     </routers>
+
+    <layout>
+      <updates>
+        <mventory>
+          <file>mventory.xml</file>
+        </mventory>
+      </updates>
+    </layout>
   </frontend>
 
   <adminhtml>
