@@ -262,6 +262,16 @@
             </copies>
           </fields>
         </qr>
+
+        <build_info>
+          <frontend_model>mventory/setting_buildinfo</frontend_model>
+
+          <show_in_default>1</show_in_default>
+          <show_in_website>1</show_in_website>
+          <show_in_store>1</show_in_store>
+          
+          <sort_order>100</sort_order>
+        </build_info>
       </groups>
     </mventory>
 
