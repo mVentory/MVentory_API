@@ -184,6 +184,10 @@
         </mventory>
       </types>
     </cache>
+
+    <psr0_namespaces>
+      <Dropbox />
+    </psr0_namespaces>
   </global>
 
   <admin>
@@ -310,6 +314,17 @@
         <apply_rules>0</apply_rules>
         <product_visiblity>1</product_visiblity>
       </api>
+
+      <image_clips>
+        <enable>0</enable>
+        <backup_folder>backup</backup_folder>
+        <exclude_new>1</exclude_new>
+        <auto_replace>1</auto_replace>
+        <log_file>var/log/imglog.csv</log_file>
+        <dropbox_path>/</dropbox_path>
+        <ideal_width>900</ideal_width>
+        <ideal_height>900</ideal_height>
+      </image_clips>
 
       <metadata>
         <!-- Empty string = Visible in all -->

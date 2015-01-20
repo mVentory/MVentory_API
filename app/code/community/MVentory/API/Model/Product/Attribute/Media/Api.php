@@ -12,7 +12,7 @@
  * See http://mventory.com/legal/licensing/ for other licensing options.
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -96,11 +96,58 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     //We don't use exclude feature
     $data['exclude'] = 0;
 
-    $file['content'] = base64_encode(
-      $this->_fixOrientation($name, $file['content'])
-    );
+    $content = $this->_fixOrientation($name, $file['content']);
+    $file['content'] = base64_encode($content);
 
-    $this->create($productId, $data, $storeId, $identifierType);
+    $isClipEnabled = Mage::getStoreConfig('mventory/image_clips/enable');
+
+    //Exclude image from frontend
+    if ($isClipEnabled
+        && Mage::getStoreConfig('mventory/image_clips/exclude_new'))
+      $data['exclude'] = '1';
+
+    $img = $this->create($productId, $data, $storeId, $identifierType);
+
+    if ($isClipEnabled) try {
+      $clipHelper = Mage::helper('mventory/imageclipper');
+      $ioAdapter = new Varien_Io_File();
+
+      $_img = basename($img);
+      $backupFolder = $clipHelper->getBackupFolder();
+
+      if ($backupFolder && file_exists($backupFolder)) {
+        $ioAdapter->open(array('path'=> $backupFolder));
+        $ioAdapter->write($_img, $content);
+      }
+
+      $md = Mage::helper('mventory/imageclipper')->uploadFileFromString(
+        $_img,
+        $content
+      );
+
+      if (!empty($md['bytes']))
+        $clipHelper->log(array(
+          'date' => $clipHelper->getCurrentDate(),
+          'time' => $clipHelper->getCurrentTime(),
+          'event' => 'image-upload',
+          'file' => $_img,
+          'sku' => $this
+            ->_initProduct($productId, $storeId,$identifierType)
+            ->getSku()
+        ));
+    } catch (Exception $e) {
+      Mage::logException($e);
+
+      $clipHelper->log(array(
+        'date' => $clipHelper->getCurrentDate(),
+        'time' => $clipHelper->getCurrentTime(),
+        'event' => 'image-upload-failed',
+        'file' => $_img,
+        'sku' => $this
+          ->_initProduct($productId, $storeId,$identifierType)
+          ->getSku()
+      ));
+    }
 
     $helper = Mage::helper('mventory/product_configurable');
     $productApi = Mage::getModel('mventory/product_api');
@@ -114,7 +161,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     //Set product's visibility to 'catalog and search' if product doesn't have
     //small image before addind the image and is not assigned to configurable
     //product
-    if (!$hasSmallImage && empty($cID))
+    if (!($hasSmallImage || $data['exclude']) && empty($cID))
       $productApi->update(
         $productId,
         array(
@@ -129,9 +176,9 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         $productId,
         $cID,
         $helper,
-        !$hasSmallImage
-          ? Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
-          : null
+        ($hasSmallImage || $data['exclude'])
+          ? null
+          : Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
       );
 
     return $productApi->fullInfo($productId, $identifierType);
@@ -287,6 +334,31 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         $helper,
         !$images ? $defVisibility : null
       );
+
+    $helper = Mage::helper('mventory/imageclipper');
+
+    if (Mage::getStoreConfig('mventory/image_clips/enable')) try {
+      $helper->deleteFromDropbox(basename($file));
+
+      if ($md['is_deleted'])
+        $helper->log(array(
+          'date' => $helper->getCurrentDate(),
+          'time' => $helper->getCurrentTime(),
+          'event' => 'image-delete',
+          'file' => $_img,
+          'sku' => $product->getSku()
+        ));
+    } catch (Exception $e) {
+      Mage::logException($e);
+
+      $helper->log(array(
+        'date' => $helper->getCurrentDate(),
+        'time' => $helper->getCurrentTime(),
+        'event' => 'image-delete-failed',
+        'file' => $_img,
+        'sku' => $product->getSku()
+      ));
+    }
 
     return $productApi->fullInfo($productId, $identifierType);
   }
