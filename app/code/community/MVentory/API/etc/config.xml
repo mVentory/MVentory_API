@@ -30,24 +30,6 @@
       <mventory>
         <class>MVentory_API_Block</class>
       </mventory>
-
-      <catalog>
-        <rewrite>
-          <product_view_tabs>MVentory_API_Block_Product_View_Tabs</product_view_tabs>
-        </rewrite>
-      </catalog>
-
-      <adminhtml>
-        <rewrite>
-          <dashboard_grids>MVentory_API_Block_Adminhtml_Dashboard_Grids</dashboard_grids>
-        </rewrite>
-      </adminhtml>
-
-      <page>
-        <rewrite>
-          <html_footer>MVentory_API_Block_Html_Footer</html_footer>
-        </rewrite>
-      </page>
     </blocks>
 
     <models>
@@ -80,18 +62,6 @@
           </additional_skus>
         </entities>
       </mventory_resources>
-
-      <catalog>
-        <rewrite>
-          <product_url>MVentory_API_Model_Product_Url</product_url>
-        </rewrite>
-      </catalog>
-
-      <core>
-        <rewrite>
-          <convert>MVentory_API_Model_Core_Convert</convert>
-        </rewrite>
-      </core>
     </models>
 
     <helpers>
