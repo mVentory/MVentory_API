@@ -71,8 +71,8 @@ Visit http://mventory.com for more info.</description>
             <max/>
          </max>
          <files>
-            <files>                                                                                          </files>
-            <files>                                                                                          </files>
+            <files></files>
+            <files></files>
          </files>
       </package>
       <extension>
