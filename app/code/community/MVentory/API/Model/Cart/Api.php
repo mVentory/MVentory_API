@@ -206,7 +206,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
     $result = $cartShipping->setShippingMethod($quoteId, $data, $storeId);
 
-    $cartPayment = Mage::getModel('checkout/cart_payment_api');
+    $cartPayment = Mage::getModel('mventory/cart_payment_api');
 
     if ($price == 0)
       $data = array('method' => 'free', 0 => null);
@@ -230,7 +230,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
     }
 
     //create shipment and invoice to complete order
-    $shipment = Mage::getModel('sales/order_shipment_api');
+    $shipment = Mage::getModel('mventory/order_shipment_api');
     $shipment->create($orderId);
 
     $invoice = Mage::getModel('sales/order_invoice_api');
@@ -297,7 +297,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
       }
 
     } else {
-        $this->_fault('invalid_params');
+        $this->_fault('data_invalid');
     }
 
     foreach ($productsToOrder as &$productData)
@@ -466,7 +466,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
     $result = $cartShipping->setShippingMethod($quoteId, $data, $storeId);
 
-    $cartPayment = Mage::getModel('checkout/cart_payment_api');
+    $cartPayment = Mage::getModel('mventory/cart_payment_api');
 
     $data = array('method' => 'mventory', 0 => null);
 
@@ -475,7 +475,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
     $orderId = $this->createOrder($quoteId, $storeId);
 
     //create shipment and invoice to complete order
-    $shipment = Mage::getModel('sales/order_shipment_api');
+    $shipment = Mage::getModel('mventory/order_shipment_api');
     $shipment->create($orderId);
 
     $invoice = Mage::getModel('sales/order_invoice_api');

@@ -125,7 +125,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $result = array_merge($result, $_result[0]);
 
     $productAttributeMedia
-      = Mage::getModel('catalog/product_attribute_media_api');
+      = Mage::getModel('mventory/product_attribute_media_api');
 
     $baseUrlPath = Mage_Core_Model_Store::XML_PATH_UNSECURE_BASE_URL;
 
@@ -337,7 +337,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     //Load images from the original product before duplicating
     //because the original one can be removed during duplication
     //if duplicated product is similar to it.
-    $images = Mage::getModel('catalog/product_attribute_media_api');
+    $images = Mage::getModel('mventory/product_attribute_media_api');
     $oldImages = $images->items($oldId);
 
     $subtractQty = (int) $subtractQty;
@@ -386,14 +386,14 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $file = $new[$n]['file'];
 
       if ($mode == 'none') {
-        $images->remove($newId, $file);
+        $images->remove_($newId, $file);
 
         continue;
       }
 
       if (!isset($old[$n]['types'])) {
         if ($mode == 'main')
-          $images->remove($newId, $file);
+          $images->remove_($newId, $file);
 
         continue;
       }
@@ -401,7 +401,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $types = $old[$n]['types'];
 
       if ($mode == 'main' && !in_array('image', $types)) {
-        $images->remove($newId, $file);
+        $images->remove_($newId, $file);
 
         continue;
       }
