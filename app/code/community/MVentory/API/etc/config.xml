@@ -364,8 +364,8 @@
         <sallowspecific>0</sallowspecific>
         <cutoff_cost>0</cutoff_cost>
         <model>mventory/carrier_dummyshipping</model>
-        <name>Dummy</name>
-        <title>Dummy Shipping</title>
+        <name>mVentory</name>
+        <title>mVentory Shipping</title>
         <specificerrmsg>This shipping method is currently unavailable. If you would like to ship using this shipping method, please contact us.</specificerrmsg>
       </dummyshipping>
 
