@@ -140,5 +140,5 @@ return array(
 //Example:
 //    array('json', array('name' => 'mongo', 'min' => '1.3.0', 'max' => '1.4.0'))
 'extensions'             => array(),
-'packages'               => array(array('name' => 'Mage_Core_Modules', 'channel' => 'community', 'min' => '1.8.0.0'))
+'packages'               => array()
 );
