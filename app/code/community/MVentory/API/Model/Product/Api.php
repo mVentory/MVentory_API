@@ -129,19 +129,26 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     $baseUrlPath = Mage_Core_Model_Store::XML_PATH_UNSECURE_BASE_URL;
 
-    $mediaPath = Mage::getStoreConfig($baseUrlPath, $storeId)
-                 . 'media/'
-                 . Mage::getSingleton('catalog/product_media_config')
-                     ->getBaseMediaUrlAddition();
+    $mediaConfig = Mage::getSingleton('catalog/product_media_config');
+
+    $baseMediaPath = $mediaConfig->getBaseMediaPath();
+    $baseMediaUrl = Mage::getStoreConfig($baseUrlPath, $storeId)
+                    . 'media/'
+                    . $mediaConfig->getBaseMediaUrlAddition();
 
     $images = $productAttributeMedia->items($productId, $storeId, 'id');
 
-    foreach ($images as &$image)
-      $image['url'] = $mediaPath . $image['file'];
+    foreach ($images as &$image) {
+      $_image = new Varien_Image($baseMediaPath . $image['file']);
+
+      $image['url'] = $baseMediaUrl . $image['file'];
+      $image['width'] = (string) $_image->getOriginalWidth();
+      $image['height'] = (string) $_image->getOriginalHeight();
+    }
 
     $result['images'] = $images;
 
-     $helper = Mage::helper('mventory/product_configurable');
+    $helper = Mage::helper('mventory/product_configurable');
 
     if ($siblingIds = $helper->getSiblingsIds($productId)) {
       $attrs = Mage::getModel('mventory/product_attribute_api')
