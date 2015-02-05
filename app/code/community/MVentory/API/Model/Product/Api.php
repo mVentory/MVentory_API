@@ -51,6 +51,8 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $productId = $identifierType;
       $identifierType = 'sku';
     }
+    else if ($identifierType)
+      $identifierType = strtolower(trim($identifierType));
 
     $helper = Mage::helper('mventory/product_attribute');
 
@@ -64,11 +66,36 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
                  ->getDefaultStore()
                  ->getId();
 
-    $_result = $this->info($productId, $storeId, null, 'id');
+    $product = $this->_getProduct($productId, $storeId, $identifierType);
 
     //Product's ID can be changed by '_getProduct()' function if original
     //product is configurable one
-    $productId = $_result['product_id'];
+    $productId = $product->getId();
+
+    $_result = array(
+      'product_id' => $productId,
+      'sku' => $product->getSku(),
+      'set' => $product->getAttributeSetId(),
+      'websites' => $product->getWebsiteIds()
+    );
+
+    $editableAttributes = $product
+      ->getTypeInstance(true)
+      ->getEditableAttributes($product);
+
+    foreach ($editableAttributes as $attribute) {
+      $code = $attribute->getAttributeCode();
+
+      if (isset($_result[$code]))
+        continue;
+
+      if (!$this->_isAllowedAttribute($attribute, $attributes))
+        continue;
+
+      $_result[$code] = $product->getData($code);
+    }
+
+    unset($editableAttributes, $attribute, $code);
 
     $result = array_intersect_key(
       $_result,
