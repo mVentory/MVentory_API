@@ -12,35 +12,35 @@
  * See http://mventory.com/legal/licensing/ for other licensing options.
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
 /**
- * Dummy shipping model
+ * Shipping model
  *
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
-class MVentory_API_Model_Carrier_Dummyshipping
+class MVentory_API_Model_Shipping
   extends Mage_Shipping_Model_Carrier_Abstract
   implements Mage_Shipping_Model_Carrier_Interface {
 
-  protected $_code = 'dummyshipping';
+  protected $_code = 'mventory';
   protected $_isFixed = true;
 
   public function collectRates (Mage_Shipping_Model_Rate_Request $request) {
     if (!((Mage::getSingleton('api/server')->getAdapter() != null
-           || Mage::registry('mventory_allow_dummyshipping'))
+           || Mage::registry('mventory_allow_shipping'))
           && $this->getConfigFlag('active')))
       return false;
 
     $method = Mage::getModel('shipping/rate_result_method');
 
-    $method->setCarrier('dummyshipping');
+    $method->setCarrier('mventory');
     $method->setCarrierTitle($this->getConfigData('title'));
 
-    $method->setMethod('dummyshipping');
+    $method->setMethod('mventory');
     $method->setMethodTitle($this->getConfigData('name'));
 
     $method->setPrice('0.00');
@@ -54,7 +54,7 @@ class MVentory_API_Model_Carrier_Dummyshipping
   }
 
   public function getAllowedMethods () {
-    return array('dummyshipping' => $this->getConfigData('name'));
+    return array('mventory' => $this->getConfigData('name'));
   }
 
 }

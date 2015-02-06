@@ -12,7 +12,7 @@
  * See http://mventory.com/legal/licensing/ for other licensing options.
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -202,7 +202,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
     $cartShipping = Mage::getModel('checkout/cart_shipping_api');
 
-    $data = 'dummyshipping_dummyshipping';
+    $data = 'mventory_mventory';
 
     $result = $cartShipping->setShippingMethod($quoteId, $data, $storeId);
 
@@ -211,7 +211,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
     if ($price == 0)
       $data = array('method' => 'free', 0 => null);
     else
-      $data = array('method' => 'dummy', 0 => null);
+      $data = array('method' => 'mventory', 0 => null);
 
     $result = $cartPayment->setPaymentMethod($quoteId, $data, $storeId);
 
@@ -462,13 +462,13 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
     $cartShipping = Mage::getModel('checkout/cart_shipping_api');
 
-    $data = 'dummyshipping_dummyshipping';
+    $data = 'mventory_mventory';
 
     $result = $cartShipping->setShippingMethod($quoteId, $data, $storeId);
 
     $cartPayment = Mage::getModel('checkout/cart_payment_api');
 
-    $data = array('method' => 'dummy', 0 => null);
+    $data = array('method' => 'mventory', 0 => null);
 
     $result = $cartPayment->setPaymentMethod($quoteId, $data, $storeId);
 
