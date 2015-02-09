@@ -24,7 +24,7 @@
   <tabs>
     <mventory translate="label" module="mventory">
       <label><![CDATA[<img id="mventory-logo" alt="mVentory" title="mVentory" src="https://s3-ap-southeast-2.amazonaws.com/mventory-logos/mVentory-logo.png">]]></label>
-      <sort_order>100</sort_order>
+      <sort_order>150</sort_order>
     </mventory>
   </tabs>
 
@@ -38,24 +38,26 @@
       <show_in_website>1</show_in_website>
       <show_in_store>0</show_in_store>
 
-      <sort_order>0</sort_order>
+      <sort_order>1</sort_order>
 
       <groups>
-        <api translate="label">
+        <api translate="label comment">
           <label>Phone API</label>
+          <comment><![CDATA[<b>WARNING:</b> Additional options require configuration at website level.]]></comment>
           <frontend_type>text</frontend_type>
 
           <show_in_default>1</show_in_default>
           <show_in_website>1</show_in_website>
           <show_in_store>0</show_in_store>
 
-          <sort_order>2</sort_order>
+          <sort_order>1</sort_order>
 
           <fields>
-            <products-number-to-fetch  translate="label comment">
-              <label>Number of products to fetch</label>
+            <products-number-to-fetch  translate="label comment tooltip">
+              <label>Number of products to display</label>
+              <comment>To appear in the Products screen in Android app</comment>
+              <tooltip>mVentory Android app shows a list of latest-modified products under the Products screen (accessed from the Home screen) for your convinience. The list will be limited to this number of products.</tooltip>
               <frontend_type>text</frontend_type>
-              <comment>To appear in the products screen in phone app</comment>
 
               <show_in_default>1</show_in_default>
               <show_in_website>1</show_in_website>
@@ -65,8 +67,8 @@
             </products-number-to-fetch>
 
             <tax_class translate="label comment">
-              <label>Default tax</label>
-              <comment>Default tax for products created via the phone app</comment>
+              <label>Default Tax Class</label>
+              <comment>This Tax Class will be assigned to all products created via the Android app</comment>
 
               <frontend_type>select</frontend_type>
               <source_model>tax/class_source_product</source_model>
@@ -75,24 +77,40 @@
               <show_in_website>1</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>3</sort_order>
+              <sort_order>2</sort_order>
             </tax_class>
 
-            <cart-item-lifetime translate="label comment">
-              <label>Cart item lifetime (minutes)</label>
-              <comment>Time before a product is removed from the phone app cart</comment>
+            <cart-item-lifetime translate="label comment tooltip">
+              <label>Android app cart lifetime (minutes)</label>
+              <comment>Time before the cart is emptied if unsold</comment>
+              <tooltip>Default value: 24h (1440 minutes).</tooltip>
               <frontend_type>text</frontend_type>
 
               <show_in_default>1</show_in_default>
               <show_in_website>0</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>4</sort_order>
+              <sort_order>3</sort_order>
             </cart-item-lifetime>
 
-            <app_profile_link_lifetime translate="label comment">
-              <label>Lifetime of the link to the app profile (minutes)</label>
+            <app_profile_link_lifetime translate="label comment tooltip">
+              <label>App profile configuration URL lifetime (minutes)</label>
               <comment>Lifetime of the app configuration link for new mVentory users</comment>
+              <tooltip><![CDATA[Adding a Magento customer as a new mVentory app (XML-RPC) user, or saving an existing user creates a URL that can be used for automatic configuration of the Android app access to Magento. Just e-mail it to the app user and get them to click on the link. If mVentory app is installed, it will be automatically configured. For security reason, the URL is only live for a limited time.<br /><br />
+              <b>Default value:</b> 24h (1440 minutes).]]></tooltip>
+              <frontend_type>text</frontend_type>
+
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>0</show_in_store>
+
+              <sort_order>4</sort_order>
+            </app_profile_link_lifetime>
+
+            <lost_category translate="label comment tooltip">
+              <label>Default category ID</label>
+              <comment>Category for products without matching category mapping rules</comment>
+              <tooltip>mVentory assigns products to categories using mapping rules based on attribute values. If a valid category ID is entered here, all products that do not match any mapping rules will be assigned to this category.</tooltip>
               <frontend_type>text</frontend_type>
 
               <show_in_default>1</show_in_default>
@@ -100,18 +118,6 @@
               <show_in_store>0</show_in_store>
 
               <sort_order>5</sort_order>
-            </app_profile_link_lifetime>
-
-            <lost_category translate="label comment">
-              <label>Default category ID</label>
-              <comment>Category for products without matching category mapping rules</comment>
-              <frontend_type>text</frontend_type>
-
-              <show_in_default>1</show_in_default>
-              <show_in_website>1</show_in_website>
-              <show_in_store>0</show_in_store>
-
-              <sort_order>6</sort_order>
             </lost_category>
 
             <product_visiblity translate="label comment">
@@ -124,7 +130,7 @@
               <show_in_website>1</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>7</sort_order>
+              <sort_order>6</sort_order>
             </product_visiblity>
 
             <root_website translate="label comment">
@@ -137,24 +143,26 @@
               <show_in_website>1</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>8</sort_order>
+              <sort_order>7</sort_order>
             </root_website>
 
-            <default_role translate="label comment">
-              <label>Default API role</label>
+            <default_role translate="label comment tooltip">
+              <label>Default XML-RPC API role</label>
               <comment>Default API role name for new mVentory API users</comment>
+              <tooltip>mVentory API extension creates "mVentory" XML-RPC role that gives access to all required resources (See System->Web Services->SOAP/XML-RPC - Roles). This role will be assigned to all new mVentory users by default, unless specified otherwise.</tooltip>
               <frontend_type>text</frontend_type>
 
               <show_in_default>1</show_in_default>
               <show_in_website>1</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>9</sort_order>
+              <sort_order>8</sort_order>
             </default_role>
 
-            <apply_rules translate="label comment">
-              <label>Apply mVentory API rules on product save in the admin interface</label>
+            <apply_rules translate="label comment tooltip">
+              <label>Apply mVentory API rules on product save in Magento admin interface</label>
               <comment>e.g. category mapping rules, automatic product naming rules</comment>
+              <tooltip>mVentory makes product management an easier process by automating a number of tasks (e.g. category assignment, product naming) via a rules-based approach. This automation is always performed when products are edited via the Android app, but it can be disabled for product editing via Magento admin.</tooltip>
               <frontend_type>select</frontend_type>
               <source_model>adminhtml/system_config_source_yesno</source_model>
 
@@ -162,20 +170,29 @@
               <show_in_website>1</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>10</sort_order>
+              <sort_order>9</sort_order>
             </apply_rules>
           </fields>
-          <comment><![CDATA[<B>WARNING:</B> Additional options require configuration at website level.]]></comment>
         </api>
 
         <qr translate="label">
           <label>Labels</label>
           <comment><![CDATA[
-            <a target="_blank" href="/mventory/qr/generate/labels/1">Generate labels</a><br />
-            <a target="_blank" href="/mventory/qr/generate/links/1">Generate links</a><br />
-            <a target="_blank" href="/mventory/qr/generate/links/1/codes/1">Generate links and codes</a><br />
-            <a target="_blank" href="/mventory/qr/generate/images/1">Generate image links</a><br />
-            <a target="_blank" href="/mventory/qr/generate/images/1/codes/1">Generate image links and codes</a><br />
+            <div style="width: 600px">
+              <p>Custom labels (QR codes with unique SKUs) can be generated and printed on self-adhesive sticker paper.
+              These can be attached to products that do not have barcodes to make their look-up really fast,
+              via the app's Scan function.</p>
+
+              <p>Configure the properties listed below, save config and click on one of the generate links.</p>
+
+              <ul>
+                <li><a target="_blank" href="/mventory/qr/generate/labels/1">Generate labels</a> &#8211; generate a set of QR codes with unique SKUs.</li>
+                <li><a target="_blank" href="/mventory/qr/generate/links/1">Generate links</a></li>
+                <li><a target="_blank" href="/mventory/qr/generate/links/1/codes/1">Generate links and codes</a></li>
+                <li><a target="_blank" href="/mventory/qr/generate/images/1">Generate image links</a></li>
+                <li><a target="_blank" href="/mventory/qr/generate/images/1/codes/1">Generate image links and codes</a></li>
+              </ul>
+            </div>
           ]]></comment>
           <frontend_type>text</frontend_type>
 
@@ -186,19 +203,20 @@
           <sort_order>4</sort_order>
 
           <fields>
-            <rows translate="label">
-              <label>Rows</label>
-              <frontend_type>text</frontend_type>
+            <options_heading translate="label">
+              <label>Options</label>
+              <frontend_model>adminhtml/system_config_form_field_heading</frontend_model>
 
               <show_in_default>1</show_in_default>
               <show_in_website>0</show_in_website>
               <show_in_store>0</show_in_store>
 
               <sort_order>1</sort_order>
-            </rows>
+            </options_heading>
 
-            <columns translate="label">
-              <label>Columns</label>
+            <rows translate="label comment">
+              <label>Rows</label>
+              <comment>The number of rows of labels to generate</comment>
               <frontend_type>text</frontend_type>
 
               <show_in_default>1</show_in_default>
@@ -206,10 +224,11 @@
               <show_in_store>0</show_in_store>
 
               <sort_order>2</sort_order>
-            </columns>
+            </rows>
 
-            <size translate="label">
-              <label>QR code size, px</label>
+            <columns translate="label comment">
+              <label>Columns</label>
+              <comment>The number of columns of labels to generate</comment>
               <frontend_type>text</frontend_type>
 
               <show_in_default>1</show_in_default>
@@ -217,10 +236,11 @@
               <show_in_store>0</show_in_store>
 
               <sort_order>3</sort_order>
-            </size>
+            </columns>
 
-            <pages translate="label">
-              <label>Number of pages</label>
+            <size translate="label comment">
+              <label>QR code dimensions (pixels)</label>
+              <comment>Dimensions of the generated QR code image in pixels</comment>
               <frontend_type>text</frontend_type>
 
               <show_in_default>1</show_in_default>
@@ -228,6 +248,18 @@
               <show_in_store>0</show_in_store>
 
               <sort_order>4</sort_order>
+            </size>
+
+            <pages translate="label comment">
+              <label>Number of pages</label>
+              <comment>Number of pages of labels to generate</comment>
+              <frontend_type>text</frontend_type>
+
+              <show_in_default>1</show_in_default>
+              <show_in_website>0</show_in_website>
+              <show_in_store>0</show_in_store>
+
+              <sort_order>5</sort_order>
             </pages>
 
             <css translate="label">
@@ -238,22 +270,12 @@
               <show_in_website>0</show_in_website>
               <show_in_store>0</show_in_store>
 
-              <sort_order>5</sort_order>
+              <sort_order>6</sort_order>
             </css>
 
-            <base_url translate="label">
+            <base_url translate="label comment">
               <label>Base URL (optional)</label>
-              <frontend_type>text</frontend_type>
-
-              <show_in_default>1</show_in_default>
-              <show_in_website>0</show_in_website>
-              <show_in_store>0</show_in_store>
-
-              <sort_order>6</sort_order>
-            </base_url>
-
-            <copies translate="label">
-              <label>Copies per code</label>
+              <comment>If not entered, unsecure Base URL will be used</comment>
               <frontend_type>text</frontend_type>
 
               <show_in_default>1</show_in_default>
@@ -261,6 +283,18 @@
               <show_in_store>0</show_in_store>
 
               <sort_order>7</sort_order>
+            </base_url>
+
+            <copies translate="label comment">
+              <label>Copies per SKU</label>
+              <comment>Number of duplicate labels to generate per SKU</comment>
+              <frontend_type>text</frontend_type>
+
+              <show_in_default>1</show_in_default>
+              <show_in_website>0</show_in_website>
+              <show_in_store>0</show_in_store>
+
+              <sort_order>8</sort_order>
             </copies>
           </fields>
         </qr>
