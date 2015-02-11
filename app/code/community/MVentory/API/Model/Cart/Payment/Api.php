@@ -43,7 +43,7 @@ class MVentory_API_Model_Cart_Payment_Api
       if ($isVirtual)
         $this->_fault('billing_address_is_not_set');
       else
-        $this->_fault('shipping_address_is_not_set');
+        $this->_fault('payment_shipping_address_is_not_set');
 
     $address->setPaymentMethod(
       isset($paymentData['method']) ? $paymentData['method'] : null

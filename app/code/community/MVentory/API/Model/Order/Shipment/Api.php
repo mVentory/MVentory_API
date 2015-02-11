@@ -57,4 +57,99 @@ class MVentory_API_Model_Order_Shipment_Api extends Mage_Sales_Model_Order_Shipm
 
     return $orderApi->fullInfo($orderIncrementId);
   }
+
+  /**
+   * Add tracking number to order
+   *
+   * This method is redefined to replace not_exists fault
+   * with shipment_not_exists to avoid conflicts with similar faults from other
+   * modules
+   *
+   * @param string $shipmentIncrementId
+   * @param string $carrier
+   * @param string $title
+   * @param string $trackNumber
+   * @return int
+   */
+  public function addTrack ($shipmentIncrementId,
+                            $carrier,
+                            $title,
+                            $trackNumber) {
+
+    $shipment = Mage::getModel('sales/order_shipment')->loadByIncrementId(
+      $shipmentIncrementId
+    );
+
+    if (!$shipment->getId())
+      $this->_fault('shipment_not_exists');
+
+    $carriers = $this->_getCarriers($shipment);
+
+    if (!isset($carriers[$carrier]))
+      $this->_fault(
+        'data_invalid',
+        Mage::helper('sales')->__('Invalid carrier specified.')
+      );
+
+    $track = Mage::getModel('sales/order_shipment_track')
+      ->setNumber($trackNumber)
+      ->setCarrierCode($carrier)
+      ->setTitle($title);
+
+    $shipment->addTrack($track);
+
+    try {
+      $shipment->save();
+      $track->save();
+    }
+    catch (Mage_Core_Exception $e) {
+      $this->_fault('data_invalid', $e->getMessage());
+    }
+
+    return $track->getId();
+  }
+
+  /**
+   * Retrieve shipment information
+   *
+   * This method is redefined to replace not_exists fault
+   * with shipment_not_exists to avoid conflicts with similar faults from other
+   * modules
+   *
+   * @param string $shipmentIncrementId
+   *   Increment ID of a shipment
+   *
+   * @return array
+   *   Shipment data
+   */
+  public function info ($shipmentIncrementId) {
+    $shipment = Mage::getModel('sales/order_shipment')->loadByIncrementId(
+      $shipmentIncrementId
+    );
+
+    if (!$shipment->getId())
+      $this->_fault('shipment_not_exists');
+
+    $result = $this->_getAttributes($shipment, 'shipment');
+
+    $result['items'] = array();
+
+    foreach ($shipment->getAllItems() as $item)
+      $result['items'][] = $this->_getAttributes($item, 'shipment_item');
+
+    $result['tracks'] = array();
+
+    foreach ($shipment->getAllTracks() as $track)
+      $result['tracks'][] = $this->_getAttributes($track, 'shipment_track');
+
+    $result['comments'] = array();
+
+    foreach ($shipment->getCommentsCollection() as $comment)
+      $result['comments'][] = $this->_getAttributes(
+        $comment,
+        'shipment_comment'
+      );
+
+    return $result;
+  }
 }

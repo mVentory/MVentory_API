@@ -94,9 +94,15 @@ class MVentory_API_Model_Order_Api extends Mage_Sales_Model_Order_Api {
 
     $creditMemos = $creditMemoApi->items(array('order_id' => $orderId));
 
-    foreach ($creditMemos as $creditMemo)
-      $order['credit_memos'][]
-        = $creditMemoApi->info($creditMemo['increment_id']);
+    try {
+      foreach ($creditMemos as $creditMemo)
+        $order['credit_memos'][] = $creditMemoApi->info(
+          $creditMemo['increment_id']
+        );
+    }
+    catch (Mage_Api_Exception $e) {
+      throw new Mage_Api_Exception('creditmemo_not_exists');
+    }
 
     unset($creditMemos);
 
@@ -108,9 +114,13 @@ class MVentory_API_Model_Order_Api extends Mage_Sales_Model_Order_Api {
 
     $invoices = $invoiceApi->items(array('order_id' => $orderId));
 
-    foreach ($invoices as $invoice)
-      $order['invoices'][]
-        = $invoiceApi->info($invoice['increment_id']);
+    try {
+      foreach ($invoices as $invoice)
+        $order['invoices'][] = $invoiceApi->info($invoice['increment_id']);
+    }
+    catch (Mage_Api_Exception $e) {
+      throw new Mage_Api_Exception('invoice_not_exists');
+    }
 
     unset($invoices);
 
@@ -118,7 +128,7 @@ class MVentory_API_Model_Order_Api extends Mage_Sales_Model_Order_Api {
 
     $order['shipments'] = array();
 
-    $shipmentApi = Mage::getModel('sales/order_shipment_api');
+    $shipmentApi = Mage::getModel('mventory/order_shipment_api');
 
     $shipments = $shipmentApi->items(array('order_id' => $orderId));
 
@@ -129,5 +139,29 @@ class MVentory_API_Model_Order_Api extends Mage_Sales_Model_Order_Api {
     unset($shipments);
 
     return Mage::helper('mventory')->prepareApiResponse($order);
+  }
+
+  /**
+   * Initialise basic order model
+   *
+   * This method is redefined to replace not_exists fault
+   * with order_not_exists to avoid conflicts with similar faults from other
+   * modules
+   *
+   * @param mixed $orderIncrementId
+   *   Increment ID of an order
+   *
+   * @return Mage_Sales_Model_Order
+   *   Instance of an order model
+   */
+  protected function _initOrder ($orderIncrementId) {
+    $order = Mage::getModel('sales/order')->loadByIncrementId(
+      $orderIncrementId
+    );
+
+    if (!$order->getId())
+      $this->_fault('order_not_exists');
+
+    return $order;
   }
 }
