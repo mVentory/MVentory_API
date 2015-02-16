@@ -89,7 +89,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       if (isset($_result[$code]))
         continue;
 
-      if (!$this->_isAllowedAttribute($attribute, $attributes))
+      if (!$this->_isAllowedAttribute($attribute))
         continue;
 
       $_result[$code] = $product->getData($code);
