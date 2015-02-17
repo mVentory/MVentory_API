@@ -24,7 +24,7 @@ Download the app from Google Play (https://play.google.com/) or find out more on
 
 Configuration
 
-You need to configure user access and product attributes. Read a step by step guide (https://github.com/mVentory/MVentory_Tm) or contact our support on info@mventory.com
+You need to configure user access and product attributes. Read a step by step guide (http://www.mventory.com/installation) or contact our support on info@mventory.com
 
 License
 
@@ -34,9 +34,13 @@ The extension is free for non-commercial or trial use. Please, request a FREE co
 Visit http://mventory.com for more info.</description>
    <license>CC BY-NC-ND 4.0</license>
    <license_uri>http://creativecommons.org/licenses/by-nc-nd/4.0/</license_uri>
-   <version>1.2.0</version>
+   <version>1.4.0</version>
    <stability>devel</stability>
-   <notes>* Move all API calls into separate namespace to avoid possible conflicts with other extensions</notes>
+   <notes>* Added use of SKU attribute when searching product by barcode
+* Support for multicategories in category matching editor
+* Category matching editor improvements (better help and error messages)
+* Dropped functionality for sorting attributes in catalog filter, functionality for better product details on frontend
+* Other small improvements and bug fixes</notes>
    <authors>
       <name>
          <name>Anatoly A. Kazantsev</name>

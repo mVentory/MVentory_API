@@ -1,9 +1,9 @@
 <?php
 
-$version = '1.3.0';
+$version = '1.4.0';
 
 $notes = <<<EOT
-* Use also SKU attribute when searching product by barcode
+* Added use of SKU attribute when searching product by barcode
 
 * Support for multicategories in category matching editor
 
@@ -51,7 +51,7 @@ Configuration
 
 
 
-You need to configure user access and product attributes. Read a step by step guide (https://github.com/mVentory/MVentory_Tm) or contact our support on info@mventory.com
+You need to configure user access and product attributes. Read a step by step guide (http://www.mventory.com/installation) or contact our support on info@mventory.com
 
 
 
