@@ -4,12 +4,14 @@
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Creative Commons License BY-NC-ND.
- * NonCommercial — You may not use the material for commercial purposes.
- * NoDerivatives — If you remix, transform, or build upon the material,
- * you may not distribute the modified material.
- * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * By Attribution (BY) - You can share this file unchanged, including
+ * this copyright statement.
+ * Non-Commercial (NC) - You can use this file for non-commercial activities.
+ * A commercial license can be purchased separately from mventory.com.
+ * No Derivatives (ND) - You can make changes to this file for your own use,
+ * but you cannot share or redistribute the changes.  
  *
- * See http://mventory.com/legal/licensing/ for other licensing options.
+ * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
  * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
@@ -29,40 +31,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
   const CONF_TYPE = Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE;
 
-  protected $_excludeFromProduct = array(
-    'type' => true,
-    'type_id' => true,
-    'old_id' => true,
-    'news_from_date' => true,
-    'news_to_date' => true,
-    'country_of_manufacture' => true,
-    'categories' => true,
-    'required_options' => true,
-    'has_options' => true,
-    'image_label' => true,
-    'small_image_label' => true,
-    'thumbnail_label' => true,
-    'group_price' => true,
-    'tier_price' => true,
-    'msrp_enabled' => true,
-    'minimal_price' => true,
-    'msrp_display_actual_price_type' => true,
-    'msrp' => true,
-    'enable_googlecheckout' => true,
-    'meta_title' => true,
-    'meta_keyword' => true,
-    'meta_description' => true,
-    'is_recurring' => true,
-    'recurring_profile' => true,
-    'custom_design' => true,
-    'custom_design_from' => true,
-    'custom_design_to' => true,
-    'custom_layout_update' => true,
-    'page_layout' => true,
-    'options_container' => true,
-    'gift_message_available' => true,
-    'url_key' => true,
-    'visibility' => true
+  protected $_allowUpdate = array(
+    //!!!TODO: remove it after the app will treat status as normal attribute
+    //         Add to whitelist in MVentory_API_Helper_Product_Attribute
+    'status' => true,
+
+    'stock_data' => true
   );
 
   public function fullInfo ($productId,
@@ -79,8 +53,10 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $productId = $identifierType;
       $identifierType = 'sku';
     }
+    else if ($identifierType)
+      $identifierType = strtolower(trim($identifierType));
 
-    $helper = Mage::helper('mventory/product');
+    $helper = Mage::helper('mventory/product_attribute');
 
     $productId = $helper->getProductId($productId, $identifierType);
 
@@ -92,18 +68,57 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
                  ->getDefaultStore()
                  ->getId();
 
-    $_result = $this->info($productId, $storeId, null, 'id');
+    $product = $this->_getProduct($productId, $storeId, $identifierType);
 
     //Product's ID can be changed by '_getProduct()' function if original
     //product is configurable one
-    $productId = $_result['product_id'];
+    $productId = $product->getId();
 
-    foreach ($_result as $key => $value) {
-      if (isset($this->_excludeFromProduct[$key]))
+    $_result = array(
+      'product_id' => $productId,
+      'sku' => $product->getSku(),
+      'set' => $product->getAttributeSetId(),
+      'websites' => $product->getWebsiteIds(),
+      'category_ids' => $product->getCategoryIds()
+    );
+
+    $editableAttributes = $product
+      ->getTypeInstance(true)
+      ->getEditableAttributes($product);
+
+    foreach ($editableAttributes as $attribute) {
+      $code = $attribute->getAttributeCode();
+
+      if (isset($_result[$code]))
         continue;
 
-      $result[$key] = $value;
+      if (!$this->_isAllowedAttribute($attribute))
+        continue;
+
+      $_result[$code] = $product->getData($code);
     }
+
+    unset($editableAttributes, $attribute, $code);
+
+    $result = array_intersect_key(
+      $_result,
+      array_merge(
+        array(
+          'product_id' => true,
+          'set' => true,
+          'websites' => true,
+          'url_path' => true,
+          'status' => true,
+          'category_ids' => true,
+          'mv_created_date' => true,
+          'mv_created_userid' => true,
+          'mv_stock_journal' => true,
+          'created_at' => true,
+          'updated_at' => true
+        ),
+        $helper->getEditables($_result['set'])
+      )
+    );
 
     $stockItem = Mage::getModel('mventory/stock_item_api');
 
@@ -113,23 +128,30 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $result = array_merge($result, $_result[0]);
 
     $productAttributeMedia
-      = Mage::getModel('catalog/product_attribute_media_api');
+      = Mage::getModel('mventory/product_attribute_media_api');
 
     $baseUrlPath = Mage_Core_Model_Store::XML_PATH_UNSECURE_BASE_URL;
 
-    $mediaPath = Mage::getStoreConfig($baseUrlPath, $storeId)
-                 . 'media/'
-                 . Mage::getSingleton('catalog/product_media_config')
-                     ->getBaseMediaUrlAddition();
+    $mediaConfig = Mage::getSingleton('catalog/product_media_config');
+
+    $baseMediaPath = $mediaConfig->getBaseMediaPath();
+    $baseMediaUrl = Mage::getStoreConfig($baseUrlPath, $storeId)
+                    . 'media/'
+                    . $mediaConfig->getBaseMediaUrlAddition();
 
     $images = $productAttributeMedia->items($productId, $storeId, 'id');
 
-    foreach ($images as &$image)
-      $image['url'] = $mediaPath . $image['file'];
+    foreach ($images as &$image) {
+      $_image = new Varien_Image($baseMediaPath . $image['file']);
+
+      $image['url'] = $baseMediaUrl . $image['file'];
+      $image['width'] = (string) $_image->getOriginalWidth();
+      $image['height'] = (string) $_image->getOriginalHeight();
+    }
 
     $result['images'] = $images;
 
-     $helper = Mage::helper('mventory/product_configurable');
+    $helper = Mage::helper('mventory/product_configurable');
 
     if ($siblingIds = $helper->getSiblingsIds($productId)) {
       $attrs = Mage::getModel('mventory/product_attribute_api')
@@ -247,6 +269,17 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
                        ->getId();
 
     if (!$hasProduct) {
+      $sid = isset($data['_api_link_with_product'])
+               ? $data['_api_link_with_product']
+                 : false;
+
+      $data = $this->_filterData($data, $set);
+
+      //Set status to Enabled if it's not set, because Magento doesn't show
+      //newly created product in the admin interface if it's omitted
+      if (!isset($data['status']))
+        $data['status'] = 1;
+
       $data['mv_created_userid'] = $helper->getApiUser()->getId();
       $data['mv_created_date'] = time();
       $data['website_ids'] = $helper->getWebsitesForProduct();
@@ -254,10 +287,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $website = $helper->getCurrentWebsite();
 
       //Set visibility to website's default value
-      $data['visibility'] = (int) $helper->getConfig(
-        MVentory_API_Model_Config::_API_VISIBILITY,
-        $website
-      );
+      $data['visibility'] = $helper->getDefaultVisibility($website);
 
       $data['tax_class_id'] = (int) $helper->getConfig(
         MVentory_API_Model_Config::_TAX_CLASS,
@@ -283,14 +313,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       //!!!TODO: consider to move it before creating product
       $saveProduct = $this->_matchCategory($product);
 
-      $saveProduct |= isset($data['_api_link_with_product'])
-                      && ($sid = $data['_api_link_with_product'])
+      $saveProduct |= $sid
                       && ($sid = $helper->getProductId($sid))
                       && $helper->link($product, $sid);
 
       if ($saveProduct)
         $product->save();
-
     } else if (isset($data['_api_update_if_exists'])
               && $data['_api_update_if_exists']) {
 
@@ -319,7 +347,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     //Load images from the original product before duplicating
     //because the original one can be removed during duplication
     //if duplicated product is similar to it.
-    $images = Mage::getModel('catalog/product_attribute_media_api');
+    $images = Mage::getModel('mventory/product_attribute_media_api');
     $oldImages = $images->items($oldId);
 
     $subtractQty = (int) $subtractQty;
@@ -335,6 +363,8 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
       unset($stock);
     }
+
+    $data = $this->_filterData($data, $old->getAttributeSetId());
 
     if (!isset($data['sku']))
       $data['sku'] = $newSku;
@@ -366,14 +396,14 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $file = $new[$n]['file'];
 
       if ($mode == 'none') {
-        $images->remove($newId, $file);
+        $images->remove_($newId, $file);
 
         continue;
       }
 
       if (!isset($old[$n]['types'])) {
         if ($mode == 'main')
-          $images->remove($newId, $file);
+          $images->remove_($newId, $file);
 
         continue;
       }
@@ -381,7 +411,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $types = $old[$n]['types'];
 
       if ($mode == 'main' && !in_array('image', $types)) {
-        $images->remove($newId, $file);
+        $images->remove_($newId, $file);
 
         continue;
       }
@@ -602,6 +632,15 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     if ($skus)
       unset($productData['stock_data']);
 
+    $sid = isset($productData['_api_link_with_product'])
+             ? $productData['_api_link_with_product']
+               : false;
+
+    $productData = $this->_filterData(
+      $productData,
+      $product->getAttributeSetId()
+    );
+
     $this->_prepareDataForSave($product, $productData);
 
     if (isset($removeOldValues) && $removeOldValues)
@@ -609,12 +648,10 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     $this->_matchCategory($product);
 
-    if (isset($productData['_api_link_with_product'])
-        && $sibling = $productData['_api_link_with_product']) {
-
+    if ($sid) {
       $helper = Mage::helper('mventory/product_configurable');
 
-      if ($sid = $helper->getProductId($sibling)) try {
+      if ($sid = $helper->getProductId($sid)) try {
         $helper->link($product, $sid);
       } catch (Exception $e) {
         $this->_fault('linking_problems', $e->getMessage());
@@ -758,11 +795,24 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
   protected function _matchCategory ($product) {
     $result = Mage::getModel('mventory/matching')->matchCategory($product);
 
-    if ($result === false)
+    if (!$result)
       return;
 
-    $product->setCategoryIds((string) $result);
+    $product->setCategoryIds($result);
 
     return true;
+  }
+
+  protected function _filterData ($data, $setId) {
+    if (!$data)
+      return $data;
+
+    return array_intersect_key(
+      $data,
+      array_merge(
+        Mage::helper('mventory/product_attribute')->getWritables($setId),
+        $this->_allowUpdate
+      )
+    );
   }
 }

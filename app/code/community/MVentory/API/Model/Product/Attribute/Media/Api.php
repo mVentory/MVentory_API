@@ -4,15 +4,17 @@
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Creative Commons License BY-NC-ND.
- * NonCommercial — You may not use the material for commercial purposes.
- * NoDerivatives — If you remix, transform, or build upon the material,
- * you may not distribute the modified material.
+ * By Attribution (BY) - You can share this file unchanged, including
+ * this copyright statement.
+ * Non-Commercial (NC) - You can use this file for non-commercial activities.
+ * A commercial license can be purchased separately from mventory.com.
+ * No Derivatives (ND) - You can make changes to this file for your own use,
+ * but you cannot share or redistribute the changes.  
+ *
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
- * See http://mventory.com/legal/licensing/ for other licensing options.
- *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -96,17 +98,72 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     //We don't use exclude feature
     $data['exclude'] = 0;
 
-    $file['content'] = base64_encode(
-      $this->_fixOrientation($name, $file['content'])
-    );
+    $content = $this->_fixOrientation($name, $file['content']);
+    $file['content'] = base64_encode($content);
 
-    $this->create($productId, $data, $storeId, $identifierType);
+    $isClipEnabled = Mage::getStoreConfig('mventory/image_clips/enable');
 
+    //Exclude image from frontend
+    if ($isClipEnabled
+        && Mage::getStoreConfig('mventory/image_clips/exclude_new'))
+      $data['exclude'] = '1';
+
+    $img = $this->create($productId, $data, $storeId, $identifierType);
+
+    if ($isClipEnabled) try {
+      $clipHelper = Mage::helper('mventory/imageclipper');
+      $ioAdapter = new Varien_Io_File();
+
+      $_img = basename($img);
+      $backupFolder = $clipHelper->getBackupFolder();
+
+      if ($backupFolder && file_exists($backupFolder)) {
+        $ioAdapter->open(array('path'=> $backupFolder));
+        $ioAdapter->write($_img, $content);
+      }
+
+      $md = Mage::helper('mventory/imageclipper')->uploadFileFromString(
+        $_img,
+        $content
+      );
+
+      if (!empty($md['bytes']))
+        $clipHelper->log(array(
+          'date' => $clipHelper->getCurrentDate(),
+          'time' => $clipHelper->getCurrentTime(),
+          'event' => 'image-upload',
+          'file' => $_img,
+          'sku' => $this
+            ->_initProduct($productId, $storeId,$identifierType)
+            ->getSku()
+        ));
+    } catch (Exception $e) {
+      Mage::logException($e);
+
+      $clipHelper->log(array(
+        'date' => $clipHelper->getCurrentDate(),
+        'time' => $clipHelper->getCurrentTime(),
+        'event' => 'image-upload-failed',
+        'file' => $_img,
+        'sku' => $this
+          ->_initProduct($productId, $storeId,$identifierType)
+          ->getSku()
+      ));
+    }
+
+    $helper = Mage::helper('mventory/product_configurable');
     $productApi = Mage::getModel('mventory/product_api');
 
+    /**
+     * @todo Move getting of product ID into beginning of the function
+     */
+    if (($productId = $helper->getProductId($productId, $identifierType)))
+      $cID = $helper->getIdByChild($productId);
+
     //Set product's visibility to 'catalog and search' if product doesn't have
-    //small image before addind the image
-    if (!$hasSmallImage)
+    //small image before addind the image and is not assigned to configurable
+    //product
+    if (!($hasSmallImage || $data['exclude']) && empty($cID))
       $productApi->update(
         $productId,
         array(
@@ -116,11 +173,15 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         $identifierType
       );
 
-    $helper = Mage::helper('mventory/product_configurable');
-
-    if (($productId = $helper->getProductId($productId, $identifierType))
-        && $cID = $helper->getIdByChild($productId))
-      $this->_sync($productId, $cID, $helper);
+    if (!empty($cID))
+      $this->_sync(
+        $productId,
+        $cID,
+        $helper,
+        ($hasSmallImage || $data['exclude'])
+          ? null
+          : Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
+      );
 
     return $productApi->fullInfo($productId, $identifierType);
   }
@@ -148,7 +209,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
       ->getBackend();
 
     if (!$backend->getImage($product, $file))
-      $this->_fault('not_exists');
+      $this->_fault('image_not_exists');
 
     if (isset($data['file']['mime']) && isset($data['file']['content'])) {
       if (!isset($this->_mimeTypes[$data['file']['mime']]))
@@ -221,7 +282,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     try {
       $product->save();
     } catch (Mage_Core_Exception $e) {
-      $this->_fault('not_updated', $e->getMessage());
+      $this->_fault('image_not_updated', $e->getMessage());
     }
 
     return true;
@@ -230,24 +291,41 @@ class MVentory_API_Model_Product_Attribute_Media_Api
   public function remove_ ($productId, $file, $identifierType = null) {
     $image = $this->info($productId, $file, null, $identifierType);
 
-    $this->remove($productId, $file, $identifierType);
+    $product = $this->_initProduct($productId, null, $identifierType);
+    $gallery = $this->_getGalleryAttribute($product);
+
+    if (!$gallery->getBackend()->getImage($product, $file))
+      $this->_fault('image_not_exists');
+
+    $gallery->getBackend()->removeImage($product, $file);
+
+    try {
+      $product->save();
+    } catch (Mage_Core_Exception $e) {
+      $this->_fault('not_removed', $e->getMessage());
+    }
+
     $images = $this->items($productId, null, $identifierType);
 
     $helper = Mage::helper('mventory/product_configurable');
 
+    /**
+     * @todo Move getting of product ID into beginning of the function
+     */
     if (($productId = $helper->getProductId($productId, $identifierType)))
       $cID = $helper->getIdByChild($productId);
 
     $productApi = Mage::getModel('mventory/product_api');
 
     if (!$images) {
+      $defVisibility = $helper->getDefaultVisibility(
+        $helper->getWebsite($productId)
+      );
+
       if (!(isset($cID) && $cID))
         $productApi->update(
           $productId,
-          array('visibility' => (int) $helper->getConfig(
-            MVentory_API_Model_Config::_API_VISIBILITY,
-            $helper->getWebsite($productId)
-          )),
+          array('visibility' => $defVisibility),
           null,
           $identifierType
         );
@@ -265,9 +343,75 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     }
 
     if (isset($cID) && $cID)
-      $this->_sync($productId, $cID, $helper);
+      $this->_sync(
+        $productId,
+        $cID,
+        $helper,
+        !$images ? $defVisibility : null
+      );
+
+    $helper = Mage::helper('mventory/imageclipper');
+
+    if (Mage::getStoreConfig('mventory/image_clips/enable')) try {
+      $helper->deleteFromDropbox(basename($file));
+
+      if ($md['is_deleted'])
+        $helper->log(array(
+          'date' => $helper->getCurrentDate(),
+          'time' => $helper->getCurrentTime(),
+          'event' => 'image-delete',
+          'file' => $_img,
+          'sku' => $product->getSku()
+        ));
+    } catch (Exception $e) {
+      Mage::logException($e);
+
+      $helper->log(array(
+        'date' => $helper->getCurrentDate(),
+        'time' => $helper->getCurrentTime(),
+        'event' => 'image-delete-failed',
+        'file' => $_img,
+        'sku' => $product->getSku()
+      ));
+    }
 
     return $productApi->fullInfo($productId, $identifierType);
+  }
+
+  /**
+   * Retrieve image data
+   *
+   * This method is redefined to replace not_exists fault
+   * with image_not_exists to avoid conflicts with similar faults from other
+   * modules
+   *
+   * @param int|string $productId
+   *   ID or SKU of a product
+   *
+   * @param string $file
+   *   Name of image file
+   *
+   * @param string|int $store
+   *   ID or Code of a store
+   *
+   * @param string $identifierType
+   *   Type of $productId parameter
+   *
+   * @return array
+   *   Image data
+   */
+  public function info ($productId,
+                        $file,
+                        $store = null,
+                        $identifierType = null) {
+
+    $product = $this->_initProduct($productId, $store, $identifierType);
+    $gallery = $this->_getGalleryAttribute($product);
+
+    if (!$image = $gallery->getBackend()->getImage($product, $file))
+      $this->_fault('image_not_exists');
+
+    return $this->_imageToArray($image, $product);
   }
 
   /**
@@ -326,19 +470,20 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     return $data;
   }
 
-  protected function _sync ($aID, $cID, $helper) {
-    Mage::log('_sync()');
+  protected function _sync ($aID, $cID, $helper, $visibility = null) {
+    $store = $helper
+      ->getCurrentWebsite()
+      ->getDefaultStore();
 
     $ids = $helper->getChildrenIds($cID);
 
-    //Add ID of configurable (C) product to load it; unset ID of currently
-    //updating product because it's been already loaded above
+    //Add ID of configurable (C) product to load it
     $ids[$cID] = $cID;
 
     $prods = Mage::getResourceModel('catalog/product_collection')
       ->addAttributeToSelect('*')
       ->addIdFilter($ids)
-      ->addStoreFilter($helper->getCurrentWebsite()->getDefaultStore())
+      ->addStoreFilter($store)
       ->getItems();
 
     $a = $prods[$aID];
@@ -346,5 +491,19 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     unset($prods[$aID], $prods[$cID]);
 
     Mage::helper('mventory/image')->sync($a, $c, $prods);
+
+    if ($visibility !== null) {
+
+      //Update only configurable product if type of visibility is both, because
+      //we don't show children of configurable product when it's fully visible
+      if ($visibility == Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH)
+        $ids = array($cID);
+
+      Mage::getResourceSingleton('catalog/product_action')->updateAttributes(
+        $ids,
+        array('visibility' => $visibility),
+        $store->getId()
+      );
+    }
   }
 }

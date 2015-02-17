@@ -4,15 +4,17 @@
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Creative Commons License BY-NC-ND.
- * NonCommercial — You may not use the material for commercial purposes.
- * NoDerivatives — If you remix, transform, or build upon the material,
- * you may not distribute the modified material.
+ * By Attribution (BY) - You can share this file unchanged, including
+ * this copyright statement.
+ * Non-Commercial (NC) - You can use this file for non-commercial activities.
+ * A commercial license can be purchased separately from mventory.com.
+ * No Derivatives (ND) - You can make changes to this file for your own use,
+ * but you cannot share or redistribute the changes.  
+ *
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
- * See http://mventory.com/legal/licensing/ for other licensing options.
- *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -202,16 +204,16 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
     $cartShipping = Mage::getModel('checkout/cart_shipping_api');
 
-    $data = 'dummyshipping_dummyshipping';
+    $data = 'mventory_mventory';
 
     $result = $cartShipping->setShippingMethod($quoteId, $data, $storeId);
 
-    $cartPayment = Mage::getModel('checkout/cart_payment_api');
+    $cartPayment = Mage::getModel('mventory/cart_payment_api');
 
     if ($price == 0)
       $data = array('method' => 'free', 0 => null);
     else
-      $data = array('method' => 'dummy', 0 => null);
+      $data = array('method' => 'mventory', 0 => null);
 
     $result = $cartPayment->setPaymentMethod($quoteId, $data, $storeId);
 
@@ -230,7 +232,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
     }
 
     //create shipment and invoice to complete order
-    $shipment = Mage::getModel('sales/order_shipment_api');
+    $shipment = Mage::getModel('mventory/order_shipment_api');
     $shipment->create($orderId);
 
     $invoice = Mage::getModel('sales/order_invoice_api');
@@ -297,7 +299,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
       }
 
     } else {
-        $this->_fault('invalid_params');
+        $this->_fault('data_invalid');
     }
 
     foreach ($productsToOrder as &$productData)
@@ -462,20 +464,20 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
     $cartShipping = Mage::getModel('checkout/cart_shipping_api');
 
-    $data = 'dummyshipping_dummyshipping';
+    $data = 'mventory_mventory';
 
     $result = $cartShipping->setShippingMethod($quoteId, $data, $storeId);
 
-    $cartPayment = Mage::getModel('checkout/cart_payment_api');
+    $cartPayment = Mage::getModel('mventory/cart_payment_api');
 
-    $data = array('method' => 'dummy', 0 => null);
+    $data = array('method' => 'mventory', 0 => null);
 
     $result = $cartPayment->setPaymentMethod($quoteId, $data, $storeId);
 
     $orderId = $this->createOrder($quoteId, $storeId);
 
     //create shipment and invoice to complete order
-    $shipment = Mage::getModel('sales/order_shipment_api');
+    $shipment = Mage::getModel('mventory/order_shipment_api');
     $shipment->create($orderId);
 
     $invoice = Mage::getModel('sales/order_invoice_api');

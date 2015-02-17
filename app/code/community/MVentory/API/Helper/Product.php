@@ -4,12 +4,14 @@
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Creative Commons License BY-NC-ND.
- * NonCommercial — You may not use the material for commercial purposes.
- * NoDerivatives — If you remix, transform, or build upon the material,
- * you may not distribute the modified material.
- * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * By Attribution (BY) - You can share this file unchanged, including
+ * this copyright statement.
+ * Non-Commercial (NC) - You can use this file for non-commercial activities.
+ * A commercial license can be purchased separately from mventory.com.
+ * No Derivatives (ND) - You can make changes to this file for your own use,
+ * but you cannot share or redistribute the changes.  
  *
- * See http://mventory.com/legal/licensing/ for other licensing options.
+ * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
  * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
@@ -150,7 +152,7 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
   }
 
   /**
-   * Search product ID by value of product_barcode_ attribute
+   * Search product ID by value of product_barcode_ or sku attributes
    *
    * @param  string $barcode Barcode
    *
@@ -161,7 +163,10 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
       return $this->getIdByEAN13Barcode($barcode);
 
     $ids = Mage::getResourceModel('catalog/product_collection')
-             ->addAttributeToFilter('product_barcode_', $barcode)
+             ->addAttributeToFilter(array(
+                 array('attribute' => 'product_barcode_', 'eq' => $barcode),
+                 array('attribute' => 'sku', 'eq' => $barcode)
+               ))
              ->getAllIds(1);
 
     return $ids ? $ids[0] : null;
@@ -169,7 +174,7 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
 
   /**
    * Search product ID by value (in EAN13 or UPC-A format) of product_barcode_
-   * attribute
+   * or sku attributes
    *
    * @param  string $barcode Barcode in EAN13 or UPC-A format
    * @return int|null
@@ -178,7 +183,10 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
 
     //Get ID by exact match
     $ids = Mage::getResourceModel('catalog/product_collection')
-      ->addAttributeToFilter('product_barcode_', $barcode)
+      ->addAttributeToFilter(array(
+          array('attribute' => 'product_barcode_', 'eq' => $barcode),
+          array('attribute' => 'sku', 'eq' => $barcode)
+        ))
       ->getAllIds();
 
     //Return ID if we found only 1 match
@@ -196,10 +204,10 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
     list($barcode) = explode('-', $barcode);
 
     $ids = Mage::getResourceModel('catalog/product_collection')
-      ->addAttributeToFilter(
-          'product_barcode_',
-          array('like' => $barcode . '%')
-        )
+      ->addAttributeToFilter(array(
+          array('attribute' => 'product_barcode_', 'like' => $barcode . '%'),
+          array('attribute' => 'sku', 'like' => $barcode . '%')
+        ))
       ->getAllIds();
 
     return count($ids) == 1 ? $ids[0] : null;
@@ -427,5 +435,25 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
     return isset($attributes[$attributeCode])
              ? $attributes[$attributeCode]->getFrontend()->getValue($product)
                : null;
+  }
+
+  /**
+   * Return default product visibility for product processed via API
+   *
+   * @see Mage_Catalog_Model_Product_Visibility
+   *   For list of possible values
+   *
+   * @param Mage_Core_Model_Website $website
+   *   Website scope used to retrieve value of Default product visibility
+   *   setting
+   *
+   * @return int
+   *   Value of default product visibility
+   */
+  public function getDefaultVisibility ($website) {
+    return (int) $this->getConfig(
+      MVentory_API_Model_Config::_API_VISIBILITY,
+      $website
+    );
   }
 }

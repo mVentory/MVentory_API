@@ -5,15 +5,17 @@
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Creative Commons License BY-NC-ND.
- * NonCommercial — You may not use the material for commercial purposes.
- * NoDerivatives — If you remix, transform, or build upon the material,
- * you may not distribute the modified material.
+ * By Attribution (BY) - You can share this file unchanged, including
+ * this copyright statement.
+ * Non-Commercial (NC) - You can use this file for non-commercial activities.
+ * A commercial license can be purchased separately from mventory.com.
+ * No Derivatives (ND) - You can make changes to this file for your own use,
+ * but you cannot share or redistribute the changes.  
+ *
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
- * See http://mventory.com/legal/licensing/ for other licensing options.
- *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 -->
@@ -21,7 +23,7 @@
 <config>
   <modules>
     <MVentory_API>
-      <version>28</version>
+      <version>29</version>
     </MVentory_API>
   </modules>
 
@@ -30,26 +32,6 @@
       <mventory>
         <class>MVentory_API_Block</class>
       </mventory>
-
-      <catalog>
-        <rewrite>
-          <layer_view>MVentory_API_Block_Layer_View</layer_view>
-          <product_view_attributes>MVentory_API_Block_Product_View_Attributes</product_view_attributes>
-          <product_view_tabs>MVentory_API_Block_Product_View_Tabs</product_view_tabs>
-        </rewrite>
-      </catalog>
-
-      <adminhtml>
-        <rewrite>
-          <dashboard_grids>MVentory_API_Block_Adminhtml_Dashboard_Grids</dashboard_grids>
-        </rewrite>
-      </adminhtml>
-
-      <page>
-        <rewrite>
-          <html_footer>MVentory_API_Block_Html_Footer</html_footer>
-        </rewrite>
-      </page>
     </blocks>
 
     <models>
@@ -82,20 +64,6 @@
           </additional_skus>
         </entities>
       </mventory_resources>
-
-      <catalog>
-        <rewrite>
-          <layer>MVentory_API_Model_Layer</layer>
-          <layer_filter_attribute>MVentory_API_Model_Layer_Filter_Attribute</layer_filter_attribute>
-          <product_url>MVentory_API_Model_Product_Url</product_url>
-        </rewrite>
-      </catalog>
-
-      <core>
-        <rewrite>
-          <convert>MVentory_API_Model_Core_Convert</convert>
-        </rewrite>
-      </core>
     </models>
 
     <helpers>
@@ -218,6 +186,10 @@
         </mventory>
       </types>
     </cache>
+
+    <psr0_namespaces>
+      <Dropbox />
+    </psr0_namespaces>
   </global>
 
   <admin>
@@ -345,6 +317,17 @@
         <product_visiblity>1</product_visiblity>
       </api>
 
+      <image_clips>
+        <enable>0</enable>
+        <backup_folder>backup</backup_folder>
+        <exclude_new>1</exclude_new>
+        <auto_replace>1</auto_replace>
+        <log_file>var/log/imglog.csv</log_file>
+        <dropbox_path>/</dropbox_path>
+        <ideal_width>900</ideal_width>
+        <ideal_height>900</ideal_height>
+      </image_clips>
+
       <metadata>
         <!-- Empty string = Visible in all -->
         <invisible_for_websites><![CDATA[]]></invisible_for_websites>
@@ -378,15 +361,15 @@
     </mventory>
 
     <carriers>
-      <dummyshipping>
+      <mventory>
         <active>1</active>
         <sallowspecific>0</sallowspecific>
         <cutoff_cost>0</cutoff_cost>
-        <model>mventory/carrier_dummyshipping</model>
-        <name>Dummy</name>
-        <title>Dummy Shipping</title>
+        <model>mventory/shipping</model>
+        <name>mVentory</name>
+        <title>mVentory Shipping</title>
         <specificerrmsg>This shipping method is currently unavailable. If you would like to ship using this shipping method, please contact us.</specificerrmsg>
-      </dummyshipping>
+      </mventory>
 
       <volumerate>
         <active>0</active>
@@ -399,14 +382,14 @@
     </carriers>
 
     <payment>
-      <dummy>
+      <mventory>
         <active>1</active>
-        <model>mventory/method_dummy</model>
+        <model>mventory/payment</model>
         <order_status>pending</order_status>
-        <title>App</title>
+        <title>mVentory</title>
         <allowspecific>0</allowspecific>
         <group>offline</group>
-      </dummy>
+      </mventory>
     </payment>
   </default>
 

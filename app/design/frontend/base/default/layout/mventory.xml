@@ -15,13 +15,16 @@
  * @package MVentory/API
  * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
 -->
 
-<layout version="0.1.0">
-  <default>
+<layout>
+  <jquery>
     <reference name="head">
-      <action method="addCss"><stylesheet>mventory/css/styles.css</stylesheet></action>
+      <action method="addJs">
+        <script>jquery/jquery-min.js</script>
+      </action>
     </reference>
-  </default>
+  </jquery>
 </layout>

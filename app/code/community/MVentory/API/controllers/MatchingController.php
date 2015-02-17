@@ -4,12 +4,14 @@
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Creative Commons License BY-NC-ND.
- * NonCommercial — You may not use the material for commercial purposes.
- * NoDerivatives — If you remix, transform, or build upon the material,
- * you may not distribute the modified material.
- * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * By Attribution (BY) - You can share this file unchanged, including
+ * this copyright statement.
+ * Non-Commercial (NC) - You can use this file for non-commercial activities.
+ * A commercial license can be purchased separately from mventory.com.
+ * No Derivatives (ND) - You can make changes to this file for your own use,
+ * but you cannot share or redistribute the changes.  
  *
- * See http://mventory.com/legal/licensing/ for other licensing options.
+ * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
  * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
@@ -31,29 +33,38 @@ class MVentory_API_MatchingController
 
   /**
    * Append rule action
+   *
+   * @return MVentory_API_MatchingController
    */
   public function appendAction () {
     $request = $this->getRequest();
 
     $setId =  $request->getParam('set_id');
-
     $rule = $request->getParam('rule');
 
-    if (!$rule)
-      return 0;
+    if (!($setId && $rule))
+      return $this->_error('No set_id or rule parameters');
 
-    $rule = Mage::helper('core')->jsonDecode($rule);
+    try {
+      $rule = Mage::helper('core')->jsonDecode($rule);
 
-    Mage::getModel('mventory/matching')
-      ->loadBySetId($setId, false)
-      ->append($rule)
-      ->save();
+      Mage::getModel('mventory/matching')
+        ->loadBySetId($setId, false)
+        ->append($rule)
+        ->save();
 
-    echo 1;
+      $this->_success('Rule saved');
+    } catch(Exception $e) {
+      $this->_error('Failed to save rule', $e);
+    }
+
+    return $this;
   }
 
   /**
-   * Append rule action
+   * Remove rule action
+   *
+   * @return MVentory_API_MatchingController
    */
   public function removeAction () {
     $request = $this->getRequest();
@@ -62,14 +73,20 @@ class MVentory_API_MatchingController
     $ruleId = $request->getParam('rule_id');
 
     if (!($setId && $ruleId))
-      return 0;
+      return $this->_error('No set_id or rule parameters');
 
-    Mage::getModel('mventory/matching')
-      ->loadBySetId($setId, false)
-      ->remove($ruleId)
-      ->save();
+    try {
+      Mage::getModel('mventory/matching')
+        ->loadBySetId($setId, false)
+        ->remove($ruleId)
+        ->save();
 
-    echo 1;
+      $this->_success('Rule removed');
+    } catch(Exception $e) {
+      $this->_error('Failed to remove rule', $e);
+    }
+
+    return $this;
   }
 
   /**
@@ -82,13 +99,66 @@ class MVentory_API_MatchingController
     $ids = $request->getParam('ids');
 
     if (!($setId && $ids))
-      return 0;
+      return $this->_error('No set_id or ids parameters');
 
-    Mage::getModel('mventory/matching')
-      ->loadBySetId($setId, false)
-      ->reorder($ids)
-      ->save();
+    try {
+      Mage::getModel('mventory/matching')
+        ->loadBySetId($setId, false)
+        ->reorder($ids)
+        ->save();
 
-    echo 1;
+      $this->_success('Rules reordered');
+    } catch(Exception $e) {
+      $this->_error('Failed to reorder rules', $e);
+    }
+
+    return $this;
+  }
+
+  /**
+   * Prepare successfull response
+   *
+   * @param string $msg Response message
+   * @param array $data Additional response data
+   * @return MVentory_API_MatchingController
+   */
+  protected function _success ($msg, $data = null) {
+    return $this->_response(true, $msg, $data);
+  }
+
+  /**
+   * Prepare error response
+   *
+   * @param string $msg Response message
+   * @param Exception $exception Exception
+   * @param array $data Additional response data
+   * @return MVentory_API_MatchingController
+   */
+  protected function _error ($msg, $exception = null, $data = array()) {
+    if ($exception)
+      $data['exception'] = array(
+        'message' => $exception->getMessage(),
+        'trace' => $exception->getTraceAsString()
+      );
+
+    return $this->_response(false, $msg, $data);
+  }
+
+  /**
+   * Prepare response in JSON format
+   *
+   * @param bool $success Was request successful
+   * @param string $msg Response message
+   * @param array $data Additional response data
+   * @return MVentory_API_MatchingController
+   */
+  protected function _response ($success, $msg, $data = array()) {
+    echo Mage::helper('core')->jsonEncode(array(
+      'success' => $success,
+      'message' => $this->__($msg),
+      'data' => $data
+    ));
+
+    return $this;
   }
 }

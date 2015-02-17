@@ -4,12 +4,14 @@
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Creative Commons License BY-NC-ND.
- * NonCommercial — You may not use the material for commercial purposes.
- * NoDerivatives — If you remix, transform, or build upon the material,
- * you may not distribute the modified material.
- * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * By Attribution (BY) - You can share this file unchanged, including
+ * this copyright statement.
+ * Non-Commercial (NC) - You can use this file for non-commercial activities.
+ * A commercial license can be purchased separately from mventory.com.
+ * No Derivatives (ND) - You can make changes to this file for your own use,
+ * but you cannot share or redistribute the changes.  
  *
- * See http://mventory.com/legal/licensing/ for other licensing options.
+ * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
  * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
@@ -131,7 +133,7 @@ class MVentory_API_Model_Dataflow_Api extends Mage_Api_Model_Resource_Abstract {
     	return $this->getProfileErrorMessage(self::PROFILE_ERR_FAILED, $profile, $user, "Unable to convert the profile.", $e);
     }
 
-    $actions = $convertProfile->getActions();
+    $actions = $this->_getProfileActions($convertProfile);
     $actionsCount = count($actions);
 
     if ($actionsCount == 0)
@@ -265,5 +267,32 @@ class MVentory_API_Model_Dataflow_Api extends Mage_Api_Model_Resource_Abstract {
     }
 
     return $result;
+  }
+
+  /**
+   * Return list of actions from supplied profile
+   *
+   * It uses reflections to get values of protected field because
+   * Mage_Dataflow_Model_Convert_Profile_Abstract doesn't provide getter method
+   * for the field and we don't want to overwrite a couple of classes to add
+   * getter method
+   *
+   * @param Mage_Dataflow_Model_Convert_Profile_Abstract $profile
+   *   Dataflow profile model
+   *
+   * @return array
+   *   List of actions from supplied profile. It returns empty array in case
+   *   some error happens while getting actions via reflections
+   */
+  protected function _getProfileActions ($profile) {
+    try {
+      $ref = new ReflectionObject($profile);
+      $prop = $ref->getProperty('_actions');
+      $prop->setAccessible(true);
+
+      return $prop->getValue($profile);
+    } catch (Exception $e) {
+      return array();
+    }
   }
 }

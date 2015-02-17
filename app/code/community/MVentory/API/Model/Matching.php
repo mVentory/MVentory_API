@@ -4,12 +4,14 @@
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Creative Commons License BY-NC-ND.
- * NonCommercial — You may not use the material for commercial purposes.
- * NoDerivatives — If you remix, transform, or build upon the material,
- * you may not distribute the modified material.
- * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * By Attribution (BY) - You can share this file unchanged, including
+ * this copyright statement.
+ * Non-Commercial (NC) - You can use this file for non-commercial activities.
+ * A commercial license can be purchased separately from mventory.com.
+ * No Derivatives (ND) - You can make changes to this file for your own use,
+ * but you cannot share or redistribute the changes.  
  *
- * See http://mventory.com/legal/licensing/ for other licensing options.
+ * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
  * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
@@ -106,7 +108,7 @@ class MVentory_API_Model_Matching
 
     unset($attributes, $attribute, $code, $id);
 
-    $categoryId = null;
+    $categoryIds = array();
 
     $rules = $this->getData('rules');
 
@@ -128,27 +130,37 @@ class MVentory_API_Model_Matching
           continue 2;
       }
 
-      if (isset($rule['category'])) {
-        $categoryId = (int) $rule['category'];
-
-        break;
+      if (!empty($rule['categories'])) {
+          $categoryIds = $rule['categories'];
+          break;
       }
     }
 
-    if ($categoryId == null && isset($rules[self::DEFAULT_RULE_ID]))
-      $categoryId = (int) $rules[self::DEFAULT_RULE_ID]['category'];
+    if (!$categoryIds && isset($rules[self::DEFAULT_RULE_ID]))
+      $categoryIds = $rules[self::DEFAULT_RULE_ID]['categories'];
 
+    /**
+     * @todo This should be loaded on demand in the next two if blocks
+     */
     $categories = Mage::getResourceModel('catalog/category_collection')
                     ->load()
                     ->toArray();
 
-    if ($categoryId == null || !isset($categories[$categoryId]))
-      $categoryId = (int) $this->_getLostCategoryId($product);
+    //Check if matched categories still exist; remove non-existing
+    if ($categoryIds)
+      foreach ($categoryIds as $i => $cid)
+        if (!isset($categories[(int) $cid]))
+          unset($categoryIds[$i]);
 
-    if (!($categoryId && isset($categories[$categoryId])))
-      return false;
+    //Use lost category (if it exists) when there's no matched categories
+    if (!$categoryIds) {
+      $lostCategoryId = (int) $this->_getLostCategoryId($product);
 
-    return $categoryId;
+      if ($lostCategoryId && isset($categories[$lostCategoryId]))
+        $categoryIds[] = $lostCategoryId;
+    }
+
+    return $categoryIds;
   }
 
   protected function _getLostCategoryId ($product) {

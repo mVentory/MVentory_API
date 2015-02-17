@@ -4,12 +4,14 @@
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Creative Commons License BY-NC-ND.
- * NonCommercial — You may not use the material for commercial purposes.
- * NoDerivatives — If you remix, transform, or build upon the material,
- * you may not distribute the modified material.
- * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * By Attribution (BY) - You can share this file unchanged, including
+ * this copyright statement.
+ * Non-Commercial (NC) - You can use this file for non-commercial activities.
+ * A commercial license can be purchased separately from mventory.com.
+ * No Derivatives (ND) - You can make changes to this file for your own use,
+ * but you cannot share or redistribute the changes.  
  *
- * See http://mventory.com/legal/licensing/ for other licensing options.
+ * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
  * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
@@ -71,12 +73,13 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
 
     $options = Mage::getResourceModel('eav/entity_attribute_option_collection')
                  ->setAttributeFilter(array('in' => array_keys($this->_attrs)))
-                 ->setStoreFilter($attr->getStoreId())
-                 ->setPositionOrder('asc', true);
+                 ->setStoreFilter();
 
     foreach ($options as $option)
-      $this->_attrs[$option->getAttributeId()]['values'][$option->getId()]
-        = $option->getValue();
+      $this->_attrs[$option->getAttributeId()]['values'][] = array(
+        'id' => $option->getId(),
+        'label' => $option->getValue()
+      );
 
     $this->_categories = Mage::getResourceModel('catalog/category_collection')
                            ->addNameToResult()
@@ -166,21 +169,14 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
     $id = $data['id'];
     $default = ($id == MVentory_API_Model_Matching::DEFAULT_RULE_ID);
 
-    $category = $data['category'];
-    $hasCategory = false;
-
-    if ($category == null)
-      $category = $this->__('Category not selected');
-    else if (!isset($this->_categories[$category]))
-      $category = $this->__('Category doesn\'t exist anymore');
-    else {
-      $hasCategory = true;
-      $category = $this->_categories[$category]['name'];
-    }
-
     $attrs = array();
 
     foreach ($data['attrs'] as $attr) {
+
+      //Ignore attribute which doesn't exists in Magento
+      if (!isset($this->_attrs[$attr['id']]))
+        continue;
+
       $_attr = &$this->_attrs[$attr['id']];
 
       $_attr['used'] = true;
@@ -189,11 +185,13 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
         $values = array();
 
         foreach ($attr['value'] as $valueId)
-          if (isset($_attr['values'][$valueId])) {
-            $values[] = $_attr['values'][$valueId];
+          foreach ($_attr['values'] as $option)
+            if ($valueId == $option['id']) {
+              $values[] = $option['label'];
+              $_attr['used_values'][$valueId] = true;
 
-            $_attr['used_values'][$valueId] = true;
-          }
+              break;
+            }
 
         $attrs[$_attr['label']] = implode(', ', $values);
 
@@ -205,12 +203,38 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
                                     : '';
     }
 
+    return $this->_getRuleCategories($data)
+           + array(
+               'id' => $id,
+               'default' => $default,
+               'attrs' => $attrs
+             );
+  }
+
+  protected function _getRuleCategories ($rule) {
+    if (empty($rule['categories']))
+      return array(
+        'has_categories' => false,
+        'categories' => array($this->__('Categories not selected'))
+      );
+
+    $categories = $rule['categories'];
+
+    foreach ($categories as $i => $id)
+      if (isset($this->_categories[$id]))
+        $categories[$i] = $this->_categories[$id]['name'];
+      else
+        unset($categories[$i]);
+
+    if (!$categories)
+      return array(
+        'has_categories' => false,
+        'categories' => array($this->__('All categories don\'t exist anymore'))
+      );
+
     return array(
-      'id' => $id,
-      'default' => $default,
-      'category' => $category,
-      'has_category' => $hasCategory,
-      'attrs' => $attrs
-    );
+        'has_categories' => true,
+        'categories' => $categories
+      );
   }
 }

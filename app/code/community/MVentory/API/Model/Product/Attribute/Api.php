@@ -4,12 +4,14 @@
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Creative Commons License BY-NC-ND.
- * NonCommercial — You may not use the material for commercial purposes.
- * NoDerivatives — If you remix, transform, or build upon the material,
- * you may not distribute the modified material.
- * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * By Attribution (BY) - You can share this file unchanged, including
+ * this copyright statement.
+ * Non-Commercial (NC) - You can use this file for non-commercial activities.
+ * A commercial license can be purchased separately from mventory.com.
+ * No Derivatives (ND) - You can make changes to this file for your own use,
+ * but you cannot share or redistribute the changes.  
  *
- * See http://mventory.com/legal/licensing/ for other licensing options.
+ * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
  * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
@@ -118,7 +120,7 @@ class MVentory_API_Model_Product_Attribute_Api
     $attrs = $this->_helper->getEditables($setId);
 
     foreach ($attrs as $attr)
-      $result[] = $this->_info($attr);
+      $result[] = $this->_info($attr->getAttributeId());
 
     return $result;
   }
@@ -222,7 +224,7 @@ class MVentory_API_Model_Product_Attribute_Api
     $attributeId = $attributeModel->getId();
 
     if (!$attributeId) {
-      $this->_fault('not_exists');
+      $this->_fault('attribute_not_exists');
     }
 
     $defaultOptionLabels = $this->getOptionLabels(0, $attributeId);
@@ -301,5 +303,27 @@ class MVentory_API_Model_Product_Attribute_Api
     }
 
     return $metadata;
+  }
+
+  /**
+   * Load model by attribute ID or code
+   *
+   * This method is redefined to convert not_exists fault
+   * to attribute_not_exists to avoid conflictc with similar faults
+   * from other modules
+   *
+   * @param int|string $attribute
+   *   Attribute ID or code
+   *
+   * @return Mage_Catalog_Model_Resource_Eav_Attribute
+   *   Instance of attribute model
+   */
+  protected function _getAttribute ($attribute) {
+    try {
+      return parent::_getAttribute($attribute);
+    }
+    catch (Mage_Api_Exception $e) {
+      throw new Mage_Api_Exception('attribute_not_exists');
+    }
   }
 }
