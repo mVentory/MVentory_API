@@ -231,3 +231,7 @@
   display: inline-block;
   margin: 0;
 }
+
+#mventory-logo {
+  display: block;
+}
