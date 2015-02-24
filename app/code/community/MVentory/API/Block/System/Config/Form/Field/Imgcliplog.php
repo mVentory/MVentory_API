@@ -28,6 +28,10 @@ class MVentory_API_Block_System_Config_Form_Field_Imgcliplog
   extends Mage_Adminhtml_Block_System_Config_Form_Field
 {
 
+  const _TPL_ELEMENT = <<<'EOT'
+<div id="%s"class="buttons-set">%s%s</div>
+EOT;
+
   const _JS_SET_LOCATION = <<<'EOT'
 javascript:setLocation('%s'); return false;
 EOT;
@@ -46,10 +50,12 @@ EOT;
    *   Element HTML
    */
   protected function _getElementHtml (Varien_Data_Form_Element_Abstract $element) {
-    return '<div class="buttons-set">'
-             . $this->_getDownloadButton()
-             . $this->_getClearButton()
-           . '</div>';
+    return sprintf(
+      self::_TPL_ELEMENT,
+      $element->getHtmlId(),
+      $this->_getDownloadButton(),
+      $this->_getClearButton()
+    );
   }
 
   /**

@@ -1,17 +1,11 @@
 <?php
 
-$version = '1.4.0';
+$version = '1.4.1';
 
 $notes = <<<EOT
-* Added use of SKU attribute when searching product by barcode
+* Fix setting default category on create/updating product
 
-* Support for multicategories in category matching editor
-
-* Category matching editor improvements (better help and error messages)
-
-* Dropped functionality for sorting attributes in catalog filter, functionality for better product details on frontend
-
-* Other small improvements and bug fixes
+* Fix bug which breaks API settings page in Magento versions prior 1.9 release
 EOT;
 
 $description = <<<EOT

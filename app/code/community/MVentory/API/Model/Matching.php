@@ -89,12 +89,12 @@ class MVentory_API_Model_Matching
 
   public function matchCategory ($product) {
     if (($setId = $product->getAttributeSetId()) === false)
-      return (int) $this->_getLostCategoryId($product);
+      return $this->_getLostCategoryId($product);
 
     $this->loadBySetId($setId);
 
     if (!$this->getId())
-      return (int) $this->_getLostCategoryId($product);
+      return $this->_getLostCategoryId($product);
 
     $_attributes = array();
 
@@ -154,20 +154,34 @@ class MVentory_API_Model_Matching
 
     //Use lost category (if it exists) when there's no matched categories
     if (!$categoryIds) {
-      $lostCategoryId = (int) $this->_getLostCategoryId($product);
+      $lostCategoryId = $this->_getLostCategoryId($product);
 
-      if ($lostCategoryId && isset($categories[$lostCategoryId]))
-        $categoryIds[] = $lostCategoryId;
+      if ($lostCategoryId && isset($categories[$lostCategoryId[0]]))
+        return $lostCategoryId;
     }
 
     return $categoryIds;
   }
 
+  /**
+   * Return value of Default category ID setting
+   *
+   * @param Mage_Catalog_Model_Product $product
+   *   Product model to get product's website
+   *
+   * @return array
+   *   List with one ID of default category or empty list if the setting
+   *   is not set
+   */
   protected function _getLostCategoryId ($product) {
     $helper = Mage::helper('mventory/product');
 
-    return $helper->getConfig(MVentory_API_Model_Config::_LOST_CATEGORY,
-                              $helper->getWebsite($product));
+    $id = $helper->getConfig(
+      MVentory_API_Model_Config::_LOST_CATEGORY,
+      $helper->getWebsite($product)
+    );
+
+    return empty($id) ? array() : array((int) $id);
   }
 
   protected function _clean () {
