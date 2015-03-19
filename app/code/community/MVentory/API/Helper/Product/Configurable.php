@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -32,7 +32,10 @@ class MVentory_API_Helper_Product_Configurable
    *
    * @see MVentory_API_Helper_Product_Configurable::updateProds()
    */
-  protected $_ignUpdInConfig = array('weight' => true);
+  protected $_ignUpdInConfig = array(
+    'weight' => true,
+    'visibility' => true
+  );
 
   public function getIdByChild ($child) {
     $id = $child instanceof Mage_Catalog_Model_Product
@@ -270,7 +273,7 @@ class MVentory_API_Helper_Product_Configurable
 
     //Find minimal price in products
     foreach ($products as $product) {
-      if (($price = $product->getPrice()) < $min)
+      if (($price = $this->_getPrice($product)) < $min)
         $min = $price;
 
       $prices[(int) $product->getData($code)] = $price;
@@ -395,6 +398,23 @@ class MVentory_API_Helper_Product_Configurable
 
         $pval = $get ? $prod->$get() : $prod->getData($code);
 
+        /**
+         * Use per-product value for visibility attribute
+         *
+         * @see MVentory_API_Helper_Product_Configurable::_getVisibility
+         *   This function returns per-product value for visibility attribute
+         *
+         * @todo if there will be more attributes which value depends on
+         *   the product state and can't be replicated from original product
+         *   (which was linked to configurable or was updated while being linked
+         *   to configurable) consider to extend format of $data array to
+         *   allow to specify source of data (i.e. some function which accepts
+         *   the product as parameter and will be called to get data) instead
+         *   data.
+         */
+        if ($code == 'visibility')
+          $val = $this->_getVisibility($prod);
+
         if ($cmp ? call_user_func($cmp, $pval, $val) : ($pval != $val))
           $set ? $prod->$set($val) : $prod->setData($code, $val);
       }
@@ -495,8 +515,19 @@ class MVentory_API_Helper_Product_Configurable
       $setId,
       $attr,
       array(
-        'visibility'
-          => Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE
+
+        /**
+         * This dummy value will be overwritten with per-product value
+         * in updateProds() function.
+         * We pass it just to add visibility attribute to the list.
+         *
+         * @see MVentory_API_Helper_Product_Configurable::updateProds()
+         *   This function applies per-product value
+         *
+         * @see MVentory_API_Helper_Product_Configurable::_getVisibility
+         *   This function returns per-product value for visibility attribute
+         */
+        'visibility' => true
       )
     );
 
@@ -558,7 +589,26 @@ class MVentory_API_Helper_Product_Configurable
 
     //List of attributes and their values which should be updated
     //in all linked products
-    $updAttrs = $this->_getUpdAttrs($a, $setId, $attr);
+    $updAttrs = $this->_getUpdAttrs(
+      $a,
+      $setId,
+      $attr,
+      array(
+
+        /**
+         * This dummy value will be overwritten with per-product value
+         * in updateProds() function.
+         * We pass it just to add visibility attribute to the list.
+         *
+         * @see MVentory_API_Helper_Product_Configurable::updateProds()
+         *   This function applies per-product value
+         *
+         * @see MVentory_API_Helper_Product_Configurable::_getVisibility
+         *   This function returns per-product value for visibility attribute
+         */
+        'visibility' => true
+      )
+    );
 
     $prods[$aID] = $a;
     $c = $prods[$cID];
@@ -571,9 +621,9 @@ class MVentory_API_Helper_Product_Configurable
       ->recalculatePrices($c, $attr, $prods);
 
     $prods[$cID] = $c;
-    unset($prods[$aID]);
-
     $this->updateProds($prods, $updAttrs);
+
+    unset($prods[$aID]);
 
     foreach ($prods as $prod)
       $prod->save();
@@ -635,5 +685,55 @@ class MVentory_API_Helper_Product_Configurable
     }
 
     return $overwrite ? array_merge($attrs, $overwrite) : $attrs;
+  }
+
+  /**
+   * Check if supplied product has special price and has no time period
+   * for the special price, because we ignore special price if period is set
+   *
+   * @param Mage_Catalog_Model_Product $prod
+   *   Product model
+   *
+   * @return boolean
+   *   True if the product has special price without time period
+   */
+  protected function _hasSpecialPrice ($prod) {
+    if (!isset($this->__now))
+      $this->__now = strtotime(Mage::app()->getLocale()->date());
+
+    return is_numeric($prod->getSpecialPrice())
+           && !(strtotime($prod->getSpecialFromDate()) >  $this->__now
+                || $prod->getSpecialToDate());
+  }
+
+  /**
+   * Return special price if product has special price otherwise general price
+   *
+   * @param Mage_Catalog_Model_Product $prod
+   *   Product model
+   *
+   * @return float|string
+   *   Special price or general price of product
+   */
+  protected function _getPrice ($prod) {
+    return $this->_hasSpecialPrice($prod)
+             ? $prod->getSpecialPrice()
+             : $prod->getPrice();
+  }
+
+  /**
+   * Return 'Catalog, Search' visibility if product has special price
+   * otherwise 'Not Visible Individually' visibility
+   *
+   * @param Mage_Catalog_Model_Product $prod
+   *   Product model
+   *
+   * @return int
+   *   'Catalog, Search' or 'Not Visible Individually' visibility
+   */
+  protected function _getVisibility ($prod) {
+    return $this->_hasSpecialPrice($prod)
+             ? Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
+             : Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE;
   }
 }
