@@ -81,7 +81,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     $productId = $product->getId();
 
     $_result = array(
-      'product_id' => $productId,
+      'id' => $productId,
       'sku' => $product->getSku(),
       'set' => $product->getAttributeSetId(),
       'websites' => $product->getWebsiteIds(),
@@ -110,7 +110,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $_result,
       array_merge(
         array(
-          'product_id' => true,
+          'id' => true,
           'set' => true,
           'websites' => true,
           'url_path' => true,
@@ -125,6 +125,11 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         $helper->getEditables($_result['set'])
       )
     );
+
+    /**
+     * @todo Remove after apps will be updated
+     */
+    $result['product_id'] = $productId;
 
     $stockItem = Mage::getModel('mventory/stock_item_api');
 
