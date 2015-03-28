@@ -140,36 +140,26 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     $result['images'] = $this->_getImages($productId, $storeId);
 
-    $helper = Mage::helper('mventory/product_configurable');
+    if ($attr = $helper->getConfigurable($result['set'])) {
+      $_tmp = array($productId => $result);
 
-    if ($siblingIds = $helper->getSiblingsIds($productId)) {
-      $attrs = Mage::getModel('mventory/product_attribute_api')
-        ->fullInfoList($result['set']);
-
-      foreach ($attrs as $attr)
-        if ($attr['is_configurable'])
-          break;
-
-      $siblings = Mage::getResourceModel('catalog/product_collection')
-                    ->addAttributeToSelect('price')
-                    ->addAttributeToSelect('name')
-                    ->addAttributeToSelect($attr['attribute_code'])
-                    ->addIdFilter($siblingIds)
-                    ->addStoreFilter($storeId)
-                    ->setFlag('require_stock_items');
-
-      foreach ($siblings as $sibling)
-        $result['siblings'][] = array(
-          'product_id' => $sibling->getId(),
-          'sku' => $sibling->getSku(),
-          'name' => $sibling->getName(),
-          'price' => $sibling->getPrice(),
-          'qty' => $sibling->getStockItem()->getQty(),
-          $attr['attribute_code'] => $sibling->getData($attr['attribute_code'])
-        );
+      $this->_addSiblings(
+        $_tmp,
+        array($result['set'] => $attr),
+        array(
+          'name',
+          'price',
+          'special_price',
+          'special_from_date',
+          'special_to_date'
+        ),
+        $storeId,
+        array('load_image' => true)
+      );
     }
 
-    $product = new Varien_Object($result);
+    $product = new Varien_Object(isset($_tmp) ? $_tmp[$productId] : $result);
+    unset($_tmp);
 
     Mage::dispatchEvent(
       'mventory_api_product_info',
