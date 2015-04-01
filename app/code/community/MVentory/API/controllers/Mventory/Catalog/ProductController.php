@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -47,11 +47,7 @@ class MVentory_API_Mventory_Catalog_ProductController
         ->_getSession()
         ->addSuccess($this->__($m, $numberOfRenamed, count($productIds)));
     }
-    catch (Mage_Core_Model_Exception $e) {
-      $this
-        ->_getSession()
-        ->addError($e->getMessage());
-    } catch (Mage_Core_Exception $e) {
+    catch (Mage_Core_Exception $e) {
       $this
         ->_getSession()
         ->addError($e->getMessage());
@@ -82,11 +78,7 @@ class MVentory_API_Mventory_Catalog_ProductController
         ->_getSession()
         ->addSuccess($this->__($m, $number, count($productIds)));
     }
-    catch (Mage_Core_Model_Exception $e) {
-      $this
-        ->_getSession()
-        ->addError($e->getMessage());
-    } catch (Mage_Core_Exception $e) {
+    catch (Mage_Core_Exception $e) {
       $this
         ->_getSession()
         ->addError($e->getMessage());
