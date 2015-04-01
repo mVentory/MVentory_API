@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -181,6 +181,124 @@ class MVentory_API_Model_Product_Action extends Mage_Core_Model_Abstract {
     }
 
     return $n;
+  }
+
+  /**
+   * Mass action to sync images between configurable product and its
+   * assigned simple products
+   *
+   * @param array $ids
+   *   List of various IDs of products. It can be simple and configurable
+   *   products
+   *
+   * @param array $param
+   *   List of optional parameter
+   *
+   * @param int $storeId
+   *   Current store ID
+   *
+   * @return array
+   *   Array of result numbers. First number is a number of processed
+   *   configurable products and second one is a total number of products
+   */
+  public function syncImages ($ids, $params, $storeId) {
+    if (!$_confs = $this->getConfsAndChildren($ids))
+      return array(0, 0);
+
+    $helper = Mage::helper('mventory/image');
+
+    $confs = Mage::getResourceModel('catalog/product_collection')
+      ->addAttributeToSelect(array('image', 'small_image', 'thumbnail'))
+      ->addIdFilter(array_keys($_confs))
+      ->setStore($storeId);
+
+    $n = 0;
+
+    foreach ($confs as $id => $conf) {
+      $_params = $params;
+
+      if (isset($_params['source']))
+        $_params['source'] = $id;
+
+      $helper->sync(null, $conf, $_confs[$id], $_params);
+
+      $n++;
+    }
+
+    return array($n, count($_confs));
+  }
+
+  /**
+   * Filter IDs of configurable product from supplied products IDs
+   *
+   * @param array $ids
+   *   List of products IDs
+   *
+   * @return array
+   *   Lsit of configurable products IDs
+   */
+  protected function getConfigurableIds ($ids) {
+    $res = Mage::getResourceModel('catalog/product');
+    $adp = $res->getReadConnection();
+
+    return $adp->fetchCol(
+      $adp
+        ->select()
+        ->from($res->getEntityTable(), 'entity_id')
+        ->where($adp->prepareSqlCondition(
+            'type_id',
+            Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE
+          ))
+        ->where($adp->prepareSqlCondition(
+            'entity_id',
+            array('in' => (array) $ids)
+          ))
+    );
+  }
+
+  /**
+   * Return all possible IDs of configirable products and their children IDs
+   * from supplied list of products IDs (can be configurable and/or
+   * simple products)
+   *
+   * @param array $ids
+   *   List of products IDs (can be configurable and/or simple products)
+   *
+   * @return array
+   *   List of IDs of configirable products and their children IDs
+   */
+  protected function getConfsAndChildren ($ids) {
+    $helper = Mage::helper('mventory/product_configurable');
+
+    $confs = array();
+    $children = array();
+
+    //Get configurable IDs from supplied products IDs and load children for them
+    foreach (($_confs = $this->getConfigurableIds($ids)) as $id)
+      if ($_children = $helper->getChildrenIds($id))
+        $children += $confs[$id] = $_children;
+
+    //Return collected configurable IDs and their children if all supplied
+    //IDs are IDs of configurable products
+    if (count($ids) == count($confs))
+      return $confs;
+
+    //Remove all configurable IDs and their children IDs from supplied
+    //products IDs and then search for configurables among remained IDs
+    if ($ids = array_diff($ids, $_confs, $children))
+      while (list($key, $id) = each($ids)) {
+        if (($conf = $helper->getIdByChild($id))
+            && $children = $helper->getChildrenIds($conf))
+          $confs[$conf] = $children;
+
+        $ids = array_diff(
+          $ids,
+          array($id),
+          isset($children) ? $children : array()
+        );
+      }
+
+    return $confs;
   }
 }
 

@@ -92,6 +92,47 @@ class MVentory_API_Mventory_Catalog_ProductController
 
     $this->_redirect('adminhtml/catalog_product/', array('store'=> $storeId));
   }
+
+  public function massImageSyncAction () {
+    $request = $this->getRequest();
+
+    $productIds = (array) $request->getParam('product');
+    $mode = array_flip(explode(',', $request->getParam('mode')));
+    $storeId = (int) $request->getParam('store', 0);
+
+    $params = array();
+
+    foreach (array('empty', 'source') as $param)
+      if (isset($mode[$param]))
+        $params[$param] = true;
+
+    try {
+      $numbers = Mage::getSingleton('mventory/product_action')->syncImages(
+        $productIds,
+        $params,
+        $storeId
+      );
+
+      $m = '%d of %d record(s) have been updated.';
+
+      $this
+        ->_getSession()
+        ->addSuccess($this->__($m, $numbers[0], $numbers[1]));
+    }
+    catch (Mage_Core_Exception $e) {
+      $this
+        ->_getSession()
+        ->addError($e->getMessage());
+    } catch (Exception $e) {
+      $m = $this->__('An error occurred while syncing the product(s) images.');
+
+      $this
+        ->_getSession()
+        ->addException($e, $m);
+    }
+
+    $this->_redirect('adminhtml/*', array('store'=> $storeId));
+  }
 }
 
 ?>

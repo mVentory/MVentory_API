@@ -85,6 +85,43 @@ class MVentory_API_Model_Observer {
               array('_current' => true)
             )
           )
+        )
+      ->addItem(
+          'imagesync',
+          array(
+            'label' => $helper->__('Sync product images'),
+            'url' => $block->getUrl(
+              'mventory/catalog_product/massImageSync',
+              array('_current' => true)
+            ),
+            'additional' => array(
+              'mode' => array(
+                'name' => 'mode',
+                'type' => 'select',
+                'label' => $helper->__('Mode'),
+                'values' => array(
+                  array(
+                    'value' => '',
+                    'label' => $helper->__('Sync all')
+                  ),
+                  array(
+                    'value' => 'empty',
+                    'label' => $helper->__('Sync only products w/o images')
+                  ),
+                  array(
+                    'value' => 'source',
+                    'label' => $helper->__('Configurable as source of images')
+                  ),
+                  array(
+                    'value' => 'source,empty',
+                    'label' => $helper->__(
+                      'Configurable as source & only w/o images'
+                    )
+                  )
+                )
+              )
+            )
+          )
         );
   }
 
