@@ -140,17 +140,11 @@
 
       <adminhtml_catalog_product_grid_prepare_massaction>
         <observers>
-          <mventory_add_product_name_rebuild_massaction>
+          <mventory_add_product_massactions>
             <type>singleton</type>
             <class>mventory/observer</class>
-            <method>addProductNameRebuildMassaction</method>
-          </mventory_add_product_name_rebuild_massaction>
-
-          <mventory_add_product_category_match_massaction>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>addProductCategoryMatchMassaction</method>
-          </mventory_add_product_category_match_massaction>
+            <method>addProductMassactions</method>
+          </mventory_add_product_massactions>
         </observers>
       </adminhtml_catalog_product_grid_prepare_massaction>
     </events>

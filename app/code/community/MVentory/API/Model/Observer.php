@@ -59,30 +59,33 @@ class MVentory_API_Model_Observer {
     Mage::register('current_category', $category);
   }
 
-  public function addProductNameRebuildMassaction ($observer) {
-    $block = $observer->getBlock();
-
-    $route = 'adminhtml/mventory_catalog_product/massNameRebuild';
-
-    $label = Mage::helper('mventory')->__('Rebuild product name');
-    $url = $block->getUrl($route, array('_current' => true));
+  public function addProductMassactions ($observer) {
+    $helper = Mage::helper('mventory');
+    $block = $observer
+      ->getBlock()
+      ->getMassactionBlock();
 
     $block
-      ->getMassactionBlock()
-      ->addItem('namerebuild', compact('label', 'url'));
-  }
-
-  public function addProductCategoryMatchMassaction ($observer) {
-    $block = $observer->getBlock();
-
-    $route = 'adminhtml/mventory_catalog_product/massCategoryMatch';
-
-    $label = Mage::helper('mventory')->__('Match product category');
-    $url = $block->getUrl($route, array('_current' => true));
-
-    $block
-      ->getMassactionBlock()
-      ->addItem('categorymatch', compact('label', 'url'));
+      ->addItem(
+          'namerebuild',
+          array(
+            'label' => $helper->__('Rebuild product name'),
+            'url' => $block->getUrl(
+              'adminhtml/mventory_catalog_product/massNameRebuild',
+              array('_current' => true)
+            )
+          )
+        )
+      ->addItem(
+          'categorymatch',
+          array(
+            'label' => $helper->__('Match product category'),
+            'url' => $block->getUrl(
+              'adminhtml/mventory_catalog_product/massCategoryMatch',
+              array('_current' => true)
+            )
+          )
+        );
   }
 
   /**
