@@ -99,7 +99,7 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
    * Synching images between configurable product and all assigned products
    *
    * @param Mage_Catalog_Model_Product $product
-   *   Currently updating product
+   *   Currently updating product, optional
    *
    * @param Mage_Catalog_Model_Product $configurable
    *   Configurable product
@@ -128,6 +128,11 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
   public function sync ($product, $configurable, $ids, $params = array()) {
     $params = array_merge(array('slave' => false), $params);
 
+    if ($product == null) {
+      $product = $configurable;
+      $params['slave'] = true;
+    }
+
     $attrs = $product->getAttributes();
 
     if (!isset($attrs['media_gallery']))
@@ -151,7 +156,7 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
     $mediaAttributes = $product->getMediaAttributes();
 
     foreach ($mediaAttributes as $code => $attr)
-      if ($configurable->getData($code) != 'no_selection')
+      if ($params['slave'] || $configurable->getData($code) != 'no_selection')
         $mediaVals[$attr->getAttributeId()] = $configurable->getData($code);
 
     if (!(isset($mediaVals) && count($mediaVals) == count($mediaAttributes)))
