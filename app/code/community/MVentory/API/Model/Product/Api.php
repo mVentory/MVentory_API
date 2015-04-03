@@ -294,12 +294,20 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         $website
       );
 
+      Mage::dispatchEvent(
+        'mventory_api_product_create',
+        array(
+          'product' => ($product = new Varien_Object($data)),
+          'website' => $website
+        )
+      );
+
       //Use admin store ID to save values of attributes in the default scope
       $id = $this->create(
         $type,
         $set,
         $sku,
-        $data,
+        $product->getData(),
         Mage_Core_Model_App::ADMIN_STORE_ID
       );
 
