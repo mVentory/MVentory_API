@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -529,7 +529,12 @@ class MVentory_API_Helper_Product_Configurable
     //assinged to configurable product (C) because we are passing it
     //in a separate parameter
     unset($prods[$aID]);
-    Mage::helper('mventory/image')->sync($a, $c, $prods, true);
+    Mage::helper('mventory/image')->sync(
+      $a,
+      $c,
+      $prods,
+      array('slave' => true)
+    );
 
     return true;
   }

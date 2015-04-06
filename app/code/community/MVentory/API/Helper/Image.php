@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -98,18 +98,36 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
   /**
    * Synching images between configurable product and all assigned products
    *
-   * !!!TODO: make $product parameter optional, because there's sense to pass
-   *          it only when images are updated/removed (e.g. when calling from
-   *          media API)
+   * @param Mage_Catalog_Model_Product $product
+   *   Currently updating product
    *
-   * @param Mage_Catalog_Model_Product $product Currently updating product
-   * @param Mage_Catalog_Model_Product $configurable Configurable product
-   * @param array $_products List of other assigned products
-   * @param bool $slave Shows that $product will be used as a source of changes
-   *                    or not
+   * @param Mage_Catalog_Model_Product $configurable
+   *   Configurable product
+   *
+   * @param array $ids
+   *   List of other assigned products
+   *
+   * @param array $params
+   *   List of opional parameters:
+   *     * slave - Shows that $product will be used as a source of changes
+   *               or not. Default: false
+   *
    * @return MVentory_API_Helper_Image
+   *
+   * @todo this method should be updated to accept following parameters:
+   *   * $configurable - configurable product is used as source of images and
+   *       image settings for assigned products
+   *   * $ids - List of assigned products
+   *   * $params['changedProd'] - Simple product (one of $ids), optional
+   *       parameter. If is set then is used as source instead of configurable
+   *       product. This is needed to find which images should be removed
+   *       and which images should be used as image, small image and thumbnail
+   *       in other linked products after linked simple product is updated
+   *       via API.
    */
-  public function sync ($product, $configurable, $ids, $slave = false) {
+  public function sync ($product, $configurable, $ids, $params = array()) {
+    $params = array_merge(array('slave' => false), $params);
+
     $attrs = $product->getAttributes();
 
     if (!isset($attrs['media_gallery']))
@@ -175,7 +193,7 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
     foreach ($imgs as $file => $data) {
       $_ids = $data['prods'];
 
-      if (!($slave || isset($_ids[$pID]))) {
+      if (!($params['slave'] || isset($_ids[$pID]))) {
         foreach ($_ids as $valueId)
           $resourse->deleteGalleryValueInStore(
             $imgsToDel[] = $valueId,
