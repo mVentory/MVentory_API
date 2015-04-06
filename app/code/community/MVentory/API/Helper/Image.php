@@ -112,6 +112,8 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
    *     * slave - Shows that $product will be used as a source of changes
    *               or not. Default: false
    *     * empty - Update only products without images. Default: false
+   *     * source - IDs of products among passed to the function to use as
+   *                a source of images. Defaul: null
    *
    * @return MVentory_API_Helper_Image
    *
@@ -130,10 +132,14 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
     $params = array_merge(
       array(
         'slave' => false,
-        'empty' => false
+        'empty' => false,
+        'source' => null
       ),
       $params
     );
+
+    if ($params['source'])
+      $params['source'] = array_flip((array) $params['source']);
 
     if ($product == null) {
       $product = $configurable;
@@ -192,6 +198,9 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
         continue;
       }
 
+      if ($params['source'] && !isset($params['source'][$id]))
+        continue;
+
       foreach ($gallery as $img) {
         $file = $img['file'];
 
@@ -208,10 +217,13 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
       }
     }
 
+    if (!$imgs)
+      return $this;
+
     $ids = $params['empty'] ? $emptyIds : $ids;
     $nIds = count($ids);
 
-    unset($emptyIds);
+    unset($emptyIds, $sourceIds);
 
     //Exit if it was requested to update only products without images
     //and there's no such products
