@@ -111,6 +111,7 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
    *   List of opional parameters:
    *     * slave - Shows that $product will be used as a source of changes
    *               or not. Default: false
+   *     * empty - Update only products without images. Default: false
    *
    * @return MVentory_API_Helper_Image
    *
@@ -126,7 +127,13 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
    *       via API.
    */
   public function sync ($product, $configurable, $ids, $params = array()) {
-    $params = array_merge(array('slave' => false), $params);
+    $params = array_merge(
+      array(
+        'slave' => false,
+        'empty' => false
+      ),
+      $params
+    );
 
     if ($product == null) {
       $product = $configurable;
@@ -175,25 +182,41 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
       = Mage::getResourceSingleton('catalog/product_attribute_backend_media');
 
     $imgs = array();
+    $emptyIds = array();
 
-    foreach ($ids as $id)
-      if ($gallery = $resourse->loadGallery($product->setId($id), $object))
-        foreach ($gallery as $img) {
-          $file = $img['file'];
+    foreach ($ids as $id) {
+      $gallery = $resourse->loadGallery($product->setId($id), $object);
 
-          $imgs[$file]['prods'][$id] = $img['value_id'];
-
-          //Remember image settings from first product only, so later products
-          //don't overwrite it. Allows to use image settings from source product
-          //(which is first in the list) for images which will be added to
-          //products
-          if (!isset($imgs[$file]['img'])) {
-            unset($img['value_id']);
-            $imgs[$file]['img'] = $img;
-          }
+      if (!$gallery && $params['empty']) {
+        $emptyIds[] = $id;
+        continue;
       }
 
+      foreach ($gallery as $img) {
+        $file = $img['file'];
+
+        $imgs[$file]['prods'][$id] = $img['value_id'];
+
+        //Remember image settings from first product only, so later products
+        //don't overwrite it. Allows to use image settings from source product
+        //(which is first in the list) for images which will be added to
+        //products
+        if (!isset($imgs[$file]['img'])) {
+          unset($img['value_id']);
+          $imgs[$file]['img'] = $img;
+        }
+      }
+    }
+
+    $ids = $params['empty'] ? $emptyIds : $ids;
     $nIds = count($ids);
+
+    unset($emptyIds);
+
+    //Exit if it was requested to update only products without images
+    //and there's no such products
+    if (!$nIds && $params['empty'])
+      return $this;
 
     foreach ($imgs as $file => $data) {
       $_ids = $data['prods'];
@@ -210,18 +233,19 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
         continue;
       }
 
-      if (count($_ids) != $nIds) {
-        $img = $data['img'];
-        $val = array(
-          'attribute_id' => $galleryAttributeId,
-          'value' => $file
-        );
+      if (!$idsToProcess = array_diff($ids, array_keys($_ids)))
+        continue;
 
-        foreach (array_diff($ids, array_keys($_ids)) as $id) {
-          $val['entity_id'] = $id;
-          $img['value_id'] = $resourse->insertGallery($val);
-          $resourse->insertGalleryValueInStore($img);
-        }
+      $img = $data['img'];
+      $val = array(
+        'attribute_id' => $galleryAttributeId,
+        'value' => $file
+      );
+
+      foreach ($idsToProcess as $id) {
+        $val['entity_id'] = $id;
+        $img['value_id'] = $resourse->insertGallery($val);
+        $resourse->insertGalleryValueInStore($img);
       }
     }
 
