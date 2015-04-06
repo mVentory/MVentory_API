@@ -160,8 +160,14 @@ class MVentory_API_Helper_Image extends MVentory_API_Helper_Product {
 
           $imgs[$file]['prods'][$id] = $img['value_id'];
 
-          unset($img['value_id']);
-          $imgs[$file]['img'] = $img;
+          //Remember image settings from first product only, so later products
+          //don't overwrite it. Allows to use image settings from source product
+          //(which is first in the list) for images which will be added to
+          //products
+          if (!isset($imgs[$file]['img'])) {
+            unset($img['value_id']);
+            $imgs[$file]['img'] = $img;
+          }
       }
 
     $nIds = count($ids);
