@@ -142,11 +142,15 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     $images = $productAttributeMedia->items($productId, $storeId, 'id');
 
     foreach ($images as &$image) {
-      $_image = new Varien_Image($baseMediaPath . $image['file']);
-
       $image['url'] = $baseMediaUrl . $image['file'];
-      $image['width'] = (string) $_image->getOriginalWidth();
-      $image['height'] = (string) $_image->getOriginalHeight();
+
+      if (file_exists($_image = $baseMediaPath . $image['file'])) try {
+        $_image = new Varien_Image($_image);
+
+        $image['width'] = (string) $_image->getOriginalWidth();
+        $image['height'] = (string) $_image->getOriginalHeight();
+      }
+      catch (Exception $e) {}
     }
 
     $result['images'] = $images;
