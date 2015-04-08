@@ -288,6 +288,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       array('load_image' => false)
     );
 
+    /**
+     * @todo [COMPAT] reset keys temporarely, because old app expects plain
+     *   array
+     */
+    $result['items'] = array_values($result['items']);
+
     return $helper->prepareApiResponse($result);
   }
 
@@ -988,7 +994,11 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
           $params
         );
 
-      $product['siblings'] = $_siblings;
+      /**
+       * @todo [COMPAT] reset keys temporarely, because old app expects plain
+       *   array
+       */
+      $product['siblings'] = array_values($_siblings);
     }
   }
 
