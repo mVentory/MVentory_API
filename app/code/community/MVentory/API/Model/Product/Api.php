@@ -36,6 +36,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     //         Add to whitelist in MVentory_API_Helper_Product_Attribute
     'status' => true,
 
+    /**
+     * @todo remove it after API code will be changed to update product
+     *   visibility directly in product but not via update call
+     */
+    'visibility' => true,
+
     'stock_data' => true
   );
 
