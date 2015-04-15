@@ -116,11 +116,11 @@ class MVentory_API_AppController
       return;
     }
 
-    $url = Mage::app()
-      ->getStore()
-      ->getBaseUrl();
+    $store = Mage::app()->getStore();
+    $secure = $store->isCurrentlySecure();
+    $url = $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, $secure);
 
-    $url = 'mventory://'
+    $url = ($secure ? 'mventorys://' : 'mventory://')
            . substr($url, strpos($url, '//') + 2)
            . 'mventory-key/'
            . urlencode($key)
