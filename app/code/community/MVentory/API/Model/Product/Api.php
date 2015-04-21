@@ -669,7 +669,8 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $product->setAttributeSetId($newSet);
     }
 
-    $skus = isset($productData['additional_sku'])
+    $skus = (isset($productData['additional_sku'])
+             && $productData['additional_sku'])
               ? (array) $productData['additional_sku']
                 : false;
 
