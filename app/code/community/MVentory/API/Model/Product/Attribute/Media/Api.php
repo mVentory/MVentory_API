@@ -101,11 +101,13 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     $content = $this->_fixOrientation($name, $file['content']);
     $file['content'] = base64_encode($content);
 
-    $isClipEnabled = Mage::getStoreConfig('mventory/image_clips/enable');
+    $isClipEnabled = Mage::getStoreConfig(
+      MVentory_API_Model_Config::_BGG_ENABLED
+    );
 
     //Exclude image from frontend
     if ($isClipEnabled
-        && Mage::getStoreConfig('mventory/image_clips/exclude_new'))
+        && Mage::getStoreConfig(MVentory_API_Model_Config::_BGG_EXCL_NEW))
       $data['exclude'] = '1';
 
     $img = $this->create($productId, $data, $storeId, $identifierType);
@@ -352,7 +354,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
 
     $helper = Mage::helper('mventory/imageclipper');
 
-    if (Mage::getStoreConfig('mventory/image_clips/enable')) try {
+    if (Mage::getStoreConfig(MVentory_API_Model_Config::_BGG_ENABLED)) try {
       $helper->deleteFromDropbox(basename($file));
 
       if ($md['is_deleted'])

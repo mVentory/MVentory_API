@@ -259,7 +259,7 @@ class MVentory_API_Helper_Imageclipper extends MVentory_API_Helper_Data
    * @return string /full/path/magento/media/backup
    */
   public function getBackupFolder () {
-    $confVal = Mage::getStoreConfig('mventory/image_clips/backup_folder');
+    $confVal = Mage::getStoreConfig(MVentory_API_Model_Config::_BGG_BACKUP_DIR);
 
     return $confVal ? Mage::getBaseDir('media') . DS . $confVal : null;
   }
@@ -298,7 +298,7 @@ class MVentory_API_Helper_Imageclipper extends MVentory_API_Helper_Data
     return Mage::helper('mventory/string')->startsWith(
       strtolower(trim($file)),
       strtolower(trim(Mage::getStoreConfig(
-        MVentory_API_Model_Config::_DBX_PATH
+        MVentory_API_Model_Config::_BGG_DBX_PATH
       )))
     );
   }
@@ -308,7 +308,7 @@ class MVentory_API_Helper_Imageclipper extends MVentory_API_Helper_Data
    */
   public function getDbxClient () {
     return new Dropbox\Client(
-      Mage::getStoreConfig(MVentory_API_Model_Config::_DBX_TKN),
+      Mage::getStoreConfig(MVentory_API_Model_Config::_BGG_DBX_TKN),
       'PHP-Example/1.0'
     );
   }
@@ -357,7 +357,7 @@ class MVentory_API_Helper_Imageclipper extends MVentory_API_Helper_Data
    *   Full dropbox path
    */
   protected function _toDbxPath ($filename) {
-    return Mage::getStoreConfig(MVentory_API_Model_Config::_DBX_PATH)
+    return Mage::getStoreConfig(MVentory_API_Model_Config::_BGG_DBX_PATH)
            . $filename;
   }
 }

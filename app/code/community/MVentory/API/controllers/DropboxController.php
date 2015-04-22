@@ -27,7 +27,7 @@
 class MVentory_API_DropboxController extends Mage_Core_Controller_Front_Action
 {
   public function indexAction () {
-    if (!Mage::getStoreConfig('mventory/image_clips/enable'))
+    if (!Mage::getStoreConfig(MVentory_API_Model_Config::_BGG_ENABLED))
       return;
 
     //Respond to dropbox
@@ -55,7 +55,9 @@ class MVentory_API_DropboxController extends Mage_Core_Controller_Front_Action
     if (!$delta['entries'])
       return;
 
-    $isAutoReplace = Mage::getStoreConfig('mventory/image_clips/auto_replace');
+    $isAutoReplace = Mage::getStoreConfig(
+      MVentory_API_Model_Config::_BGG_AUTO_REPL
+    );
 
     foreach ($delta['entries'] as $_item) {
 

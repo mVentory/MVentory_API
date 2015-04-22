@@ -46,8 +46,14 @@ class MVentory_API_Model_Config
   const _QR_CSS = 'mventory/qr/css';
   const _QR_URL = 'mventory/qr/base_url';
   const _QR_COPIES = 'mventory/qr/copies';
-  const _DBX_TKN = 'mventory/image_clips/dropbox_token';
-  const _DBX_PATH = 'mventory/image_clips/dropbox_path';
+
+  //BackGround Genie config paths
+  const _BGG_ENABLED = 'bg_genie/settings/enabled';
+  const _BGG_BACKUP_DIR = 'bg_genie/settings/backup_dir';
+  const _BGG_EXCL_NEW = 'bg_genie/settings/exclude_new';
+  const _BGG_AUTO_REPL = 'bg_genie/settings/auto_replace';
+  const _BGG_DBX_TKN = 'bg_genie/settings/dropbox_token';
+  const _BGG_DBX_PATH = 'bg_genie/settings/dropbox_path';
 
   //Attribute metadata values
   const MT_INPUT_KBD = 0;
