@@ -1,11 +1,11 @@
 <?php
 
-$version = '1.4.1';
+$version = '1.5.0';
 
 $notes = <<<EOT
-* Fix setting default category on create/updating product
+* Add additional data (price, QTY, images, etc) to output of product.list API call
 
-* Fix bug which breaks API settings page in Magento versions prior 1.9 release
+* Other small bug fixies and improvements
 EOT;
 
 $description = <<<EOT

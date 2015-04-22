@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -35,6 +35,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     //!!!TODO: remove it after the app will treat status as normal attribute
     //         Add to whitelist in MVentory_API_Helper_Product_Attribute
     'status' => true,
+
+    /**
+     * @todo remove it after API code will be changed to update product
+     *   visibility directly in product but not via update call
+     */
+    'visibility' => true,
 
     'stock_data' => true
   );
@@ -75,7 +81,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     $productId = $product->getId();
 
     $_result = array(
-      'product_id' => $productId,
+      'id' => $productId,
       'sku' => $product->getSku(),
       'set' => $product->getAttributeSetId(),
       'websites' => $product->getWebsiteIds(),
@@ -104,7 +110,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $_result,
       array_merge(
         array(
-          'product_id' => true,
+          'id' => true,
           'set' => true,
           'websites' => true,
           'url_path' => true,
@@ -120,6 +126,11 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       )
     );
 
+    /**
+     * @todo Remove after apps will be updated
+     */
+    $result['product_id'] = $productId;
+
     $stockItem = Mage::getModel('mventory/stock_item_api');
 
     $_result = $stockItem->items($productId);
@@ -127,60 +138,28 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     if (isset($_result[0]))
       $result = array_merge($result, $_result[0]);
 
-    $productAttributeMedia
-      = Mage::getModel('mventory/product_attribute_media_api');
+    $result['images'] = $this->_getImages($productId, $storeId);
 
-    $baseUrlPath = Mage_Core_Model_Store::XML_PATH_UNSECURE_BASE_URL;
+    if ($attr = $helper->getConfigurable($result['set'])) {
+      $_tmp = array($productId => $result);
 
-    $mediaConfig = Mage::getSingleton('catalog/product_media_config');
-
-    $baseMediaPath = $mediaConfig->getBaseMediaPath();
-    $baseMediaUrl = Mage::getStoreConfig($baseUrlPath, $storeId)
-                    . 'media/'
-                    . $mediaConfig->getBaseMediaUrlAddition();
-
-    $images = $productAttributeMedia->items($productId, $storeId, 'id');
-
-    foreach ($images as &$image) {
-      $_image = new Varien_Image($baseMediaPath . $image['file']);
-
-      $image['url'] = $baseMediaUrl . $image['file'];
-      $image['width'] = (string) $_image->getOriginalWidth();
-      $image['height'] = (string) $_image->getOriginalHeight();
+      $this->_addSiblings(
+        $_tmp,
+        array($result['set'] => $attr),
+        array(
+          'name',
+          'price',
+          'special_price',
+          'special_from_date',
+          'special_to_date'
+        ),
+        $storeId,
+        array('load_image' => true)
+      );
     }
 
-    $result['images'] = $images;
-
-    $helper = Mage::helper('mventory/product_configurable');
-
-    if ($siblingIds = $helper->getSiblingsIds($productId)) {
-      $attrs = Mage::getModel('mventory/product_attribute_api')
-        ->fullInfoList($result['set']);
-
-      foreach ($attrs as $attr)
-        if ($attr['is_configurable'])
-          break;
-
-      $siblings = Mage::getResourceModel('catalog/product_collection')
-                    ->addAttributeToSelect('price')
-                    ->addAttributeToSelect('name')
-                    ->addAttributeToSelect($attr['attribute_code'])
-                    ->addIdFilter($siblingIds)
-                    ->addStoreFilter($storeId)
-                    ->setFlag('require_stock_items');
-
-      foreach ($siblings as $sibling)
-        $result['siblings'][] = array(
-          'product_id' => $sibling->getId(),
-          'sku' => $sibling->getSku(),
-          'name' => $sibling->getName(),
-          'price' => $sibling->getPrice(),
-          'qty' => $sibling->getStockItem()->getQty(),
-          $attr['attribute_code'] => $sibling->getData($attr['attribute_code'])
-        );
-    }
-
-    $product = new Varien_Object($result);
+    $product = new Varien_Object(isset($_tmp) ? $_tmp[$productId] : $result);
+    unset($_tmp);
 
     Mage::dispatchEvent(
       'mventory_api_product_info',
@@ -191,13 +170,22 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
   }
 
   public function limitedList ($name = null, $categoryId = null, $page = 1) {
-    $helper = Mage::helper('mventory');
+    $helper = Mage::helper('mventory/product_attribute');
     $storeId = $helper->getCurrentStoreId();
 
     $limit = (int) Mage::getStoreConfig(
       MVentory_API_Model_Config::_FETCH_LIMIT,
       $storeId
     );
+
+    $collection = Mage::getResourceModel('mventory/product_collection')
+      ->addAttributeToFilter(
+          'type_id',
+          Mage_Catalog_Model_Product_Type::TYPE_SIMPLE
+        )
+      ->setStoreId($storeId)
+      ->addStoreFilter($storeId)
+      ->setPage($page, $limit);
 
     if ($categoryId) {
       $category = Mage::getModel('catalog/category')
@@ -207,11 +195,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       if (!$category->getId())
         $this->_fault('category_not_exists');
 
-      $collection = $category->getProductCollection();
-    } else {
-      $collection = Mage::getModel('catalog/product')
-                      ->getCollection()
-                      ->addStoreFilter($storeId);
+      $collection->addCategoryFilter($category);
     }
 
     if ($name) {
@@ -229,31 +213,86 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         'left'
       );
     }
+    else
+      $collection->setOrder(
+        'updated_at',
+        Varien_Data_Collection::SORT_ORDER_DESC
+      );
 
-    $collection
-      ->addAttributeToSelect('name')
-      ->addAttributeToFilter(
-          'type_id',
-          Mage_Catalog_Model_Product_Type::TYPE_SIMPLE
-        )
-      ->setPage($page, $limit);
+    $result = array(
+      'items' => array(),
+      'current_page' =>  $collection->getCurPage(),
+      'last_page' => (int) $collection->getLastPageNumber()
+    );
+
+    //Check if there's products which pass collection filters
+    if (!$collection->getSize())
+      return $helper->prepareApiResponse($result);
+
+    //List of product attributes which should be returned in the result
+    $_attrs = array(
+      'name',
+      'price',
+      'special_price',
+      'special_from_date',
+      'special_to_date'
+    );
+
+    //Get product IDs and attribute set IDs for the collection. We will use
+    //loaded IDs later to load product data
+    $ids = $collection->getIdsAndSets();
+
+    //Collect attrribute set IDs and their configurable attributes to
+    //get list of attributes which should be loaded in collection.
+    //Also this data is used to add data of sibling products.
+    $confAttrs = $confCodes = array();
+
+    foreach ($ids as $id => $setId)
+      if (!isset($confAttrs[$setId])
+          && $confAttr = $helper->getConfigurable($setId)) {
+
+        $confAttrs[$setId] = $confAttr;
+        $confCodes[] = $confAttr->getAttributeCode();
+      }
+
+    unset($code);
+
+    //Get full list of attributes which should be returned in the result
+    $attrs = array_merge($_attrs, $confCodes);
+
+    $collection = Mage::getResourceModel('mventory/product_collection')
+      ->addIdFilter(array_keys($ids))
+      ->setStoreId($storeId)
+      ->addAttributeToSelect($attrs)
+      ->setFlag('require_stock_items', true);
 
     if (!$name)
-      $collection
-        ->setOrder('updated_at', Varien_Data_Collection::SORT_ORDER_DESC);
+      $collection->setOrder(
+        'updated_at',
+        Varien_Data_Collection::SORT_ORDER_DESC
+      );
 
-    $result = array('items' => array());
+    foreach ($collection as $id => $product)
+      $result['items'][$id] = $this->_getProductData(
+        $product,
+        $attrs,
+        $storeId,
+        array('load_image' => false)
+      );
 
-    foreach ($collection as $product)
-      $result['items'][] = array('product_id' => $product->getId(),
-                                 'sku' => $product->getSku(),
-                                 'name' => $product->getName(),
-                                 'set' => $product->getAttributeSetId(),
-                                 'type' => $product->getTypeId(),
-                                 'category_ids' => $product->getCategoryIds() );
+    $this->_addSiblings(
+      $result['items'],
+      $confAttrs,
+      $_attrs,
+      $storeId,
+      array('load_image' => false)
+    );
 
-    $result['current_page'] = $collection->getCurPage();
-    $result['last_page'] = (int) $collection->getLastPageNumber();
+    /**
+     * @todo [COMPAT] reset keys temporarely, because old app expects plain
+     *   array
+     */
+    $result['items'] = array_values($result['items']);
 
     return $helper->prepareApiResponse($result);
   }
@@ -294,12 +333,20 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         $website
       );
 
+      Mage::dispatchEvent(
+        'mventory_api_product_create',
+        array(
+          'product' => ($product = new Varien_Object($data)),
+          'website' => $website
+        )
+      );
+
       //Use admin store ID to save values of attributes in the default scope
       $id = $this->create(
         $type,
         $set,
         $sku,
-        $data,
+        $product->getData(),
         Mage_Core_Model_App::ADMIN_STORE_ID
       );
 
@@ -622,7 +669,8 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $product->setAttributeSetId($newSet);
     }
 
-    $skus = isset($productData['additional_sku'])
+    $skus = (isset($productData['additional_sku'])
+             && $productData['additional_sku'])
               ? (array) $productData['additional_sku']
                 : false;
 
@@ -814,5 +862,198 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         $this->_allowUpdate
       )
     );
+  }
+
+  /**
+   * Return prepared product data for list API call. Also loads and prepares
+   * images data.
+   *
+   * @param Mage_Catalog_Model_Product $product
+   *   Product model
+   *
+   * @param array $attrs
+   *   List of attributes which data should be included
+   *
+   * @param  int $storeId
+   *   Current store ID
+   *
+   * @param array $params
+   *   Additional parameters
+   *
+   * @return array
+   *   Prepared product data
+   */
+  protected function _getProductData ($product, $attrs, $storeId, $params) {
+    $stock = $product->getStockItem();
+
+    $id = $product->getId();
+    $qty = $stock->getQty();
+
+    return array_merge(
+      array(
+        'id' => $id,
+        'sku' => $product->getSku(),
+        'set' => $product->getAttributeSetId(),
+        'category_ids' => $product->getCategoryIds(),
+        'stock' => array(
+          'qty' => $qty,
+          'is_in_stock' => $stock->getIsInStock(),
+          'manage_stock' => $stock->getManageStock(),
+          'is_qty_decimal' => $stock->getIsQtyDecimal()
+        ),
+        'images' => $this->_getImages($id, $storeId, $params['load_image']),
+
+        /**
+         * @todo Remove after apps will be updated
+         */
+        'product_id' => $id,
+        'type' => $product->getTypeId(),
+        'qty' => $qty
+      ),
+      array_intersect_key($product->getData(), array_flip($attrs))
+    );
+  }
+
+  /**
+   * Add data of sibling products to the supplied list of product data
+   *
+   * @param array $products
+   *   Prepared product data
+   *
+   * @param array $confAttrs
+   *   List of attribute sets IDs anf their configurable attributes, where
+   *   key is ID of attribute set and value is attribute model
+   *
+   * @param array $_attrs
+   *   List of attributes which data should be included
+   *
+   * @param int $storeId
+   *   Current store ID
+   *
+   * @param array $params
+   *   Additional parameters
+   */
+  protected function _addSiblings (&$products,
+                                   $confAttrs,
+                                   $_attrs,
+                                   $storeId,
+                                   $params) {
+
+    $helper = Mage::helper('mventory/product_configurable');
+
+    foreach ($products as &$product) {
+      $setId = $product['set'];
+
+      $product['siblings'] = array();
+
+      if (!isset($confAttrs[$setId]))
+        continue;
+
+      $attr = $confAttrs[$setId];
+      $code = $attr->getAttributeCode();
+
+      if (!(isset($product[$code]) && $product[$code]))
+        continue;
+
+      if (!$siblingIds = $helper->getSiblingsIds($product['id']))
+        continue;
+
+      $_siblings = array();
+
+      //Find which sibling products were already loaded and reuse exising data
+      if ($loaded = array_intersect_key($products, array_flip($siblingIds))) {
+        foreach ($loaded as $id => $_sibling) {
+          unset($_sibling['siblings']);
+
+          $_siblings[$id] = $_sibling;
+        }
+
+        if (count($loaded) == count($siblingIds)) {
+          $product['siblings'] = $_siblings;
+          continue;
+        }
+
+        //Get list of IDs of not loaded sibling products
+        $siblingIds = array_diff($siblingIds, array_keys($loaded));
+      }
+
+      unset($loaded);
+
+      $attrs = array_merge($_attrs, array($code));
+
+      $siblings = Mage::getResourceModel('mventory/product_collection')
+        ->addIdFilter($siblingIds)
+        ->addAttributeToSelect($attrs)
+        ->setFlag('require_stock_items', true)
+        ->setStoreId($storeId);
+
+      foreach ($siblings as $id => $sibling)
+        $_siblings[$id] = $this->_getProductData(
+          $sibling,
+          $attrs,
+          $storeId,
+          $params
+        );
+
+      /**
+       * @todo [COMPAT] reset keys temporarely, because old app expects plain
+       *   array
+       */
+      $product['siblings'] = array_values($_siblings);
+    }
+  }
+
+  /**
+   * Return prepared data for product's images
+   *
+   * @param int $id
+   *   ID of product
+   *
+   * @param int $storeId
+   *   Current store ID
+   *
+   * @param bool $loadImage
+   *   Flag to load image to get additional data
+   *
+   * @return array
+   *   Prepared data for product's images
+   */
+  protected function _getImages ($id, $storeId, $loadImage = true) {
+    if (!isset($this->__mediaApi))
+      $this->__mediaApi = Mage::getModel(
+        'mventory/product_attribute_media_api'
+      );
+
+    if (!isset($this->__mediaPath, $this->__mediaUrl)) {
+      $config = Mage::getSingleton('catalog/product_media_config');
+
+      $this->__mediaPath = $config->getBaseMediaPath();
+      $this->__mediaUrl = Mage::getStoreConfig(
+                            Mage_Core_Model_Store::XML_PATH_UNSECURE_BASE_URL,
+                            $storeId
+                          )
+                          . 'media/'
+                          . $config->getBaseMediaUrlAddition();
+    }
+
+    $images = $this
+      ->__mediaApi
+      ->items($id, $storeId, 'id');
+
+    foreach ($images as &$image) {
+      $image['url'] = $this->__mediaUrl . $image['file'];
+
+      if ($loadImage
+          && file_exists($_image = $this->__mediaPath . $image['file'])) try {
+
+        $_image = new Varien_Image($_image);
+
+        $image['width'] = (string) $_image->getOriginalWidth();
+        $image['height'] = (string) $_image->getOriginalHeight();
+      }
+      catch (Exception $e) {}
+    }
+
+    return $images;
   }
 }

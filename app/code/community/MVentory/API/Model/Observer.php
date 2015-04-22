@@ -233,7 +233,9 @@ EOT;
 
     $msg = $helper->__(
       self::__CONFIG_URL,
-      $store->getBaseUrl() . 'mventory-key/' . urlencode($key),
+      $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true)
+        . 'mventory-key/'
+        . urlencode($key),
       round($period / 3600)
     );
 
