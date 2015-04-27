@@ -222,7 +222,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
     //Save transaction ID and orderId pair. So, it will return existing order
     //to API client if it will try to create order with same transaction ID
     //next time
-    if ($transactionId !== null) {
+    if ($transactionId !== null) try {
       $transaction = Mage::getModel('mventory/order_transaction');
 
       $transaction
@@ -230,15 +230,28 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
         ->setTransactionId((int) $transactionId)
         ->save();
     }
+    catch (Exception $e) {
+      Mage::logException($e);
+    }
 
     //create shipment and invoice to complete order
-    $shipment = Mage::getModel('mventory/order_shipment_api');
-    $shipment->create($orderId);
+    try {
+      $shipment = Mage::getModel('mventory/order_shipment_api');
+      $shipment->create($orderId);
+    }
+    catch (Exception $e) {
+      Mage::logException($e);
+    }
 
-    $invoice = Mage::getModel('sales/order_invoice_api');
-    $invoice->create($orderId, null);
+    try {
+      $invoice = Mage::getModel('sales/order_invoice_api');
+      $invoice->create($orderId, null);
+    }
+    catch (Exception $e) {
+      Mage::logException($e);
+    }
 
-    if ($updateProduct) {
+    if ($updateProduct) try {
       Mage::app()->setCurrentStore(Mage_Core_Model_App::ADMIN_STORE_ID);
 
       $product
@@ -247,14 +260,26 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
       Mage::app()->setCurrentStore($storeId);
     }
+    catch (Exception $e) {
+      Mage::logException($e);
+    }
 
-    if (isset($productQtyNew))
+    if (isset($productQtyNew)) try {
       $stockItem
         ->setUseConfigManageStock(0)
         ->setQty($productQtyNew)
         ->save();
+    }
+    catch (Exception $e) {
+      Mage::logException($e);
+    }
 
-    $result = $productApi->fullInfo($product->getId(), 'id');
+    try {
+      $result = $productApi->fullInfo($product->getId(), 'id');
+    }
+    catch (Exception $e) {
+      Mage::logException($e);
+    }
 
     if ($orderId)
       $result['order_id'] = $orderId;
