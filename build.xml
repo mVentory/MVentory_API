@@ -35,10 +35,10 @@ The extension is free for non-commercial or trial use. Please, request a FREE co
 Visit http://mventory.com for more info.</description>
    <license>CC BY-NC-ND 4.0</license>
    <license_uri>http://creativecommons.org/licenses/by-nc-nd/4.0/</license_uri>
-   <version>1.5.0</version>
+   <version>1.5.1</version>
    <stability>stable</stability>
-   <notes>* Add additional data (price, QTY, images, etc) to output of product.list API call
-* Other small bug fixies and improvements</notes>
+   <notes>* Fix HTTPS handling for android app links
+* Updated config hints and tooltips</notes>
    <authors>
       <name>
          <name>Anatoly A. Kazantsev</name>
