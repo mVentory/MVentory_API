@@ -1,11 +1,10 @@
 <?php
 
-$version = '1.5.0';
+$version = '1.5.1';
 
 $notes = <<<EOT
-* Add additional data (price, QTY, images, etc) to output of product.list API call
-
-* Other small bug fixies and improvements
+* Fix HTTPS handling for android app links
+* Updated config hints and tooltips
 EOT;
 
 $description = <<<EOT
