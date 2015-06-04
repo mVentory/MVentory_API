@@ -274,12 +274,7 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
       Mage::logException($e);
     }
 
-    try {
-      $result = $productApi->fullInfo($product->getId(), 'id');
-    }
-    catch (Exception $e) {
-      Mage::logException($e);
-    }
+    $result = $productApi->fullInfo($product->getId(), 'id');
 
     if ($orderId)
       $result['order_id'] = $orderId;
