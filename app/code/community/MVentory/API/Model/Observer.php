@@ -25,8 +25,17 @@
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
 class MVentory_API_Model_Observer {
+  
+/**
+ * Double percentage sign to screen line breaks from sprintf() variables. Variables found on line 243.
+ */
   const __CONFIG_URL = <<<'EOT'
-mVentory configuration URL: <a href="%1$s">%1$s</a> (Can only be used once and is valid for %2$d hours)
+
+mVentory configuration URL: <a href="%1$s">%1$s</a><br>Email: <a href="mailto:%4$s?subject=API Key&body=Hi,%%0D%%0A%%0D%%0AYour Android access to %3$s has been configured. You can start loading products now.%%0D%%0A%%0D%%0A
+Please, download the app from https://play.google.com/store/apps/details?id=com.mventory first and then click on this link to complete the configuration: %1$s %%0D%%0A%%0D%%0A
+	This link can only be used once within 24hr period. Ask your website administrator to reissue if the link doesn't work or report the problem to support@mventory.com.%%0D%%0A%%0D%%0A 
+	Thanks mVentory">Send API Key Email</a><br>View: <a href="%5$s">QR CODE</a>
+
 EOT;
 
   public function productInit ($observer) {
@@ -236,7 +245,12 @@ EOT;
       Mage::getModel('core/url')->setStore($store)->getBaseUrl()
         . 'mventory-key/'
         . urlencode($key),
-      round($period / 3600)
+      round($period / 3600),
+      Mage::getStoreConfig('web/unsecure/base_url'),
+      $customer->getEmail(),
+      'https://chart.googleapis.com/chart?cht=qr&chld=M|1&chs=100x100&chl='.urlencode(Mage::getModel('core/url')->setStore($store)->getBaseUrl()
+        . 'mventory-key/'
+        . urlencode($key))
     );
 
     Mage::getSingleton('adminhtml/session')->addNotice($msg);
