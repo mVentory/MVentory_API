@@ -248,7 +248,7 @@ EOT;
       round($period / 3600),
       Mage::getStoreConfig('web/unsecure/base_url'),
       $customer->getEmail(),
-      'https://chart.googleapis.com/chart?cht=qr&chld=M|1&chs=100x100&chl='.urlencode(Mage::getModel('core/url')->setStore($store)->getBaseUrl()
+      'https://chart.googleapis.com/chart?cht=qr&chld=M|1&chs=300x300&chl='.urlencode(Mage::getModel('core/url')->setStore($store)->getBaseUrl()
         . 'mventory-key/'
         . urlencode($key))
     );
