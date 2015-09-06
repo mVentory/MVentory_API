@@ -18,8 +18,6 @@
  */
 
 $_rules = $this->_getRules();
-$_attrs = $this->_attrs;
-
 $_loaderUrl = $this->getSkinUrl('images/ajax-loader-tr.gif');
 
 $__loading = Mage::helper('adminhtml')->__('Loading...');
@@ -45,7 +43,7 @@ $__loading = Mage::helper('adminhtml')->__('Loading...');
 
 ?>
 
-<?php if (count($_rules) < 3 && $_attrs): ?>
+<?php if (count($_rules) < 3 && $this->_attrs): ?>
 <ul id="mventory-matching-messages" class="messages">
   <li class="notice-msg">
     <ul>
@@ -130,7 +128,7 @@ $__loading = Mage::helper('adminhtml')->__('Loading...');
     <div class="mventory-inner clear">
 
       <?php //Hide attribute selector if there is no attribute and show warning message ?>
-      <?php if (count($_attrs) < 2): ?>
+      <?php if (count($this->_attrs) < 2): ?>
 
       <ul id="mventory-matching-attribute-messages" class="messages">
         <li class="warning-msg">
@@ -156,7 +154,7 @@ $__loading = Mage::helper('adminhtml')->__('Loading...');
           <div>
             <select class="mventory-rule-new-attr-name">
 
-              <?php foreach ($_attrs as $id => $attr): ?>
+              <?php foreach ($this->_attrs as $id => $attr): ?>
               <option <?php if ($attr['used']) echo 'class="mventory-state-used-attr"'; ?> value="<?php echo $id; ?>"><?php echo $attr['label']; ?></option>
               <?php endforeach; ?>
 
