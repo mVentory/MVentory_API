@@ -56,6 +56,12 @@ class MVentory_API_Helper_Data extends Mage_Core_Helper_Abstract {
              ? $website->getDefaultStore()->getId() : true;
   }
 
+  public function getCurrentStore () {
+    return (($website = $this->getCurrentWebsite()) && $website->getId())
+             ? $website->getDefaultStore()
+             : Mage::app()->getStore();
+  }
+
   /**
    * Get a customer assigned to the current API user or specified one
    *

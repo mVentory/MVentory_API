@@ -21,6 +21,20 @@
 <config>
   <api>
     <resources>
+      <mventory_app translate="title" module="mventory">
+        <title>App API</title>
+        <model>mventory/app_api</model>
+        <acl>mventory/app</acl>
+
+        <methods>
+          <config translate="title" module="mventory">
+            <title>Get settings for Android application</title>
+            <acl>mventory/app</acl>
+            <method>config</method>
+          </config>
+        </methods>
+      </mventory_app>
+
       <mventory_dataflow_profile translate="title" module="mventory">
         <title>Dataflow API</title>
         <model>mventory/dataflow_api</model>
@@ -887,9 +901,14 @@
           <title>MVentory</title>
           <sort_order>-1</sort_order>
 
+          <app translate="title" module="mventory">
+            <title>Android application</title>
+            <sort_order>1</sort_order>
+          </app>
+
           <catalog translate="title" module="catalog">
             <title>Catalog</title>
-            <sort_order>1</sort_order>
+            <sort_order>2</sort_order>
 
             <category translate="title" module="catalog">
               <title>Category</title>
