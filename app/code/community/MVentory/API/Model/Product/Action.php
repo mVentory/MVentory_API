@@ -26,6 +26,11 @@
  */
 class MVentory_API_Model_Product_Action extends Mage_Core_Model_Abstract {
 
+  //Add new line
+  const _RE_TAGS = <<<'EOT'
+/(?<pre>\s*)(?<tag>{(?<before>[^{}]*){(?<code>[^{}]*)}(?<after>[^{}]*)})(?<post>\s*)/
+EOT;
+
   public function rebuildNames ($productIds, $storeId) {
     $numberOfRenamedProducts = 0;
 
@@ -127,7 +132,10 @@ class MVentory_API_Model_Product_Action extends Mage_Core_Model_Abstract {
       if (!array_walk($name, $replace, $mapping))
         continue;
 
-      $name = implode(' ', $name);
+      //Add new line
+      $names = $this->_processNames($name, $product);
+
+      $name = implode(' ', $names);
 
       if ($name == $templates[$attributeSetId])
         continue;
@@ -181,6 +189,41 @@ class MVentory_API_Model_Product_Action extends Mage_Core_Model_Abstract {
     }
 
     return $n;
+  }
+
+  //Add function
+  protected function _processNames ($names, $product) {
+
+    $attrs = $product->getAttributes();
+
+    return preg_replace_callback(
+        self::_RE_TAGS,
+        function ($matches) use ($product, $attrs) {
+          $code = trim($matches['code']);
+
+          //We check raw value in the condition because product can contain
+          //null/empty string as value and dropdown attribute's frontend
+          //returns "No" in this case
+          $cond = $code
+              && $product->getData($code)
+              && isset($attrs[$code])
+              && ($attr = $attrs[$code]);
+
+          $value = $cond
+              ? trim($attr->getFrontend()->getValue($product))
+              : false;
+
+          if ($value)
+            return $matches['pre']
+            . $matches['before']
+            . $value
+            . $matches['after']
+            . $matches['post'];
+
+          return ($matches['pre'] . $matches['post']) ? ' ' : '';
+        },
+        $names
+    );
   }
 }
 
