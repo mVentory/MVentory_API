@@ -198,6 +198,7 @@
 #mventory-categories-wrapper {
   display: none;
   position: absolute;
+  z-index: 1000;
 }
 
 #mventory-matching-attribute-messages {
