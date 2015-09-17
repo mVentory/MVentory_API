@@ -34,7 +34,7 @@ class MVentory_API_Model_Observer {
 mVentory configuration URL: <a href="%1$s">%1$s</a><br>Email: <a href="mailto:%4$s?subject=API Key&body=Hi,%%0D%%0A%%0D%%0AYour Android access to %3$s has been configured. You can start loading products now.%%0D%%0A%%0D%%0A
 Please, download the app from https://play.google.com/store/apps/details?id=com.mventory first and then click on this link to complete the configuration: %1$s %%0D%%0A%%0D%%0A
 	This link can only be used once within 24hr period. Ask your website administrator to reissue if the link doesn't work or report the problem to support@mventory.com.%%0D%%0A%%0D%%0A 
-	Thanks mVentory">Send API Key Email</a><br>View: <a href="%5$s">QR CODE</a>
+	Thanks mVentory">Send API Key Email</a><br>View: <a href="%5$s" target="_blank">QR CODE</a>
 
 EOT;
 
