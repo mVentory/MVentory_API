@@ -95,45 +95,8 @@ EOT;
       if (!$templates[$attributeSetId])
         continue;
 
-      $mapping = array();
-
-      foreach ($frontends as $code => $frontend) {
-        $value = $frontend->getValue($product);
-
-        //Try converting value of the field to a string. Set it to empty if
-        //value of the field is array or class which doesn't support convertion
-        //to string
-        try {
-          $value = (string) $value;
-
-          //Ignore 'n/a', 'n-a', 'n\a' and 'na' values
-          //Note: case insensitive comparing; delimeter can be surrounded
-          //      with spaces
-          if (preg_match('#^n(\s*[/-\\\\]\s*)?a$#i', trim($value)))
-            $value = '';
-        } catch (Exception $e) {
-          $value = '';
-        }
-
-        $mapping[$code] = $value;
-      }
-
-      //Sort array by key length (desc)
-      uksort($mapping, function ($a, $b) { return strlen($a) < strlen($b); });
-
-      $name = explode(' ', $templates[$attributeSetId]);
-
-      $replace = function (&$value, $key, $mapping) {
-        foreach ($mapping as $search => $replace)
-          if (($replaced = str_replace($search, $replace, $value)) !== $value)
-            return $value = $replaced;
-      };
-
-      if (!array_walk($name, $replace, $mapping))
-        continue;
-
       //Add new line
-      $names = $this->_processNames($name, $product);
+      $names = $this->_processNames($templates[$attributeSetId], $product);
 
       $name = implode(' ', $names);
 
@@ -145,7 +108,7 @@ EOT;
       $name = preg_replace_callback(
         '/(?<needle>\w+)(\s+\k<needle>)+\b/i',
         function ($match) { return $match['needle']; },
-        $name
+        $names
       );
 
       //Remove duplicates of spaces and punctuation 
