@@ -64,31 +64,6 @@ EOT;
         if ($defaultValue) {
           $templates[$attributeSetId] = $defaultValue;
 
-          $attrs = Mage::getResourceModel('eav/entity_attribute_collection')
-                     ->setAttributeSetFilter($attributeSetId);
-
-          foreach ($attrs as $attr) {
-            $code = $attr->getAttributeCode();
-
-            if (isset($frontends[$code]))
-              continue;
-
-            $resource = $product->getResource();
-
-            $frontends[$code] = $attr
-                                  ->setEntity($resource)
-                                  ->getFrontend();
-
-            $sortFrontends = true;
-          }
-
-          unset($attrs);
-
-          if (isset($sortFrontends) && $sortFrontends)
-            uksort(
-              $frontends,
-              function ($a, $b) { return strlen($a) < strlen($b); }
-            );
         }
       }
 
@@ -100,10 +75,10 @@ EOT;
 
       $name = implode(' ', $names);
 
-      if ($name == $templates[$attributeSetId])
+      if ($names == $templates[$attributeSetId])
         continue;
 
-      $name = trim($name, ', ');
+      $name = trim($names, ', ');
 
       $name = preg_replace_callback(
         '/(?<needle>\w+)(\s+\k<needle>)+\b/i',
