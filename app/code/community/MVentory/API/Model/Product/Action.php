@@ -26,7 +26,38 @@
  */
 class MVentory_API_Model_Product_Action extends Mage_Core_Model_Abstract {
 
-  //Add new line
+  /**
+   * Regex to replace tag with atttribute code by its product's value
+   *
+   * Groups:
+   *
+   *   - pre, post: whitespaces around tag
+   *   - tag: whole tag
+   *   - before, after: any text around code group inside tag group
+   *   - code: attribute code which is replaced by its value in a product
+   *
+   * Example:
+   *
+   * Beach shorts   { in {color} color}   and t-shirt
+   *             \A/\_B_/\__C__/\__D__/\E/
+   *                \________F________/
+   *
+   * - A: pre
+   * - B: before
+   * - C: code
+   * - D: after
+   * - E: post
+   * - F: tag
+   *
+   * Notes:
+   *
+   *   - Whole tag is removed when code is empty
+   *     Above example become "Beach shorts and t-shirt"
+   *   - Any number of spaces around tag is replaced with single space
+   *     if tag is removed.
+   *
+   * @see MVentory_TradeMe_Helper_Product::_processNames()
+   */
   const _RE_TAGS = <<<'EOT'
 /(?<pre>\s*)(?<tag>{(?<before>[^{}]*){(?<code>[^{}]*)}(?<after>[^{}]*)})(?<post>\s*)/
 EOT;
@@ -35,7 +66,6 @@ EOT;
     $numberOfRenamedProducts = 0;
 
     $templates = array();
-    $frontends = array();
 
     $attributeResource
                    = Mage::getResourceSingleton('mventory/entity_attribute');
@@ -70,20 +100,17 @@ EOT;
       if (!$templates[$attributeSetId])
         continue;
 
-      //Add new line
-      $names = $this->_processNames($templates[$attributeSetId], $product);
+      $name = $this->_processName($templates[$attributeSetId], $product);
 
-      $name = implode(' ', $names);
-
-      if ($names == $templates[$attributeSetId])
+      if ($name == $templates[$attributeSetId])
         continue;
 
-      $name = trim($names, ', ');
+      $name = trim($name, ', ');
 
       $name = preg_replace_callback(
         '/(?<needle>\w+)(\s+\k<needle>)+\b/i',
         function ($match) { return $match['needle']; },
-        $names
+        $name
       );
 
       //Remove duplicates of spaces and punctuation 
@@ -129,8 +156,23 @@ EOT;
     return $n;
   }
 
-  //Add function
-  protected function _processNames ($names, $product) {
+  /**
+   * Replace {{attribute_code}} tags in the supplied list of product's
+   * alternative names with corresponding value from the specified product
+   *
+   * @see MVentory_TradeMe_Helper_Product::_RE_TAGS
+   *   See description of regex
+   *
+   * @param array $names
+   *   List of product's alternative names
+   *
+   * @param Mage_Catalog_Model_Product $product
+   *   Product model
+   *
+   * @return String
+   *    Rebuilt product name
+   */
+  protected function _processName ($name, $product) {
 
     $attrs = $product->getAttributes();
 
@@ -151,6 +193,15 @@ EOT;
               ? trim($attr->getFrontend()->getValue($product))
               : false;
 
+          //Ignore 'n/a', 'n-a', 'n\a' and 'na' values
+          //Note: case insensitive comparing; delimeter can be surrounded
+          // with spaces
+          if (preg_match('#^n(\s*[/-\\\\]\s*)?a$#i', trim($value))){
+
+            $value = '';
+
+          };
+
           if ($value)
             return $matches['pre']
             . $matches['before']
@@ -160,7 +211,7 @@ EOT;
 
           return ($matches['pre'] . $matches['post']) ? ' ' : '';
         },
-        $names
+        $name
     );
   }
 }
