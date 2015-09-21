@@ -56,10 +56,17 @@ class MVentory_API_Model_Product_Action extends Mage_Core_Model_Abstract {
    *   - Any number of spaces around tag is replaced with single space
    *     if tag is removed.
    *
-   * @see MVentory_TradeMe_Helper_Product::_processNames()
+   * @see MVentory_API_Model_Product_Action::_processName()
    */
   const _RE_TAGS = <<<'EOT'
 /(?<pre>\s*)(?<tag>{(?<before>[^{}]*){(?<code>[^{}]*)}(?<after>[^{}]*)})(?<post>\s*)/
+EOT;
+
+  //Ignore 'n/a', 'n-a', 'n\a' and 'na' values
+  //Note: case insensitive comparing; delimeter can be surrounded
+  // with spaces
+  const _RE_NA = <<<'EOT'
+#^n(\s*[/-\\\\]\s*)?a$#i
 EOT;
 
   public function rebuildNames ($productIds, $storeId) {
@@ -104,8 +111,6 @@ EOT;
 
       if ($name == $templates[$attributeSetId])
         continue;
-
-      $name = trim($name, ', ');
 
       $name = preg_replace_callback(
         '/(?<needle>\w+)(\s+\k<needle>)+\b/i',
@@ -173,7 +178,6 @@ EOT;
    *    Rebuilt product name
    */
   protected function _processName ($name, $product) {
-
     $attrs = $product->getAttributes();
 
     return preg_replace_callback(
@@ -193,14 +197,7 @@ EOT;
               ? trim($attr->getFrontend()->getValue($product))
               : false;
 
-          //Ignore 'n/a', 'n-a', 'n\a' and 'na' values
-          //Note: case insensitive comparing; delimeter can be surrounded
-          // with spaces
-          if (preg_match('#^n(\s*[/-\\\\]\s*)?a$#i', trim($value))){
-
-            $value = '';
-
-          };
+          $value = (preg_match(self::_RE_NA, $value))? ' ' : $value;
 
           if ($value)
             return $matches['pre']
