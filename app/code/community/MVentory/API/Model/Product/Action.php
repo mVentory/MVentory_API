@@ -9,7 +9,7 @@
  * Non-Commercial (NC) - You can use this file for non-commercial activities.
  * A commercial license can be purchased separately from mventory.com.
  * No Derivatives (ND) - You can make changes to this file for your own use,
- * but you cannot share or redistribute the changes.  
+ * but you cannot share or redistribute the changes.
  *
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
@@ -62,9 +62,12 @@ class MVentory_API_Model_Product_Action extends Mage_Core_Model_Abstract {
 /(?<pre>\s*)(?<tag>{(?<before>[^{}]*){(?<code>[^{}]*)}(?<after>[^{}]*)})(?<post>\s*)/
 EOT;
 
-  //Ignore 'n/a', 'n-a', 'n\a' and 'na' values
-  //Note: case insensitive comparing; delimeter can be surrounded
-  // with spaces
+
+  /**
+   * Ignore 'n/a', 'n-a', 'n\a' and 'na' values
+   * Note: case insensitive comparing; delimeter can be surrounded
+   * with spaces
+   */
   const _RE_NA = <<<'EOT'
 #^n(\s*[/-\\\\]\s*)?a$#i
 EOT;
@@ -118,7 +121,7 @@ EOT;
         $name
       );
 
-      //Remove duplicates of spaces and punctuation 
+      //Remove duplicates of spaces and punctuation
       $name = preg_replace(
         '/([,.!?;:\s])\1*(\s?)(\2)*(\s*\1\s*)*/',
         '\\1\\2',
@@ -193,13 +196,14 @@ EOT;
               && isset($attrs[$code])
               && ($attr = $attrs[$code]);
 
-          $value = $cond
-              ? trim($attr->getFrontend()->getValue($product))
-              : false;
+          if ($cond) {
 
-          $value = (preg_match(self::_RE_NA, $value))? ' ' : $value;
+            $value = trim($attr->getFrontend()->getValue($product));
 
-          if ($value)
+            $value = preg_match(self::_RE_NA, $value) ? false : $value;
+          }
+
+          if (isset($value))
             return $matches['pre']
             . $matches['before']
             . $value
