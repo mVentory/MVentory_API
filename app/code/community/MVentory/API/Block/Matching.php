@@ -138,9 +138,9 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
       'ajax' => true
     );
 
-    $addrule = $this->getUrl('mventory/matching/append/', $params);
-    $remove = $this->getUrl('mventory/matching/remove/', $params);
-    $reorder = $this->getUrl('mventory/matching/reorder/', $params);
+    $addrule = $this->getUrl('adminhtml/mventory_matching/append/', $params);
+    $remove = $this->getUrl('adminhtml/mventory_matching/remove/', $params);
+    $reorder = $this->getUrl('adminhtml/mventory_matching/reorder/', $params);
 
     return Mage::helper('core')->jsonEncode(compact('addrule',
                                                     'remove',

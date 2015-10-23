@@ -33,8 +33,10 @@ class MVentory_API_Block_System_Config_Form_Field_Exportrates
                  ->getRequest()
                  ->getParam('website', '');
 
-    $url = $this->getUrl('mventory/carriers/export', compact('website'))
-           . 'shippingrates.csv';
+    $url = $this->getUrl(
+      'adminhtml/mventory_carriers/export',
+      compact('website')
+     );
 
     $data = array(
       'label' => $this->__('Export CSV'),

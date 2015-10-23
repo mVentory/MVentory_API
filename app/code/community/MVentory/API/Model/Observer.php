@@ -261,7 +261,7 @@ EOT;
 
     if ($block instanceof Mage_Adminhtml_Block_Customer_Edit) {
       $url = $block->getUrl(
-        'mventory/customer/createapiuser',
+        'adminhtml/mventory_customer/createapiuser',
         array(
           '_current' => true,
           'id' => $block->getCustomerId(),
