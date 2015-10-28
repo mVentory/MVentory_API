@@ -24,7 +24,8 @@
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
-class MVentory_API_CustomerController extends Mage_Adminhtml_Controller_Action
+class MVentory_API_Mventory_CustomerController
+  extends Mage_Adminhtml_Controller_Action
 {
 
   const _NO_ADDRESS = <<<'EOT'

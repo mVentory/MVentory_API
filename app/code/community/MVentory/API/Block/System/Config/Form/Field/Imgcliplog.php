@@ -65,7 +65,7 @@ EOT;
    *   HTML of the Download button
    */
   protected function _getDownloadButton () {
-    $url = $this->getUrl('mventory/logs/download');
+    $url = $this->getUrl('adminhtml/mventory_logs/download');
 
     return $this
       ->getLayout()
@@ -86,7 +86,7 @@ EOT;
    *   HTML of the Clear button
    */
   protected function _getClearButton () {
-    $url = $this->getUrl('mventory/logs/clear');
+    $url = $this->getUrl('adminhtml/mventory_logs/clear');
     $msg = $this->__('All current data in the activity log will be erased');
 
     return $this
