@@ -199,9 +199,14 @@ class MVentory_API_Model_Matching
       if (!($type == 'select' || $type == 'multiselect'))
         continue;
 
-      $allOptions = $attr
-                      ->getSource()
-                      ->getAllOptions();
+      // skip attribute in case its model is broken for some reason (e.g. 3rd party ext problem)
+      try {
+        $allOptions = $attr
+                        ->getSource()
+                        ->getAllOptions();
+      } catch (Exception $e) {
+        continue;
+      }
 
       $optionIds = array();
 
