@@ -24,7 +24,7 @@
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
-class MVentory_API_Catalog_ProductController
+class MVentory_API_Mventory_Catalog_ProductController
   extends Mage_Adminhtml_Controller_Action {
 
   public function massNameRebuildAction () {
@@ -59,7 +59,7 @@ class MVentory_API_Catalog_ProductController
         ->addException($e, $m);
     }
 
-    $this->_redirect('adminhtml/*', array('store'=> $storeId));
+    $this->_redirect('adminhtml/catalog_product', array('store'=> $storeId));
   }
 
   public function massCategoryMatchAction () {
@@ -94,7 +94,7 @@ class MVentory_API_Catalog_ProductController
         ->addException($e, $m);
     }
 
-    $this->_redirect('adminhtml/*', array('store'=> $storeId));
+    $this->_redirect('adminhtml/catalog_product/', array('store'=> $storeId));
   }
 }
 

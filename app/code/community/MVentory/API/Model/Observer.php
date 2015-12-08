@@ -74,7 +74,7 @@ EOT;
   public function addProductNameRebuildMassaction ($observer) {
     $block = $observer->getBlock();
 
-    $route = 'mventory/catalog_product/massNameRebuild';
+    $route = 'adminhtml/mventory_catalog_product/massNameRebuild';
 
     $label = Mage::helper('mventory')->__('Rebuild product name');
     $url = $block->getUrl($route, array('_current' => true));
@@ -87,7 +87,7 @@ EOT;
   public function addProductCategoryMatchMassaction ($observer) {
     $block = $observer->getBlock();
 
-    $route = 'mventory/catalog_product/massCategoryMatch';
+    $route = 'adminhtml/mventory_catalog_product/massCategoryMatch';
 
     $label = Mage::helper('mventory')->__('Match product category');
     $url = $block->getUrl($route, array('_current' => true));
