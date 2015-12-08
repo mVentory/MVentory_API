@@ -91,7 +91,7 @@ class MVentory_API_Model_Observer {
           array(
             'label' => $helper->__('Sync product images'),
             'url' => $block->getUrl(
-              'mventory/catalog_product/massImageSync',
+              'adminhtml/mventory_catalog_product/massImageSync',
               array('_current' => true)
             ),
             'additional' => array(

@@ -131,7 +131,7 @@ class MVentory_API_Mventory_Catalog_ProductController
         ->addException($e, $m);
     }
 
-    $this->_redirect('adminhtml/*', array('store'=> $storeId));
+    $this->_redirect('adminhtml/catalog_product/', array('store'=> $storeId));
   }
 }
 
