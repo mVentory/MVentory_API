@@ -48,6 +48,10 @@ EOT;
     $this->setUsedModuleName('MVentory_API');
   }
 
+  protected function _isAllowed () {
+    return true;
+  }
+
   /**
    * Create API user for customer
    */
