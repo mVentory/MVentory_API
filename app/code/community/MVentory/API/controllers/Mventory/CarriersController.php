@@ -31,6 +31,10 @@ class MVentory_API_Mventory_CarriersController
     $this->setUsedModuleName('MVentory_API');
   }
 
+  protected function _isAllowed () {
+    return true;
+  }
+
   /**
    * Export shipping rates in csv format
    */

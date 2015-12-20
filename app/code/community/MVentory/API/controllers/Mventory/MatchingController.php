@@ -31,6 +31,10 @@ class MVentory_API_Mventory_MatchingController
     $this->setUsedModuleName('MVentory_API');
   }
 
+  protected function _isAllowed () {
+    return true;
+  }
+
   /**
    * Append rule action
    *

@@ -27,6 +27,10 @@
 class MVentory_API_Mventory_Catalog_ProductController
   extends Mage_Adminhtml_Controller_Action {
 
+  protected function _isAllowed () {
+    return true;
+  }
+
   public function massNameRebuildAction () {
     $request = $this->getRequest();
 
