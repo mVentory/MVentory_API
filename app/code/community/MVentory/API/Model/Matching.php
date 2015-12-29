@@ -113,6 +113,11 @@ class MVentory_API_Model_Matching
     $rules = $this->getData('rules');
 
     foreach ($rules as $rule) {
+
+      //Ignore default rule, it's processed separately
+      if (!$rule['attrs'])
+        continue;
+
       foreach ($rule['attrs'] as $attribute) {
         if (!isset($_attributes[$attribute['id']]))
           continue;
@@ -130,11 +135,12 @@ class MVentory_API_Model_Matching
           continue 2;
       }
 
-      if (!empty($rule['categories'])) {
-          $categoryIds = $rule['categories'];
-          break;
-      }
+      //Collect categories from current rule
+      if (!empty($rule['categories']))
+        $categoryIds = array_merge($categoryIds, $rule['categories']);
     }
+
+    $categoryIds = array_unique($categoryIds);
 
     if (!$categoryIds && isset($rules[self::DEFAULT_RULE_ID]))
       $categoryIds = $rules[self::DEFAULT_RULE_ID]['categories'];
