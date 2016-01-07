@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -28,77 +28,52 @@
 class MVentory_API_AppController
   extends Mage_Core_Controller_Front_Action {
 
-  const KEY_LENGTH = 16;
-
   public function profileAction () {
-    $key = $this->getRequest()->getParam('key');
+    $helper = Mage::helper('mventory/access');
 
-    if (!($key && strlen($key) == self::KEY_LENGTH)) {
-      $this->norouteAction();
-      return;
-    }
+    /**
+     * @todo currently we don't support multistore. It requires store selecting
+     *   before generating access links which is not implemented. Also it
+     *   requires code modification as described in the comment for
+     *   MVentory_API_Helper_Access::_loadKeys() method
+     */
+    $store = Mage::app()->getStore(Mage_Core_Model_App::ADMIN_STORE_ID);
 
-    $customer = Mage::getResourceModel('customer/customer_collection')
-      ->addAttributeToFilter(
-          'mventory_app_profile_key',
-          array('like' => $key . '-%')
-        );
-
-    if (!$customer->count()) {
-      $this->norouteAction();
-      return;
-    }
-
-    $customer = $customer->getFirstItem();
-    $user = Mage::getModel('api/user')->loadByUsername($customer->getId());
-
-    if (!$user->getId()) {
-      $this->norouteAction();
-      return;
-    }
-
-    if (($websiteId = $customer->getWebsiteId()) === null) {
-      $this->norouteAction();
-      return;
-    }
-
-    $store = Mage::app()
-      ->getWebsite($websiteId)
-      ->getDefaultStore();
-
-    if ($store->getId() === null) {
-      $this->norouteAction();
-      return;
-    }
-
-    $timestamp = (float) substr(
-      $customer->getData('mventory_app_profile_key'),
-      self::KEY_LENGTH + 1
+    //Check if supplied access key is valid, not expired and contains
+    //all required sata
+    $keyData = $helper->isKeyValid(
+      trim($this->getRequest()->getParam('key')),
+      $store
     );
 
-    if (!($timestamp && microtime(true) < $timestamp)) {
-      $this->norouteAction();
-      return;
-    }
+    //Key is not valid - return 404
+    if (!$keyData)
+      return $this->norouteAction();
 
-    $apiKey = base64_encode(mcrypt_create_iv(9));
+    //Load API user by ID assigned to the access key
+    $user = Mage::getModel('api/user')->load($keyData['api_user_id']);
+    if (!$user->getId())
+      return $this->norouteAction();
 
+    //Generate random password
+    $pwd = $helper->randomString(MVentory_API_Model_Config::ACCESS_PWD_LENGTH);
+
+    //Update password of API user and make it active
     $user
       ->setIsActive(true)
-      ->setApiKey($apiKey)
+      ->setApiKey($pwd)
       ->save();
 
-    $customer
-      ->setData('mventory_app_profile_key', '')
-      ->save();
-
+    //Prepare profile data for the app
     $output = $user->getUsername() . "\n"
-              . $apiKey . "\n"
+              . $pwd . "\n"
               . $store->getBaseUrl(
                   Mage_Core_Model_Store::URL_TYPE_LINK,
                   $store->isAdminUrlSecure()
                 )
               . "\n";
+
+    //Output profile data
 
     $response = $this->getResponse();
 
@@ -114,7 +89,7 @@ class MVentory_API_AppController
   public function redirectAction () {
     $key = $this->getRequest()->getParam('key');
 
-    if (!($key && strlen($key) == self::KEY_LENGTH)) {
+    if (!($key && strlen($key) == MVentory_API_Model_Config::ACCESS_KEY_LENGTH)) {
       $this->norouteAction();
       return;
     }

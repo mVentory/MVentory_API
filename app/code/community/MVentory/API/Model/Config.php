@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -46,6 +46,7 @@ class MVentory_API_Model_Config
   const _QR_CSS = 'mventory/qr/css';
   const _QR_URL = 'mventory/qr/base_url';
   const _QR_COPIES = 'mventory/qr/copies';
+  const _ACCESS_KEYS = 'mventory/access/keys';
 
   //BackGround Genie config paths
   const _BGG_ENABLED = 'bg_genie/settings/enabled';
@@ -54,6 +55,9 @@ class MVentory_API_Model_Config
   const _BGG_AUTO_REPL = 'bg_genie/settings/auto_replace';
   const _BGG_DBX_TKN = 'bg_genie/settings/dropbox_token';
   const _BGG_DBX_PATH = 'bg_genie/settings/dropbox_path';
+
+  const ACCESS_KEY_LENGTH = 16;
+  const ACCESS_PWD_LENGTH = 12;
 
   //Attribute metadata values
   const MT_INPUT_KBD = 0;

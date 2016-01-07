@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -54,37 +54,6 @@ class MVentory_API_Helper_Data extends Mage_Core_Helper_Abstract {
 
     return $website && $website->getId()
              ? $website->getDefaultStore()->getId() : true;
-  }
-
-  /**
-   * Get a customer assigned to the current API user or specified one
-   *
-   * @param Mage_Api_Model_User $user API user
-   *
-   * @return null|Mage_Customer_Model_Customer
-   */
-  public function getCustomerByApiUser ($user = null) {
-    $customerId = Mage::registry('mventory_api_customer');
-
-    if ($customerId === null) {
-      if (!$user && !($user = $this->getApiUser()))
-        return;
-
-      $customerId = $user->getUsername();
-    }
-
-    $customerId = (int) $customerId;
-
-    //Customer IDs begin from 1
-    if ($customerId < 1)
-      return null;
-
-    $customer = Mage::getModel('customer/customer')->load($customerId);
-
-    if (!$customer->getId())
-      return null;
-
-    return $customer;
   }
 
   /**
@@ -268,5 +237,65 @@ class MVentory_API_Helper_Data extends Mage_Core_Helper_Abstract {
     );
 
     return !($isApiRequest || $applyRules);
+  }
+
+  /**
+   * Generated random string of requested length
+   *
+   * @param int $length
+   *   Lenght of a generated string
+   *
+   * @return string
+   *   Generated random string
+   */
+  public function randomString ($length) {
+    return substr(
+      str_replace(
+        ['+', '/', '='],
+        '',
+        base64_encode(mcrypt_create_iv($length * 2))
+      ),
+      0,
+      $length
+    );
+  }
+
+  /**
+   * Save value on specified path in the Magento config
+   *
+   * @param string $path
+   *   Path for the value in config
+   *
+   * @param string $value
+   *   Value to store
+   *
+   * @param Mage_Core_Model_Store $store
+   *   Store model to specify scope of the config
+   *
+   * @return MVentory_API_Helper_Data
+   *   Instances of this class
+   */
+  public function saveConfig ($path, $value, $store) {
+    if ($store->getId() == Mage_Core_Model_App::ADMIN_STORE_ID) {
+      $scope = 'default';
+      $scopeId = 0;
+    }
+    else {
+      $scope = 'stores';
+      $scopeId = $store->getId();
+    }
+
+    Mage::getResourceModel('core/config')->saveConfig(
+      $path,
+      $value,
+      $scope,
+      $scopeId
+    );
+
+    Mage::app()
+      ->getConfig()
+      ->reinit();
+
+    return $this;
   }
 }

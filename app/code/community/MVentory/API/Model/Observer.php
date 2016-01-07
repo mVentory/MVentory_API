@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -25,18 +25,6 @@
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
 class MVentory_API_Model_Observer {
-  
-/**
- * Double percentage sign to screen line breaks from sprintf() variables. Variables found on line 243.
- */
-  const __CONFIG_URL = <<<'EOT'
-
-mVentory configuration URL: <a href="%1$s">%1$s</a><br>Email: <a href="mailto:%4$s?subject=API Key&body=Hi,%%0D%%0A%%0D%%0AYour Android access to %3$s has been configured. You can start loading products now.%%0D%%0A%%0D%%0A
-Please, download the app from https://play.google.com/store/apps/details?id=com.mventory first and then click on this link to complete the configuration: %1$s %%0D%%0A%%0D%%0A
-	This link can only be used once within 24hr period. Ask your website administrator to reissue if the link doesn't work or report the problem to support@mventory.com.%%0D%%0A%%0D%%0A 
-	Thanks mVentory">Send API Key Email</a><br>View: <a href="%5$s" target="_blank">QR CODE</a>
-
-EOT;
 
   public function productInit ($observer) {
     $product = $observer->getProduct();
@@ -210,81 +198,30 @@ EOT;
     $configurable->save();
   }
 
-  public function generateLinkForProfile ($observer) {
-    $helper = Mage::helper('mventory');
-
-    if (!$customer = $helper->getCustomerByApiUser($observer->getObject()))
-      return;
-
-    if (($websiteId = $customer->getWebsiteId()) === null)
-      return;
-
-    $store = Mage::app()
-      ->getWebsite($websiteId)
-      ->getDefaultStore();
-
-    if ($store->getId() === null)
-      return;
-
-    $period = $store->getConfig(MVentory_API_Model_Config::_LINK_LIFETIME) * 60;
-
-    if (!$period)
-      return;
-
-    $key = strtr(base64_encode(mcrypt_create_iv(12)), '+/=', '-_,');
-
-    $customer
-      ->setData(
-          'mventory_app_profile_key',
-          $key . '-' . (microtime(true) + $period)
-        )
-      ->save();
-
-    $msg = $helper->__(
-      self::__CONFIG_URL,
-      Mage::getModel('core/url')->setStore($store)->getBaseUrl()
-        . 'mventory-key/'
-        . urlencode($key),
-      round($period / 3600),
-      Mage::getStoreConfig('web/unsecure/base_url'),
-      $customer->getEmail(),
-      'https://chart.googleapis.com/chart?cht=qr&chld=M|1&chs=300x300&chl='.urlencode(Mage::getModel('core/url')->setStore($store)->getBaseUrl()
-        . 'mventory-key/'
-        . urlencode($key))
-    );
-
-    Mage::getSingleton('adminhtml/session')->addNotice($msg);
-  }
-
+  /**
+   * Add "Generate mVentory Access Link" button on API user pages
+   * Event: controller_action_layout_render_before_adminhtml_api_user_edit
+   */
   public function addCreateApiUserButton ($observer) {
-    $block = $observer->getData('block');
 
-    if ($block instanceof Mage_Adminhtml_Block_Customer_Edit) {
-      $url = $block->getUrl(
-        'adminhtml/mventory_customer/createapiuser',
-        array(
-          '_current' => true,
-          'id' => $block->getCustomerId(),
-          'tab' => '{{tab_id}}'
-        )
-      );
+    //Check if API user loaded and exists
+    $apiUser = Mage::registry('api_user');
+    if (!($apiUser && $apiUser->getId()))
+      return;
 
-      $helper = Mage::helper('mventory');
+    $children = Mage::getSingleton('core/layout')
+      ->getBlock('content')
+      ->getChild();
 
-      $block->addButton(
-        'create_api_user',
-        array(
-          'label' => $helper->__('mVentory Access'),
-          'onclick' => sprintf(
-            'if (confirm(\'%s\')) setLocation(mv_prepare_url(\'%s\'))',
-            $helper->__('Allow database access via mVentory app?'),
-            $url
-          ),
-          'class' => 'add'
-        ),
-        -1
-      );
-    }
+    foreach ($children as $key => $block)
+      if ($block instanceof Mage_Adminhtml_Block_Api_User_Edit) {
+        Mage::helper('mventory/access')->addGenerateLinkButton(
+          $block,
+          $apiUser
+        );
+
+        return;
+      }
   }
 
   /**
