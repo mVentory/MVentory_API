@@ -47,6 +47,7 @@ class MVentory_API_Model_Config
   const _QR_URL = 'mventory/qr/base_url';
   const _QR_COPIES = 'mventory/qr/copies';
   const _ACCESS_KEYS = 'mventory/access/keys';
+  const _ORDER_CUSTOMER_ID = 'mventory/order/customer_id';
 
   //BackGround Genie config paths
   const _BGG_ENABLED = 'bg_genie/settings/enabled';
