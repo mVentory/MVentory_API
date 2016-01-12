@@ -170,6 +170,36 @@ class MVentory_API_Helper_Access extends MVentory_API_Helper_Data
   }
 
   /**
+   * Check if first API user has been created
+   *
+   * @param Mage_Core_Model_Store $store
+   *   Store model
+   *
+   * @return boolean
+   *   Result of the check
+   */
+  public function isUserCreated ($store) {
+    return Mage::getStoreConfigFlag(
+      MVentory_API_Model_Config::_ACCESS_USER_CREATED,
+      $store
+    );
+  }
+
+  /**
+   * Set that first API user was created
+   *
+   * @param Mage_Core_Model_Store $store
+   *   Store model
+   */
+  public function setUserCreated ($store) {
+    return $this->saveConfig(
+      MVentory_API_Model_Config::_ACCESS_USER_CREATED,
+      true,
+      $store
+    );
+  }
+
+  /**
    * Load all access keys and data for specified store
    *
    * @todo For multistore support it requires custom loading of data from

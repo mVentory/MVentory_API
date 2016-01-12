@@ -28,8 +28,16 @@ class MVentory_API_Mventory_AccessController
   extends MVentory_API_Controller_Admin
 {
 
+  const _MISSING_REQUIRED_PARAMS = <<<'EOT'
+Some of required parameters are mising
+EOT;
+
   const _NO_ROLE = <<<'EOT'
 Default API role is not configured. Read more on <a target="_blank" href="http://mventory.com/help/api-roles/">http://mventory.com/help/api-roles/</a>
+EOT;
+
+  const _USER_FAILED = <<<'EOT'
+Creation of new API user failed
 EOT;
 
   const _LOAD_USER_ERR = <<<'EOT'
@@ -40,17 +48,79 @@ EOT;
 Access key can't be created
 EOT;
 
-  //Double percentage sign to screen line breaks from sprintf() variables.
-  const __CONFIG_URL = <<<'EOT'
-mVentory configuration URL: <a href="%1$s">%1$s</a>
-<br>
-Email: <a href="mailto:%4$s?subject=API Key&body=Hi,%%0D%%0A%%0D%%0AYour Android access to %3$s has been configured. You can start loading products now.%%0D%%0A%%0D%%0A
-Please, download the app from https://play.google.com/store/apps/details?id=com.mventory first and then click on this link to complete the configuration: %1$s %%0D%%0A%%0D%%0A
-This link can only be used once within %1hr period. Ask your website administrator to reissue if the link doesn't work or report the problem to support@mventory.com.%%0D%%0A%%0D%%0A
-Thanks mVentory">Send API Key Email</a>
-<br>
-View: <a href="%5$s" target="_blank">QR CODE</a>
-EOT;
+  /**
+   * Create API user for customer
+   */
+  public function createuserAction () {
+    $requiredFields = [
+      'email' => true,
+      'firstname' => true,
+      'lastname' => true,
+      'username' => true
+    ];
+
+    $params = array_intersect_key(
+      $this->getRequest()->getParams(),
+      $requiredFields
+    );
+
+    if (count($params) != count($requiredFields))
+      return $this->_jsonError($this->__(self::_MISSING_REQUIRED_PARAMS));
+
+    $roleName = Mage::helper('mventory')
+      ->getConfig(MVentory_API_Model_Config::_DEFAULT_ROLE);
+
+    $role = Mage::getResourceModel('api/role_collection')
+      ->addFieldToFilter('role_name', $roleName);
+
+    if (!$role->count())
+      return $this->_jsonError($this->__(self::_NO_ROLE));
+
+    try {
+      $apiUser = Mage::getModel('api/user');
+
+      $apiUser
+        ->setData($params)
+        ->setIsActive(false)
+        ->save()
+        ->setRoleIds(array($role->getFirstItem()->getRoleId()))
+        ->setRoleUserId($apiUser->getUserId())
+        ->saveRelations();
+    } catch (Exception $e) {
+      Mage::logException($e);
+
+      if ($apiUser->getUserId())
+        $apiUser->delete();
+
+      return $this->_jsonError($this->__(self::_USER_FAILED), $e);
+    }
+
+    $helper = Mage::helper('mventory/access');
+    $store = Mage::app()->getStore(Mage_Core_Model_App::ADMIN_STORE_ID);
+
+    //Create access key
+    $key = $helper->createKey($apiUser, $store);
+    if (!$key)
+      return $this->_jsonError($this->__(self::_KEY_CREATE_ERR));
+
+    $info = $this
+      ->getLayout()
+      ->createBlock(
+          'mventory/access_info',
+          '',
+          [
+            'template' => 'mventory/access/info.phtml',
+            'store' => $store,
+            'access_key' => $key,
+            'api_user' => $apiUser
+          ]
+        )
+      ->toHtml();
+
+    $helper->setUserCreated($store);
+
+    $this->_jsonSuccess(['block_info' => $info]);
+  }
 
   /**
    * Generate access link and show it on API user page
@@ -82,18 +152,21 @@ EOT;
         'error'
       );
 
-    $link = $helper->getLink($key, $store);
+    $info = $this
+      ->getLayout()
+      ->createBlock(
+          'mventory/access_info',
+          '',
+          [
+            'template' => 'mventory/access/info.phtml',
+            'store' => $store,
+            'access_key' => $key,
+            'api_user' => $apiUser
+          ]
+        )
+      ->toHtml();
 
-    $msg = $this->__(
-      self::__CONFIG_URL,
-      $link,
-      round($helper->getAccessLinkLifetime($store) / 60),
-      $store->getConfig('web/unsecure/base_url'),
-      $apiUser->getEmail(),
-      $helper->getQrLink($link)
-    );
-
-    $this->_redirectToUser($apiUser, $msg);
+    $this->_redirectToUser($apiUser, $info);
   }
 
   /**

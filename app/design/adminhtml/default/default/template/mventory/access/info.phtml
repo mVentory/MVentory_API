@@ -1,0 +1,56 @@
+<?php
+/**
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Creative Commons License BY-NC-ND.
+ * NonCommercial — You may not use the material for commercial purposes.
+ * NoDerivatives — If you remix, transform, or build upon the material,
+ * you may not distribute the modified material.
+ * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
+ *
+ * See http://mventory.com/legal/licensing/ for other licensing options.
+ *
+ * @package MVentory/API
+ * @copyright Copyright (c) 2016 mVentory Ltd. (http://mventory.com)
+ * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * @author Anatoly A. Kazantsev <anatoly@mventory.com>
+ */
+?>
+
+<?php
+
+$_accessUrl = $this->_getAccessUrl();
+$_apiUsersListUrl = $this->getUrl('admin/api_user');
+$_qrImgUrl = $this->_getQrImgUrl($_accessUrl);
+
+$_mailtoBody = <<<EOT
+Hi,\r
+\r
+Your Android app access to %s has been configured. You can start loading products now.\r
+\r
+Download and install the app from https://play.google.com/store/apps/details?id=com.mventory first and then click on this link (on the phone) to complete the configuration: %s\r
+\r
+This link can only be used once within %dhr period. Please ask your website administrator to reissue the link if it doesn't work any more.\r
+\r
+Report any problems to support@mventory.com.\r
+\r
+Thanks mVentory
+EOT;
+
+$_mailtoUrl = $this->_getMailtoUrl(
+	$this->__('API Key'),
+  $this->__(
+    $_mailtoBody,
+    $this->_getStoreUrl(),
+    $_accessUrl,
+    $this->_getValidPeriod()
+  )
+);
+
+?>
+
+<p><?php echo $this->__('You have successfully created your first app user. Please <a target="_blank" href="https://play.google.com/store/apps/details?id=com.mventory">download</a> and install the app and then open the following URL on your phone:<br />%s', $this->_a($_accessUrl, null, true)) ?></p>
+
+<p><?php echo $this->__('You can create additional app users <a target="_blank" href="%s">here</a>.', $_apiUsersListUrl) ?></p>
+
+<p><?php echo $this->__('For your convenience, you can also <a target="_blank" href="%s">email</a> the URL to yourself or scan this <a target="_blank" href="%s">QR CODE</a> using your phone\'s barcode scanner app.', $_mailtoUrl, $_qrImgUrl) ?></p>

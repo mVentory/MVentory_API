@@ -1,0 +1,202 @@
+<?php
+/**
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Creative Commons License BY-NC-ND.
+ * NonCommercial — You may not use the material for commercial purposes.
+ * NoDerivatives — If you remix, transform, or build upon the material,
+ * you may not distribute the modified material.
+ * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
+ *
+ * See http://mventory.com/legal/licensing/ for other licensing options.
+ *
+ * @package MVentory/API
+ * @copyright Copyright (c) 2016 mVentory Ltd. (http://mventory.com)
+ * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * @author Anatoly A. Kazantsev <anatoly@mventory.com>
+ */
+?>
+
+<?php $_defaultValue = $this->_getDefaultValues() ?>
+
+<div class="backup-dialog" style="display: none;" id="mventory-new-api-user">
+  <div class="entry-edit">
+    <div class="entry-edit-head">
+      <h4 class="head-edit-form fieldset-legend"><?php echo $this->__('Create a new mVentory App user ') ?></h4>
+    </div>
+
+    <div class="content">
+      <div id="mventory-new-api-user-errors-wrapper" class="backup-messages" style="display: none;"><ul id="mventory-new-api-user-errors" class="messages"></ul></div>
+      <form action="" method="post" id="mventory-new-api-user-form">
+        <table class="form-list" cellspacing="0">
+          <tr>
+            <td class="label"><label for="email"><?php echo $this->__('Email')?> <span class="required">*</span></label></td>
+            <td class="value"><input type="text" name="email" value="<?php echo $_defaultValue['email'] ?>"></td>
+          </tr>
+          <tr>
+            <td class="label"><label for="firstname"><?php echo $this->__('First Name')?> <span class="required">*</span></label></td>
+            <td class="value"><input type="text" name="firstname" value="<?php echo $_defaultValue['firstname'] ?>"></td>
+          </tr>
+          <tr>
+            <td class="label"><label for="lastname"><?php echo $this->__('Last Name')?> <span class="required">*</span></label></td>
+            <td class="value"><input type="text" name="lastname" value="<?php echo $_defaultValue['lastname'] ?>"></td>
+          </tr>
+          <tr>
+            <td class="label"><label for="username"><?php echo $this->__('User Name')?> <span class="required">*</span></label></td>
+            <td class="value"><input type="text" name="username" value="<?php echo $_defaultValue['username'] ?>"></td>
+          </tr>
+        </table>
+      </form>
+
+      <div id="mventory-new-api-user-info"></div>
+    </div>
+
+    <div class="buttons-set">
+      <div class="f-right">
+        <button type="button" id="mventory-new-api-user-create" class="scalable ">
+          <span><?php echo $this->__('Create')?></span>
+        </button>
+        <button type="button" id="mventory-new-api-user-close" class="scalable ">
+          <span><?php echo $this->__('Close')?></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="popup-window-mask" style="display: none;"></div>
+
+<script type="text/javascript">
+//<![CDATA[
+;(function() {
+
+var $popupMask,
+    $dialog,
+    $errors,
+    $errorsWrapper,
+    $info,
+    $createButton,
+    $notification,
+    height,
+    keyupHandler;
+
+function showPopup () {
+  keyupHandler = document.on('keyup', function (event) {
+    //27 is code of escape key
+    if (event.key == 'Escape' || event.keyCode == 27)
+      hidePopup();
+  });
+
+  $dialog
+    .show()
+    .setStyle({
+      'marginTop': -$dialog.getDimensions().height / 2 + 'px'
+    });
+
+  $popupMask
+    .setStyle({height: height})
+    .show();
+
+  return false;
+}
+
+function hidePopup () {
+  keyupHandler.stop()
+
+  $dialog.hide();
+  $popupMask.hide();
+}
+
+function createUser (onComplete) {
+  new Ajax.Request(
+    '<?php echo $this->getCreateUserUrl() ?>',
+    {
+      parameters: $('mventory-new-api-user-form').serialize(),
+      onSuccess: function (response) {
+        var error,
+            response,
+            message;
+
+        if (!response.responseJSON)
+          return displayError(response.responseText)
+
+        error = response.responseJSON.error;
+        response = response.responseJSON.response;
+
+        if (error) {
+          message = response.message;
+
+          if (response.exception)
+            message += ': ' + response.exception.message;
+
+          return displayError(message)
+        }
+
+        showInfoBlock(response.block_info);
+      },
+      onFailure: function (response) {
+        return displayError(response.responseText)
+      },
+      onComplete: onComplete
+    }
+  );
+}
+
+function displayError (message) {
+  message = '<li class="error-msg"><ul><li><span>'
+            + message
+            + '</span></li></ul></li>';
+
+  $errors.update(message);
+  $errorsWrapper.show();
+
+}
+
+function showInfoBlock (blockHtml) {
+  $createButton.hide();
+  $('mventory-first-api-user-notification').remove();
+
+  $info
+    .update(blockHtml)
+    .show();
+}
+
+document.on('dom:loaded', function () {
+  $popupMask = $('popup-window-mask');
+  $dialog = $('mventory-new-api-user');
+  $errors = $('mventory-new-api-user-errors');
+  $errorsWrapper = $('mventory-new-api-user-errors-wrapper');
+  $info = $('mventory-new-api-user-info');
+  $createButton = $('mventory-new-api-user-create')
+  height = $('html-body').getHeight() + 'px';
+
+  $info.hide();
+
+  $('mventory-first-api-user').on('click', function (event) {
+    event.stop();
+    showPopup();
+  });
+
+  $createButton.on('click', function () {
+    var zIndex = $dialog.getStyle('zIndex'),
+        $loadingMask = $('loading-mask');
+
+    $errorsWrapper.hide();
+    $info.hide();
+
+    $dialog.setStyle({zIndex: 0});
+    $loadingMask.toggle();
+
+    createUser(function () {
+      $loadingMask.toggle();
+      $dialog.setStyle({zIndex: zIndex});
+    });
+  });
+
+  $popupMask.on('click', hidePopup);
+  $('mventory-new-api-user-close').on('click', hidePopup);
+});
+
+})();
+//]]>
+</script>

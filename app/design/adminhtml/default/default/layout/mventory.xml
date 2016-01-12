@@ -36,6 +36,15 @@
     </reference>
   </jquery_ui>
 
+  <default>
+    <reference name="notifications">
+      <block type="mventory/notifications" name="mventory.notifications" template="mventory/notifications.phtml"></block>
+    </reference>
+    <reference name="before_body_end">
+      <block type="mventory/access" name="mventory.access" template="mventory/access.phtml"></block>
+    </reference>
+  </default>
+
   <adminhtml_catalog_product_attribute_edit>
     <reference name="attribute_edit_tabs">
       <block type="mventory/metadata" name="mventory.tab" as="mventory" template="mventory/metadata.phtml" />

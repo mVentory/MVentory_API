@@ -78,6 +78,88 @@ class MVentory_API_Controller_Admin
   }
 
   /**
+   * Prepares a successful response in JSON format in the same ways as Magento
+   * does
+   *
+   * @param array $response
+   *   Response data
+   *
+   * @return MVentory_API_Controller_Admin
+   *   Instances of this class
+   */
+  protected function _jsonSuccess ($response = []) {
+    if (!is_array($response))
+      $response['message'] = $response;
+
+    return $this->_jsonResponse([
+      'error' => false,
+      'response' => $response
+    ]);
+  }
+
+  /**
+   * Prepares an error response in JSON format in the same ways as Magento
+   * does
+   *
+   * @param array $response
+   *   Response data
+   *
+   * @param Exception $exception
+   *   Exception object
+   *
+   * @return MVentory_API_Controller_Admin
+   *   Instances of this class
+   */
+  protected function _jsonError ($response = [], $exception = null) {
+    if (!is_array($response))
+      $response = ['message' => $response];
+
+    if ($exception)
+      $response['exception'] = [
+        'message' => $exception->getMessage(),
+        'trace' => $exception->getTraceAsString()
+      ];
+
+    /**
+     * Mimic Magento JSON response for errors.
+     *
+     * @see Mage_Adminhtml_Controller_Action::preDispatch()
+     *   See to find how magento returns errors in JSON format
+     */
+
+    $message = '';
+
+    if (isset($response['message']))
+      $message = $response['message'];
+    else if (isset($response['exception']['message']))
+      $message = $response['exception']['message'];
+
+    return $this->_jsonResponse([
+      'error' => true,
+      'message' => $message,
+      'response' => $response
+    ]);
+  }
+
+  /**
+   * Prepares a response in JSON format in the same ways as Magento does
+   *
+   * @param array $response
+   *   Response data
+   *
+   * @return MVentory_API_Controller_Admin
+   *   Instances of this class
+   */
+  protected function _jsonResponse ($response = []) {
+    $this
+      ->getResponse()
+      ->setHeader('Content-type', 'application/json', true)
+      ->setBody(Mage::helper('core')->jsonEncode($response));
+
+    return $this;
+  }
+
+  /**
    * Apply default values for omitted function arguments which are not in
    * the arguments list of the function
    *

@@ -21,6 +21,9 @@
 /**
  * Controller for category mapping rules
  *
+ * @todo this controller should extend MVentory_API_Controller_Admin
+ *   class and re-use json* method for JSON responses
+ *
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
