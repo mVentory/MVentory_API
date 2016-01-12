@@ -328,8 +328,12 @@
       </access>
 
       <metadata>
-        <!-- Empty string = Visible in all -->
-        <invisible_for_websites><![CDATA[]]></invisible_for_websites>
+        <!--
+          1 = Yes
+          System attributes use 0 as default value.
+          See MVentory_API_Block_Metadata::_getValue() method for details.
+        -->
+        <is_visible>1</is_visible>
 
         <!-- Empty string = No hint -->
         <hint><![CDATA[]]></hint>
@@ -395,13 +399,12 @@
   <mventory>
     <metadata>
       <fields>
-        <invisible_for_websites>
-          <type>multiselect</type>
-          <label>Make invisible for</label>
-          <note>Select all websites this attribute should NOT appear in</note>
-          <tooltip>All non-system attributes appear in the app by default. You can hide some of them from the app. It won't affect their use in Magento or the front-end.</tooltip>
-          <source_model>mventory/system_config_source_website</source_model>
-        </invisible_for_websites>
+        <is_visible>
+          <type>select</type>
+          <label>Visible</label>
+          <note>Only visible attributes will be shown in the app.</note>
+          <source_model>adminhtml/system_config_source_yesno</source_model>
+        </is_visible>
 
         <hint>
           <type>text</type>

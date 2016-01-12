@@ -27,30 +27,46 @@
 class MVentory_API_Helper_Product_Attribute
   extends MVentory_API_Helper_Product
 {
-  protected $_whitelist = array(
-    'category_ids' => true,
-    'name' => true,
-    'description' => true,
-    'short_description' => true,
-    'sku' => true,
-    'price' => true,
-    'special_price' => true,
-    'special_from_date' => true,
-    'special_to_date' => true,
-    'weight' => true,
-    'tax_class_id' => true
-  );
+  //protected $_whitelist = array(
+  //  'category_ids' => true,
+  //  'name' => true,
+  //  'description' => true,
+  //  'short_description' => true,
+  //  'sku' => true,
+  //  'price' => true,
+  //  'special_price' => true,
+  //  'special_from_date' => true,
+  //  'special_to_date' => true,
+  //  'weight' => true,
+  //  'tax_class_id' => true
+  //);
 
   protected $_blacklist = array('cost' => true);
 
   protected $_nonReplicable = array(
-    'sku' => true,
+    'gallery' => true,
+    'group_price' => true,
+    'image' => true,
+    'media_gallery' => true,
+    'msrp' => true,
+    'msrp_display_actual_price_type' => true,
+    'msrp_enabled' => true,
+    'mv_created_date' => true,
+    'mv_created_userid' => true,
     'price' => true,
-    'special_price' => true,
+    'price_view' => true,
+    'product_barcode_' => true,
+    'sku' => true,
+    'small_image' => true,
     'special_from_date' => true,
     'special_to_data' => true,
+    'special_price' => true,
+    'status' => true,
+    'thumbnail' => true,
+    'tire_price' => true,
+    'url_key' => true,
+    'visibility' => true,
     'weight' => true,
-    'product_barcode_' => true,
   );
 
   /**
@@ -69,9 +85,6 @@ class MVentory_API_Helper_Product_Attribute
   }
 
   public function getEditables ($setId) {
-    //Save ID of current website to use later (e.g. in _isAllowedAttribute())
-    $this->_websiteId = $this->getCurrentWebsite()->getId();
-
     $attrs = array();
 
     foreach ($this->_getAttrs($setId) as $attr)
@@ -83,9 +96,6 @@ class MVentory_API_Helper_Product_Attribute
   }
 
   public function getReplicables ($setId, $ignore = array()) {
-    //Save ID of current website to use later (e.g. in _isAllowedAttribute())
-    $this->_websiteId = $this->getCurrentWebsite()->getId();
-
     $attrs = array();
 
     $ignore = $this->_nonReplicable + $ignore;
@@ -101,9 +111,6 @@ class MVentory_API_Helper_Product_Attribute
   }
 
   public function getWritables ($setId) {
-    //Save ID of current website to use later (e.g. in _isAllowedAttribute())
-    $this->_websiteId = $this->getCurrentWebsite()->getId();
-
     $attrs = array();
 
     foreach ($this->_getAttrs($setId) as $attr)
@@ -130,9 +137,6 @@ class MVentory_API_Helper_Product_Attribute
    * @return Mage_Eav_Model_Entity_Attribute Configurable attribute
    */
   public function getConfigurable ($setId) {
-    //Save ID of current website to use later (e.g. in _isAllowedAttribute())
-    $this->_websiteId = $this->getCurrentWebsite()->getId();
-
     foreach ($this->_getAttrs($setId) as $attr)
       if ((!$attr->getId() || $attr->isInSet($setId))
           && $attr->isScopeGlobal()
@@ -173,17 +177,16 @@ class MVentory_API_Helper_Product_Attribute
     if (isset($ignore[$code]) || isset($this->_blacklist[$code]))
       return false;
 
-    if (!(($attr->getIsVisible() && $attr->getIsUserDefined())
-          || isset($this->_whitelist[$code])))
-      return false;
+    //Allow user defined attributes and disallow system attributes
+    //if metadata can't be loaded
 
-    return !(($metadata = $this->parseMetadata($attr))
-             && isset($metadata['invisible_for_websites'])
-             && ($websites = $metadata['invisible_for_websites'])
-             && in_array(
-                  $this->_websiteId,
-                  is_array($websites) ? $websites : explode(',', $websites)
-                )
-            );
+    $metadata = $this->parseMetadata($attr);
+    if (!$metadata)
+      return $attr->getIsUserDefined() ?: false;
+
+    if (!isset($metadata['is_visible']))
+      return $attr->getIsUserDefined() ?: false;
+
+    return (bool) $metadata['is_visible'];
   }
 }

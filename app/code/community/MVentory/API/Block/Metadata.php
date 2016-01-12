@@ -130,7 +130,7 @@ class MVentory_API_Block_Metadata
       if ($source = (string) $field->source_model)
         $config['values'] = $this->_getOptions($source, $type);
 
-      $config['value'] = $this->_getValue($id, $values, $defaults);
+      $config['value'] = $this->_getValue($id, $values, $defaults, $attr);
 
       $fieldset
         ->addField($id, $type, $config)
@@ -180,14 +180,28 @@ class MVentory_API_Block_Metadata
   /**
    * Return value for the specified setting or its defaullt value if it's set
    *
-   * @param string $field Name of setting
-   * @param array $values List of values stored in the attribute
-   * @param array $defaults List of default values
-   * @return number|string|bool|null
+   * @param string $field
+   *   Name of setting
+   *
+   * @param array $values
+   *   List of values stored in the attribute
+   *
+   * @param array $defaults
+   *   List of default values
+   *
+   * @param Mage_Catalog_Model_Resource_Eav_Attribute $attr
+   *   Current attribute model
+   *
+   * @return mixed
+   *   Stored value or default value for the setting
    */
-  protected function _getValue ($field, $values, $defaults) {
+  protected function _getValue ($field, $values, $defaults, $attr) {
     if (isset($values[$field]))
       return $values[$field];
+
+    //System attributes are hidden by default
+    if ($field === 'is_visible' && !$attr->getIsUserDefined())
+      return '0';
 
     if (isset($defaults[$field]))
       return $defaults[$field];
