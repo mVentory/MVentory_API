@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -64,6 +64,39 @@ class MVentory_API_Model_Resource_Setup extends Mage_Eav_Model_Entity_Setup {
     $attr['entity_type_id'] = $this->getEntityTypeId($entityTypeId);
 
     return parent::addAttribute($entityTypeId, $code, $attr);
+  }
+
+  /**
+   * Update metadata in specified attributes
+   *
+   * @param array $update
+   *   Metadata to update
+   *
+   *   Format:
+   *
+   *     [
+   *        'attribute_code' => [
+   *          'metadata_field' => 'value'
+   *        ],
+   *
+   *        ...
+   *     ]
+   *
+   * @return MVentory_API_Model_Resource_Setup
+   *   Instance of this class
+   */
+  public function updateMetadata ($update) {
+    $helper = Mage::helper('mventory/metadata');
+
+    $attrs = Mage::getResourceModel('catalog/product_attribute_collection')
+      ->setCodeFilter(array_keys($update));
+
+    foreach ($attrs as $attr) {
+      $helper->append($attr, $update[$attr->getAttributeCode()]);
+      $attr->save();
+    }
+
+    return $this;
   }
 
   protected function _prepareValues ($attr) {

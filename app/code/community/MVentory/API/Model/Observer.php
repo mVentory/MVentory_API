@@ -237,18 +237,6 @@ class MVentory_API_Model_Observer {
           && is_array($attr['mventory_metadata'])))
       return;
 
-    $metadata = $attr['mventory_metadata'];
-
-    //Reset selected sites if Visible in all option is also selected.
-    //!!!TODO: This should be done properly via option's backend
-    //but it's not supported. Also default value for the options
-    //should be fetched from the config
-    if (isset($metadata['invisible_for_websites'])
-        && is_array($metadata['invisible_for_websites'])
-        && $metadata['invisible_for_websites']
-        && in_array('', $metadata['invisible_for_websites']))
-      $metadata['invisible_for_websites'] = array('');
-
-    $attr['mventory_metadata'] = serialize($metadata);
+    $attr['mventory_metadata'] = serialize($attr['mventory_metadata']);
   }
 }

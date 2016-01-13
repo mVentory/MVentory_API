@@ -23,7 +23,7 @@
 <config>
   <modules>
     <MVentory_API>
-      <version>30</version>
+      <version>31</version>
     </MVentory_API>
   </modules>
 
@@ -153,6 +153,16 @@
           </mventory_add_product_category_match_massaction>
         </observers>
       </adminhtml_catalog_product_grid_prepare_massaction>
+
+      <catalog_entity_attribute_save_before>
+        <observers>
+          <mventory_attr_save_metadata>
+            <type>singleton</type>
+            <class>mventory/observer</class>
+            <method>saveAttrMetadata</method>
+          </mventory_attr_save_metadata>
+        </observers>
+      </catalog_entity_attribute_save_before>
     </events>
 
     <rewrite>
@@ -265,16 +275,6 @@
           </mventory_add_mathing_rules_block>
         </observers>
       </controller_action_layout_render_before_adminhtml_catalog_product_set_edit>
-
-      <catalog_entity_attribute_save_before>
-        <observers>
-          <mventory_attr_save_metadata>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>saveAttrMetadata</method>
-          </mventory_attr_save_metadata>
-        </observers>
-      </catalog_entity_attribute_save_before>
     </events>
 
     <layout>

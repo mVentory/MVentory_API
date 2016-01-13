@@ -106,7 +106,7 @@ class MVentory_API_Model_Product_Attribute_Api
     //Temporarily set 'category_ids' attribite to read-only until we will
     //find final solution for 'category_ids'
     $metadata = $this->_prepareMetadata(
-      $this->_helper->parseMetadata($attr)
+      $this->_metadataHelper->get($attr)
     );
 
     if ($result['attribute_code'] == 'category_ids')
@@ -116,6 +116,8 @@ class MVentory_API_Model_Product_Attribute_Api
   }
 
   public function fullInfoList ($setId) {
+    $this->_metadataHelper = Mage::helper('mventory/metadata');
+
     $result = array();
     $attrs = $this->_helper->getEditables($setId);
 

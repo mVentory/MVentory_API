@@ -14,26 +14,27 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
 
-$data = array(
-  'name' => array('use_for_search' => 1),
-  'weight' => array(
-    'input_method' => MVentory_API_Model_Config::MT_INPUT_NUMKBD,
-    'alt_input_method' => MVentory_API_Model_Config::MT_INPUT_NUMKBD
-  ),
-  'sku' => array(
-    'input_method' => MVentory_API_Model_Config::MT_INPUT_SCANNER,
-    'alt_input_method' => MVentory_API_Model_Config::MT_INPUT_KBD
-  ),
-  'product_barcode_' => array(
-    'input_method' => MVentory_API_Model_Config::MT_INPUT_SCANNER,
-    'alt_input_method' => MVentory_API_Model_Config::MT_INPUT_KBD
-  )
-);
+//Make previously whitelisted system attributes (we ignored system attributes)
+//visible by default for the app
+
+$data = [
+  'category_ids' => ['is_visible' => true],
+  'description' => ['is_visible' => true],
+  'name' => ['is_visible' => true],
+  'price' => ['is_visible' => true],
+  'short_description' => ['is_visible' => true],
+  'sku' => ['is_visible' => true],
+  'special_from_date' => ['is_visible' => true],
+  'special_to_data' => ['is_visible' => true],
+  'special_price' => ['is_visible' => true],
+  'tax_class_id' => ['is_visible' => true],
+  'weight' => ['is_visible' => true]
+];
 
 $this
   ->startSetup()

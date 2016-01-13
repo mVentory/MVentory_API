@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -27,47 +27,29 @@
 class MVentory_API_Helper_Product_Attribute
   extends MVentory_API_Helper_Product
 {
-  //protected $_whitelist = array(
-  //  'category_ids' => true,
-  //  'name' => true,
-  //  'description' => true,
-  //  'short_description' => true,
-  //  'sku' => true,
-  //  'price' => true,
-  //  'special_price' => true,
-  //  'special_from_date' => true,
-  //  'special_to_date' => true,
-  //  'weight' => true,
-  //  'tax_class_id' => true
-  //);
-
   protected $_blacklist = array('cost' => true);
 
-  protected $_nonReplicable = array(
-    'gallery' => true,
-    'group_price' => true,
-    'image' => true,
-    'media_gallery' => true,
-    'msrp' => true,
-    'msrp_display_actual_price_type' => true,
-    'msrp_enabled' => true,
-    'mv_created_date' => true,
-    'mv_created_userid' => true,
-    'price' => true,
-    'price_view' => true,
+  /**
+   * Non-replicable user defined attributes
+   *
+   * @var array
+   */
+  protected $_nonReplicable = [
     'product_barcode_' => true,
-    'sku' => true,
-    'small_image' => true,
-    'special_from_date' => true,
-    'special_to_data' => true,
-    'special_price' => true,
-    'status' => true,
-    'thumbnail' => true,
-    'tire_price' => true,
-    'url_key' => true,
-    'visibility' => true,
-    'weight' => true,
-  );
+  ];
+
+  /**
+   * Replicable system attributes, the rest of system attributes is ignored
+   *
+   * @var array
+   */
+  protected $_replicable = [
+    'category_ids' => true,
+    'name' => true,
+    'description' => true,
+    'short_description' => true,
+    'tax_class_id' => true
+  ];
 
   /**
    * List of attributes which use special functions to set/get values
@@ -85,37 +67,45 @@ class MVentory_API_Helper_Product_Attribute
   }
 
   public function getEditables ($setId) {
+    //Load helper which is used in _isAllowedAttribute() method
+    $this->_metadataHelper = Mage::helper('mventory/metadata');
+
     $attrs = array();
 
     foreach ($this->_getAttrs($setId) as $attr)
-      if ((!$attr->getId() || $attr->isInSet($setId))
-          && $this->_isAllowedAttribute($attr))
+      if ($this->_isAllowedAttribute($attr))
         $attrs[$attr->getAttributeCode()] = $attr;
 
     return $attrs;
   }
 
   public function getReplicables ($setId, $ignore = array()) {
+    //Load helper which is used in _isAllowedAttribute() method
+    $this->_metadataHelper = Mage::helper('mventory/metadata');
+
     $attrs = array();
 
     $ignore = $this->_nonReplicable + $ignore;
 
-    foreach ($this->_getAttrs($setId) as $attr)
-      if ((!$attr->getId() || $attr->isInSet($setId))
-          && $this->_isAllowedAttribute($attr, $ignore)) {
-        $code = $attr->getAttributeCode();
+    foreach ($this->_getAttrs($setId) as $attr) {
+      $code = $attr->getAttributeCode();
+
+      if (isset($this->_replicable[$code])
+          || $this->_isAllowedAttribute($attr, $ignore))
         $attrs[$code] = $code;
-      }
+    }
 
     return $attrs;
   }
 
   public function getWritables ($setId) {
+    //Load helper which is used in _isAllowedAttribute() method
+    $this->_metadataHelper = Mage::helper('mventory/metadata');
+
     $attrs = array();
 
     foreach ($this->_getAttrs($setId) as $attr)
-      if ((!$attr->getId() || $attr->isInSet($setId))
-          && $this->_isAllowedAttribute($attr)
+      if ($this->_isAllowedAttribute($attr)
           && !(($metadata = $attr['mventory_metadata'])
                && isset($metadata['readonly'])
                && (1 == (int) $metadata['readonly'])))
@@ -137,31 +127,15 @@ class MVentory_API_Helper_Product_Attribute
    * @return Mage_Eav_Model_Entity_Attribute Configurable attribute
    */
   public function getConfigurable ($setId) {
+    //Load helper which is used in _isAllowedAttribute() method
+    $this->_metadataHelper = Mage::helper('mventory/metadata');
+
     foreach ($this->_getAttrs($setId) as $attr)
-      if ((!$attr->getId() || $attr->isInSet($setId))
-          && $attr->isScopeGlobal()
+      if ($attr->isScopeGlobal()
           && ($attr->getFrontendInput() == 'select')
           && ($attr->getIsConfigurable() == '1')
           && $this->_isAllowedAttribute($attr))
       return $attr;
-  }
-
-  /**
-   * Deserialise and set metadata in the attribute if it's available
-   *
-   * @param Mage_Eav_Model_Entity_Attribute $attr Attribute
-   * @return array Deserialised metadata
-   */
-  public function parseMetadata ($attr) {
-    if (is_array($raw = $attr['mventory_metadata']))
-      return $raw;
-
-    $attr['mventory_metadata']
-      = ($raw && ($metadata = unserialize($raw)) !== false)
-        ? $metadata
-          : ($metadata = array());
-
-    return $metadata;
   }
 
   protected function _getAttrs ($setId) {
@@ -177,16 +151,13 @@ class MVentory_API_Helper_Product_Attribute
     if (isset($ignore[$code]) || isset($this->_blacklist[$code]))
       return false;
 
+    try {
+      return (bool) $this->_metadataHelper->get($attr, 'is_visible');
+    }
+    catch (OutOfBoundsException $e) {}
+
     //Allow user defined attributes and disallow system attributes
     //if metadata can't be loaded
-
-    $metadata = $this->parseMetadata($attr);
-    if (!$metadata)
-      return $attr->getIsUserDefined() ?: false;
-
-    if (!isset($metadata['is_visible']))
-      return $attr->getIsUserDefined() ?: false;
-
-    return (bool) $metadata['is_visible'];
+    return $attr->getIsUserDefined() ?: false;
   }
 }
