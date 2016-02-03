@@ -91,7 +91,8 @@ class MVentory_API_Helper_Product_Attribute
       $code = $attr->getAttributeCode();
 
       if (isset($this->_replicable[$code])
-          || $this->_isAllowedAttribute($attr, $ignore))
+          || ($attr->getIsUserDefined()
+              && $this->_isAllowedAttribute($attr, $ignore)))
         $attrs[$code] = $code;
     }
 
