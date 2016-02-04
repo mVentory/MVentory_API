@@ -99,7 +99,7 @@ class MVentory_API_Model_Product_Attribute_Api
         array('store_id' => 0, 'label' => $label)
       ),
 
-      'options' => $this->optionsPerStoreView($attr->getId(), $storeId)
+      'options' => $this->_getOptions($attr->setStoreId($storeId))
     );
 
     //!!!TODO: remove when not needed
@@ -197,65 +197,42 @@ class MVentory_API_Model_Product_Attribute_Api
     return $this->_helper->prepareApiResponse($this->_info($attributeId));
   }
 
-  private function getOptionLabels($storeId, $attributeId)
-  {
-    $values = array();
-
-    $valuesCollection = Mage::getResourceModel('eav/entity_attribute_option_collection')
-      ->setAttributeFilter($attributeId)
-      ->setStoreFilter($storeId, false)
-      ->load();
-
-    foreach ($valuesCollection as $item) {
-      $values[$item->getId()] = $item->getValue();
+  /**
+   * Return options for supplied attribute, filter out all disabled/hidden
+   * options (i.e. with '~' as a label)
+   *
+   * @param Mage_Catalog_Model_Resource_Eav_Attribute $attr
+   *   Instance of attribute model
+   *
+   * @return array
+   *   List of prepared options
+   */
+  public function _getOptions ($attr) {
+    try {
+      $source = $attr->getSource();
+    }
+    catch (Exception $e) {
+      return [];
     }
 
-    return $values;
-  }
+    $canGetOptions = $source
+                     && is_object($source)
+                     && method_exists($source, 'getAllOptions');
 
-  private function optionsPerStoreView($attribute, $storeId)
-  {
-    $attributeModel = Mage::getResourceModel('catalog/eav_attribute')
-      ->setEntityTypeId(Mage::getModel('eav/entity')->setType('catalog_product')->getTypeId());
+    if (!$canGetOptions)
+      return [];
 
-    if (is_numeric($attribute)) {
-      $attributeModel->load(intval($attribute));
-    } else {
-      $attributeModel->load($attribute, 'attribute_code');
+    $options = [];
+
+    try {
+      //Filter out options having '~' as a label
+      foreach ($source->getAllOptions(false) as $option)
+        if ($option['label'] !== '~')
+          $options[] = $option;
     }
+    catch (Exception $e) {}
 
-    $attributeId = $attributeModel->getId();
-
-    if (!$attributeId) {
-      $this->_fault('attribute_not_exists');
-    }
-
-    $defaultOptionLabels = $this->getOptionLabels(0, $attributeId);
-    $optionLabels = $this->getOptionLabels($storeId, $attributeId);
-
-    $optionsCollection = Mage::getResourceModel('eav/entity_attribute_option_collection')
-      ->setAttributeFilter($attributeId)
-      ->setPositionOrder('desc', true)
-      ->load();
-
-    $values = array();
-
-    foreach ($optionsCollection as $option)
-    {
-      $optionLabel = '~';
-
-      if (isset($optionLabels[$option->getId()])) {
-        $optionLabel = $optionLabels[$option->getId()];
-      } elseif (isset($defaultOptionLabels[$option->getId()])) {
-        $optionLabel = $defaultOptionLabels[$option->getId()];
-      }
-
-      if (!is_null($optionLabel) && strcmp($optionLabel, '~') != 0) {
-        $values[] = array('value' => $option->getId(),
-                          'label' => $optionLabel);
-      }
-    }
-    return $values;
+    return $options;
   }
 
   protected function _removeOptionValue ($optionId, $storeId) {
