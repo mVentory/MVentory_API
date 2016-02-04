@@ -78,7 +78,7 @@ class MVentory_API_Model_Product_Attribute_Api
       'attribute_id' => $attr->getId(),
       'attribute_code' => $attr->getAttributeCode(),
       'frontend_input' => $attr->getFrontendInput(),
-      'default_value' => $attr->getDefaultValue(),
+      'default_value' => (string) $attr->getDefaultValue(),
       'is_required' => $attr->getIsRequired(),
       'frontend_class' => (string) $attr->getFrontendClass(),
       'is_html_allowed_on_front' => $attr->getIsHtmlAllowedOnFront(),
