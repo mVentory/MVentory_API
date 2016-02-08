@@ -1,10 +1,15 @@
 <?php
 
-$version = '1.5.1';
+$version = '1.6.0';
 
 $notes = <<<EOT
-* Fix HTTPS handling for android app links
-* Updated config hints and tooltips
+* Bug fixes and refactoring
+* Image Review moved into separate extension
+* Compatibility with SUPEE-6788
+* Allow category matching based on yes/no attributes
+
+Note: Category matching has changed. All rules that match will be applied to make
+assignment of a product to multiple categories easier.
 EOT;
 
 $description = <<<EOT
