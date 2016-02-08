@@ -19,34 +19,36 @@
  */
 
 /**
- * Button for exporting rates in CSV format for the volume based shipping
- * carrier
+ * Volumerate carriers export controller
  *
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
-class MVentory_API_Block_System_Config_Form_Field_Exportrates
-  extends Mage_Adminhtml_Block_System_Config_Form_Field {
+class MVentory_API_Mventory_CarriersController
+  extends Mage_Adminhtml_Controller_Action {
 
-  protected function _getElementHtml (Varien_Data_Form_Element_Abstract $elem) {
-    $website = $this
-                 ->getRequest()
-                 ->getParam('website', '');
+  protected function _construct() {
+    $this->setUsedModuleName('MVentory_API');
+  }
 
-    $url = $this->getUrl(
-      'adminhtml/mventory_carriers/export',
-      compact('website')
-     );
+  protected function _isAllowed () {
+    return true;
+  }
 
-    $data = array(
-      'label' => $this->__('Export CSV'),
-      'onclick' => 'setLocation(\'' . $url . '\')'
-    );
+  /**
+   * Export shipping rates in csv format
+   */
+  public function exportAction () {
+    $websiteId = Mage::app()
+                   ->getWebsite($this->getRequest()->getParam('website'))
+                   ->getId();
 
-    return $this
-             ->getLayout()
-             ->createBlock('adminhtml/widget_button')
-             ->setData($data)
-             ->toHtml();
+    $content = $this
+                 ->getLayout()
+                 ->createBlock('mventory/carrier_volumerate_grid')
+                 ->setWebsiteId($websiteId)
+                 ->getCsvFile();
+
+    $this->_prepareDownloadResponse('shippingrates.csv', $content);
   }
 }

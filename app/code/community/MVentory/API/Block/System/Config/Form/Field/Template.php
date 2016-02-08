@@ -14,37 +14,39 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2015 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
 /**
- * Volumerate carriers export controller
+ * Template field for fieldset
  *
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
-class MVentory_API_CarriersController
-  extends Mage_Adminhtml_Controller_Action {
-
-  protected function _construct() {
-    $this->setUsedModuleName('MVentory_API');
-  }
+class MVentory_API_Block_System_Config_Form_Field_Template
+  extends Mage_Adminhtml_Block_Template
+  implements Varien_Data_Form_Element_Renderer_Interface
+{
+  const _TPL_ELEMENT = <<<'EOT'
+<tr class="system-fieldset-sub-head mventory-field-template" id="row_%s">
+  <td colspan="5">%s</td>
+</tr>
+EOT;
 
   /**
-   * Export shipping rates in csv format
+   * Render element html
+   *
+   * @param Varien_Data_Form_Element_Abstract $element
+   * @return string
    */
-  public function exportAction () {
-    $websiteId = Mage::app()
-                   ->getWebsite($this->getRequest()->getParam('website'))
-                   ->getId();
-
-    $content = $this
-                 ->getLayout()
-                 ->createBlock('mventory/carrier_volumerate_grid')
-                 ->setWebsiteId($websiteId)
-                 ->getCsvFile();
-
-    $this->_prepareDownloadResponse('shippingrates.csv', $content);
+  public function render (Varien_Data_Form_Element_Abstract $element) {
+    return sprintf(
+      self::_TPL_ELEMENT,
+      $element->getHtmlId(),
+      $this
+        ->setTemplate($element->getOriginalData('template'))
+        ->toHtml()
+    );
   }
 }

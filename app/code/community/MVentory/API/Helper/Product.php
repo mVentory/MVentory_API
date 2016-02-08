@@ -106,10 +106,6 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
   /**
    * Try to get product's ID
    *
-   * NOTE: this method doesn't recognise only numerical SKUs even
-   *       if $identifierType is set to 'sku'. It will be returned as ID
-   *       then such SKU, barcode and additional SKUs don't exist
-   *
    * @param  int|string $productId (SKU, ID or Barcode)
    * @param  string $identifierType
    *
@@ -145,6 +141,11 @@ class MVentory_API_Helper_Product extends MVentory_API_Helper_Data {
 
     if ($id > 0)
       return $id;
+
+    //Return nothing if sku type is specified because we didn't find such SKU
+    //or barcode or additional SKU
+    if ($identifierType == 'sku')
+      return null;
 
     $id = (int) $productId;
 

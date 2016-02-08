@@ -24,7 +24,7 @@
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
-class MVentory_API_LogsController
+class MVentory_API_Mventory_LogsController
   extends Mage_Adminhtml_Controller_Action
 {
   const _CANT_CLEAR = <<<'EOT'
@@ -44,6 +44,10 @@ EOT;
    */
   protected function _construct () {
     $this->setUsedModuleName('MVentory_API');
+  }
+
+  protected function _isAllowed () {
+    return true;
   }
 
   /**

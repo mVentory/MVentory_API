@@ -113,6 +113,11 @@ class MVentory_API_Model_Matching
     $rules = $this->getData('rules');
 
     foreach ($rules as $rule) {
+
+      //Ignore default rule, it's processed separately
+      if (!$rule['attrs'])
+        continue;
+
       foreach ($rule['attrs'] as $attribute) {
         if (!isset($_attributes[$attribute['id']]))
           continue;
@@ -130,11 +135,12 @@ class MVentory_API_Model_Matching
           continue 2;
       }
 
-      if (!empty($rule['categories'])) {
-          $categoryIds = $rule['categories'];
-          break;
-      }
+      //Collect categories from current rule
+      if (!empty($rule['categories']))
+        $categoryIds = array_merge($categoryIds, $rule['categories']);
     }
+
+    $categoryIds = array_unique($categoryIds);
 
     if (!$categoryIds && isset($rules[self::DEFAULT_RULE_ID]))
       $categoryIds = $rules[self::DEFAULT_RULE_ID]['categories'];
@@ -196,17 +202,30 @@ class MVentory_API_Model_Matching
 
       $type = $attr->getFrontendInput();
 
-      if (!($type == 'select' || $type == 'multiselect'))
+      if (!($type == 'select' || $type == 'multiselect' || $type == 'boolean'))
         continue;
 
-      $allOptions = $attr
-                      ->getSource()
-                      ->getAllOptions();
+      // skip attribute in case its model is broken for some reason (e.g. 3rd party ext problem)
+      try {
+        $allOptions = $attr
+                        ->getSource()
+                        ->getAllOptions();
+      } catch (Exception $e) {
+        continue;
+      }
 
       $optionIds = array();
 
       foreach ($allOptions as $options)
-        if ($options['value'])
+
+        /**
+         * Ignore empty option (an option with empty string as value)
+         * added by "table" source model by default
+         *
+         * @see Mage_Eav_Model_Entity_Attribute_Source_Table::getAllOptions()
+         *   See the function to find how empty option is added
+         */
+        if ($options['value'] !== '')
           $optionIds[] = $options['value'];
 
       $attrs[$attr->getId()] = $optionIds;

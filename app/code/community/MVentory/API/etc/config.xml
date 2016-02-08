@@ -194,13 +194,13 @@
 
   <admin>
     <routers>
-      <mventory_adminhtml>
-        <use>admin</use>
+      <adminhtml>
         <args>
-          <module>MVentory_API</module>
-          <frontName>mventory</frontName>
+          <modules>
+            <MVentory_API after="Mage_Adminhtml">MVentory_API</MVentory_API>
+          </modules>
         </args>
-      </mventory_adminhtml>
+      </adminhtml>
     </routers>
   </admin>
 

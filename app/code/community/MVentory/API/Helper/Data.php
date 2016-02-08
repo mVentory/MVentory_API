@@ -126,6 +126,8 @@ class MVentory_API_Helper_Data extends Mage_Core_Helper_Abstract {
   /**
    * Retrieve attribute's raw value from DB for specified product's ID.
    *
+   * @deprecated The method is not used in the code. Should be removed
+   *
    * @param int $productId
    * @param int|string|array $attribute atrribute's IDs or codes
    * @param int|string|Mage_Core_Model_Website $website Website, its ID or code
@@ -143,6 +145,8 @@ class MVentory_API_Helper_Data extends Mage_Core_Helper_Abstract {
 
   /**
    * Update attribute values for product per website
+   *
+   * @deprecated The method is not used in the code. Should be removed
    *
    * @param int $productId
    * @param array $attrData

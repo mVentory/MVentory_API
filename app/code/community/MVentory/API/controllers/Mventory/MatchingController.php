@@ -24,11 +24,15 @@
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
-class MVentory_API_MatchingController
+class MVentory_API_Mventory_MatchingController
   extends Mage_Adminhtml_Controller_Action {
 
   protected function _construct() {
     $this->setUsedModuleName('MVentory_API');
+  }
+
+  protected function _isAllowed () {
+    return true;
   }
 
   /**

@@ -24,7 +24,8 @@
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
-class MVentory_API_CustomerController extends Mage_Adminhtml_Controller_Action
+class MVentory_API_Mventory_CustomerController
+  extends Mage_Adminhtml_Controller_Action
 {
 
   const _NO_ADDRESS = <<<'EOT'
@@ -40,15 +41,15 @@ User with ID=%d is already registered for API access. Manage details at <a href=
 EOT;
 
   const _HELP = <<<'EOT'
-Manage API access on <a href="%s">API user details page</a>
-<br />
-Visit <a target="_blank" href="http://mventory.com/help/configure-access/">mventory.com</a> for more info
-<br />
-Save the XML-RPC user again to generate a new link
+Manage API access on <a href="%s">API user details page</a>. Save the user there to generate a new access link or visit <a target="_blank" href="http://mventory.com/doc/configuration-2/"> mventory.com</a> for more info.
 EOT;
 
   protected function _construct() {
     $this->setUsedModuleName('MVentory_API');
+  }
+
+  protected function _isAllowed () {
+    return true;
   }
 
   /**

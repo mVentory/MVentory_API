@@ -74,7 +74,9 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
                  ->getDefaultStore()
                  ->getId();
 
-    $product = $this->_getProduct($productId, $storeId, $identifierType);
+    //Use id as identifier type because we've got product's ID earlier
+    //in this function
+    $product = $this->_getProduct($productId, $storeId, 'id');
 
     //Product's ID can be changed by '_getProduct()' function if original
     //product is configurable one
