@@ -30,6 +30,8 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
   protected $_categories = null;
 
   protected function _construct () {
+    $this->_boolAttrValues = $this->_getBoolAttrValues();
+
     $this->_attrs['-1'] = array(
       'label' => $this->__('Select an attribute...'),
       'used' => false,
@@ -47,7 +49,7 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
 
       $type = $attr->getFrontendInput();
 
-      if (!($type == 'select' || $type == 'multiselect'))
+      if (!($type == 'select' || $type == 'multiselect' || $type == 'boolean'))
         continue;
 
       $id = $attr->getId();
@@ -57,6 +59,9 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
         'used' => false,
         'used_values' => array()
       );
+
+      if ($type == 'boolean')
+        $this->_attrs[$id]['values'] = $this->_boolAttrValues;
 
       $labels[] = $attr->getFrontendLabel();
     }
@@ -236,5 +241,26 @@ class MVentory_API_Block_Matching extends Mage_Adminhtml_Block_Template {
         'has_categories' => true,
         'categories' => $categories
       );
+  }
+
+  /**
+   * Return prepared values for boolean (Yes/No) attribute
+   *
+   * @return array
+   *   List of prepared values
+   */
+  protected function _getBoolAttrValues () {
+    $options = Mage::getModel('eav/entity_attribute_source_boolean')
+      ->getAllOptions();
+
+    $values = [];
+
+    foreach ($options as $option)
+      $values[] = [
+        'id' => $option['value'],
+        'label' => $option['label']
+      ];
+
+    return $values;
   }
 }
