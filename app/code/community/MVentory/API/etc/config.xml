@@ -15,7 +15,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 -->
@@ -23,7 +23,7 @@
 <config>
   <modules>
     <MVentory_API>
-      <version>29</version>
+      <version>30</version>
     </MVentory_API>
   </modules>
 
@@ -246,7 +246,7 @@
     </acl>
 
     <events>
-      <core_block_abstract_prepare_layout_before>
+      <controller_action_layout_render_before_adminhtml_api_user_edit>
         <observers>
           <mventory_add_create_api_user_button>
             <type>singleton</type>
@@ -254,7 +254,7 @@
             <method>addCreateApiUserButton</method>
           </mventory_add_create_api_user_button>
         </observers>
-      </core_block_abstract_prepare_layout_before>
+      </controller_action_layout_render_before_adminhtml_api_user_edit>
 
       <controller_action_layout_render_before_adminhtml_catalog_product_set_edit>
         <observers>
@@ -265,16 +265,6 @@
           </mventory_add_mathing_rules_block>
         </observers>
       </controller_action_layout_render_before_adminhtml_catalog_product_set_edit>
-
-      <api_user_save_after>
-        <observers>
-          <mventory_generate_link_for_profile>
-            <type>singleton</type>
-            <class>mventory/observer</class>
-            <method>generateLinkForProfile</method>
-          </mventory_generate_link_for_profile>
-        </observers>
-      </api_user_save_after>
 
       <catalog_entity_attribute_save_before>
         <observers>
@@ -327,6 +317,15 @@
         <ideal_width>900</ideal_width>
         <ideal_height>900</ideal_height>
       </image_clips>
+
+      <access>
+
+        <!--
+          0 = False.
+          Used to show notice about API user creation after extension install
+        -->
+        <user_is_created>0</user_is_created>
+      </access>
 
       <metadata>
         <!-- Empty string = Visible in all -->

@@ -26,9 +26,25 @@
  */
 class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
+  /**
+   * @todo Update app to stop sending $customerId paramater because we don't use
+   *   it anymore
+   *
+   * @param  [type] $sku           [description]
+   * @param  [type] $price         [description]
+   * @param  [type] $qty           [description]
+   * @param  [type] $customerId    [description]
+   * @param  [type] $transactionId [description]
+   * @param  [type] $name          [description]
+   * @param  [type] $taxClass      [description]
+   * @return [type]                [description]
+   */
   public function createOrderForProduct ($sku, $price, $qty, $customerId,
                                          $transactionId = null, $name = null,
                                          $taxClass = null) {
+
+    //This parameter is not used anymore
+    unset($customerId);
 
     $helper = Mage::helper('mventory/product');
 
@@ -160,22 +176,24 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
     $cartCustomer = Mage::getModel('checkout/cart_customer_api');
 
+    list($customer, $address) = Mage::helper('mventory/customer')->get(
+      Mage::app()->getStore($storeId)
+    );
+
+    if (!$customer)
+      $this->_fault('customer_not_exists');
+
     $data = array(
       'mode' => Mage_Checkout_Model_Cart_Customer_Api::MODE_CUSTOMER,
-      'entity_id' => $customerId
+      'entity_id' => $customer->getId()
     );
 
     $result = $cartCustomer->set($quoteId, $data, $storeId);
 
-    $addressId = Mage::getModel('customer/customer')
-                   ->load($customerId)
-                   ->getDefaultBillingAddress()
-                   ->getId();
-
     $data = array('mode'
                     => Mage_Checkout_Model_Cart_Customer_Api::ADDRESS_BILLING,
                   'use_for_shipping' => true,
-                  'entity_id' => $addressId );
+                  'entity_id' => $address->getId() );
 
     $result = $cartCustomer->setAddresses($quoteId, array($data), $storeId);
 
@@ -218,6 +236,14 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
     $result = $cartPayment->setPaymentMethod($quoteId, $data, $storeId);
 
     $orderId = $this->createOrder($quoteId, $storeId);
+
+    $apiUser = $helper->getApiUser();
+    if ($apiUser)
+      Mage::getModel('mventory/order_api')->addComment(
+        $orderId,
+        false,
+        $helper->__('Order created by %s', $apiUser->getUsername())
+      );
 
     //Save transaction ID and orderId pair. So, it will return existing order
     //to API client if it will try to create order with same transaction ID
@@ -333,11 +359,6 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
       	$this->_fault('transaction_not_exists');
       }
 
-      if (!isset($customerId))
-      {
-      	$customerId = $cartItem['customer_id'];
-      }	
-
       $productData['product_id'] = $cartItem['product_id'];
 
       if (!isset($productData['price'])) {
@@ -434,20 +455,22 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
     $cartCustomer = Mage::getModel('checkout/cart_customer_api');
 
+    list($customer, $address) = Mage::helper('mventory/customer')->get(
+      Mage::app()->getStore($storeId)
+    );
+
+    if (!$customer)
+      $this->_fault('customer_not_exists');
+
     $data = array('mode' => Mage_Checkout_Model_Cart_Customer_Api::MODE_CUSTOMER,
-                  'entity_id' => $customerId);
+                  'entity_id' => $customer->getId());
 
     $result = $cartCustomer->set($quoteId, $data, $storeId);
-
-    $addressId = Mage::getModel('customer/customer')
-                   ->load($customerId)
-                   ->getDefaultBillingAddress()
-                   ->getId();
 
     $data = array('mode'
                     => Mage_Checkout_Model_Cart_Customer_Api::ADDRESS_BILLING,
                   'use_for_shipping' => true,
-                  'entity_id' => $addressId );
+                  'entity_id' => $address->getId() );
 
     $result = $cartCustomer->setAddresses($quoteId, array($data), $storeId);
 
@@ -495,6 +518,14 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
     $result = $cartPayment->setPaymentMethod($quoteId, $data, $storeId);
 
     $orderId = $this->createOrder($quoteId, $storeId);
+
+    $apiUser = $helper->getApiUser();
+    if ($apiUser)
+      Mage::getModel('mventory/order_api')->addComment(
+        $orderId,
+        false,
+        $helper->__('Order created by %s', $apiUser->getUsername())
+      );
 
     //create shipment and invoice to complete order
     $shipment = Mage::getModel('mventory/order_shipment_api');

@@ -14,27 +14,12 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
 
-$this->startSetup();
-
-$this->addAttribute(
-  'customer',
-  'mventory_app_profile_key',
-  array(
-    //Fields from Mage_Eav_Model_Entity_Setup
-    'input' => null,
-    'required' => 0,
-    'unique' => 1,
-
-    //Fields from Mage_Customer_Model_Resource_Setup
-    'visible' => 0,
-  )
-);
-
-$this->endSetup();
-
-?>
+$this
+  ->startSetup()
+  ->removeAttribute('customer', 'mventory_app_profile_key')
+  ->endSetup();

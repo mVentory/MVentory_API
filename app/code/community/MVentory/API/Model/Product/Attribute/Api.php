@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -179,13 +179,14 @@ class MVentory_API_Model_Product_Attribute_Api
         $this->addOption($attributeId, $data);
 
         $subject = 'New attribute value: ' . $value;
-        $body = $subject;
+        $body = 'Attribute code: ' . $attribute->getAttributeCode() . "\n"
+                . $subject;
 
-        if ($customer = $this->_helper->getCustomerByApiUser())
+        $apiUser = $this->_helper->getApiUser();
+        if ($apiUser)
           $body .= "\n\n"
-                   . 'Attribute code: ' . $attribute->getAttributeCode() . "\n"
-                   . 'Customer ID: ' . $customer->getId() . "\n"
-                   . 'Customer e-mail: ' . $customer->getEmail();
+                   . 'API user ID: ' . $apiUser->getId() . "\n"
+                   . 'API user e-mail: ' . $apiUser->getEmail();
 
         $this->_helper->sendEmail($subject, $body);
       } catch (Exception $e) {}

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * NOTICE OF LICENSE
  *
@@ -12,16 +11,12 @@
  * See http://mventory.com/legal/licensing/ for other licensing options.
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
-
 ?>
 
-<script type="text/javascript">//<![CDATA[
-function mv_prepare_url (template) {
-  return new Template(template, /(^|.|\r|\n)({{(\w+)}})/)
-    .evaluate({tab_id:customer_info_tabsJsTabs.activeTab.id});
-}
-//]]></script>
+<div id="mventory-first-api-user-notification" class="notification-global">
+  <?php echo $this->__('<a id="mventory-first-api-user" href="%s">Create a new mVentory App user</a> to start managing products and orders from your smartphone.', $this->getNewApiUserUrl()) ?>
+</div>
