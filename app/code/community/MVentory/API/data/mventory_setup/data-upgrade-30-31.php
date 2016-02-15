@@ -36,6 +36,27 @@ $data = [
   'weight' => ['is_visible' => true]
 ];
 
+//Make previously hidden in any website attrubutes as invisible in the app
+
+$metadata = Mage::helper('mventory/metadata');
+$attrs = Mage::getResourceModel('catalog/product_attribute_collection');
+
+foreach ($attrs as $attr) try {
+  $invisibleForWebsites = $metadata->get($attr, 'invisible_for_websites');
+
+  $isHiddenInAnyWebsite = count($invisibleForWebsites) > 1
+                          || (isset($invisibleForWebsites[0])
+                              && $invisibleForWebsites[0] !== '');
+
+  if (!$isHiddenInAnyWebsite)
+    continue;
+
+  $data[$attr->getAttributeCode()] = ['is_visible' => false];
+}
+catch (Exception $e) {
+  continue;
+}
+
 $this
   ->startSetup()
   ->updateMetadata($data)
