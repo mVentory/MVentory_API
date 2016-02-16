@@ -54,6 +54,23 @@ class MVentory_API_Model_Product_Attribute_Media_Api
 
     $file['name'] = strtolower(trim($file['name']));
 
+    /**
+     * If no 'exclude' flag is supplied set it to false. Our code requires this
+     * flag to be defined, also Magento api code sets the flag to true
+     * by default if it's omitted in the supplied data.
+     *
+     * @see Mage_Catalog_Model_Product_Attribute_Media_Api::create()
+     *   See this method to find how it calls following methods: addImage()
+     *   and update()
+     *
+     * @see Mage_Catalog_Model_Product_Attribute_Backend_Media::addImage()
+     *   See this method for the default value of 'exclude' flag
+     *
+     * @see Mage_Catalog_Model_Product_Attribute_Backend_Media::update()
+     */
+    if (!isset($data['exclude']))
+      $data['exclude'] = false;
+
     //$storeId = Mage::helper('mventory')->getCurrentStoreId($storeId);
 
     //Temp solution, apply image settings globally
@@ -94,9 +111,6 @@ class MVentory_API_Model_Product_Attribute_Media_Api
 
     if (!$hasThumbnail)
       $data['types'][] = 'thumbnail';
-
-    //We don't use exclude feature
-    $data['exclude'] = 0;
 
     $content = $this->_fixOrientation($name, $file['content']);
     $file['content'] = base64_encode($content);
