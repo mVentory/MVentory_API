@@ -12,7 +12,7 @@
  * See http://mventory.com/legal/licensing/ for other licensing options.
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
@@ -25,6 +25,9 @@
 //<![CDATA[
 
 Ext.EventManager.onDocumentReady (function () {
+  var treeData = <?php echo $this->getTreeJson() ?>,
+      root;
+
   function buildCategoryTree (parent, config) {
     for (var i = 0; i < config.length; i++) {
 
@@ -40,11 +43,8 @@ Ext.EventManager.onDocumentReady (function () {
     }
   }
 
-  var root = new Ext.tree.TreeNode({
-    text: '<?php echo $this->jsQuoteEscape($this->getRoot()->getName()); ?>',
-    id: '<?php echo $this->getRoot()->getId(); ?>',
-    expanded: true
-  });
+  treeData.expanded = true;
+  root = new Ext.tree.TreeNode(treeData);
 
   var tree = new Ext.tree.TreePanel('categories', {
     animate: false,
@@ -59,7 +59,7 @@ Ext.EventManager.onDocumentReady (function () {
     'check': onCheck
   });
 
-  buildCategoryTree(root, <?php echo $this->getTreeJson() ?>);
+  buildCategoryTree(root, treeData.children);
 
   tree.render();
 
