@@ -21,11 +21,16 @@
 /**
  * API acccess block
  *
+ * @todo add this block to layout only on normal admin pages, such as pages
+ *   with header, footer, content, etc.
+ *
  * @package MVentory/API
  * @author Anatoly A. Kazantsev <anatoly@mventory.com>
  */
 class MVentory_Api_Block_Access extends Mage_Adminhtml_Block_Template
 {
+  protected $_isOutputAllowed = false;
+
   /**
    * Check if first API user has been created
    *
@@ -82,11 +87,18 @@ class MVentory_Api_Block_Access extends Mage_Adminhtml_Block_Template
   protected function _prepareLayout () {
     parent::_prepareLayout();
 
-    if (!$this->isUserCreated())
-      $this
-        ->getLayout()
-        ->getBlock('head')
-        ->addItem('skin_css', 'mventory/css/styles.css');
+    if ($this->isUserCreated())
+      return $this;
+
+    $headBlock = $this
+      ->getLayout()
+      ->getBlock('head');
+
+    if (!$headBlock)
+      return $this;
+
+    $this->_isOutputAllowed = true;
+    $headBlock->addItem('skin_css', 'mventory/css/styles.css');
 
     return $this;
   }
@@ -101,6 +113,6 @@ class MVentory_Api_Block_Access extends Mage_Adminhtml_Block_Template
    *   Generated HTML
    */
   protected function _toHtml () {
-    return $this->isUserCreated() ? '' : parent::_toHtml();
+    return $this->_isOutputAllowed ? parent::_toHtml() : '';
   }
 }
