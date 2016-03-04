@@ -1048,14 +1048,36 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       if ($loadImage
           && file_exists($_image = $this->__mediaPath . $image['file'])) try {
 
-        $_image = new Varien_Image($_image);
+        $size = $this->_getImageSize($_image);
+        if (!$size)
+          continue;
 
-        $image['width'] = (string) $_image->getOriginalWidth();
-        $image['height'] = (string) $_image->getOriginalHeight();
+        $image['width'] = $size['width'];
+        $image['height'] = $size['height'];
       }
       catch (Exception $e) {}
     }
 
     return $images;
+  }
+
+  /**
+   * Return image dimensions
+   *
+   * @param string $image
+   *   Absolute path to an image file
+   *
+   * @return array|null
+   *   Image dimensions or null in case an error
+   */
+  protected function _getImageSize ($image) {
+    if (isset($this->_imageCache[$image]))
+      return $this->_imageCache[$image];
+
+    $size = getimagesize($image);
+
+    return $this->_imageCache[$image] = ($size && isset($size[0], $size[1]))
+      ? ['width' => (string) $size[0], 'height' => (string) $size[1]]
+      : null;
   }
 }
