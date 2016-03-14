@@ -35,15 +35,9 @@ The extension is free for non-commercial or trial use. Please, request a FREE co
 Visit http://mventory.com for more info.</description>
    <license>CC BY-NC-ND 4.0</license>
    <license_uri>http://creativecommons.org/licenses/by-nc-nd/4.0/</license_uri>
-   <version>1.6.0</version>
+   <version>1.6.1</version>
    <stability>stable</stability>
-   <notes>* Bug fixes and refactoring
-       * Image Review moved into separate extension
-       * Compatibility with SUPEE-6788
-       * Allow category matching based on yes/no attributes
-   
-       Note: Category matching has changed. All rules that match will be applied to mak
-   assignment of a product to multiple categories easier.</notes>
+   <notes>* Fix the bug which prevents another users of Magento API to send order emails</notes>
    <authors>
       <name>
          <name>Anatoly A. Kazantsev</name>
