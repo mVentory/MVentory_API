@@ -1,15 +1,9 @@
 <?php
 
-$version = '1.6.0';
+$version = '1.6.1';
 
 $notes = <<<EOT
-* Bug fixes and refactoring
-* Image Review moved into separate extension
-* Compatibility with SUPEE-6788
-* Allow category matching based on yes/no attributes
-
-Note: Category matching has changed. All rules that match will be applied to make
-assignment of a product to multiple categories easier.
+* Fix the bug which prevents another users of Magento API to send order emails
 EOT;
 
 $description = <<<EOT

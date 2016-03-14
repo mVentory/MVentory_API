@@ -33,7 +33,7 @@ class MVentory_API_Helper_Mage_Sales_Data extends Mage_Sales_Helper_Data {
    * @return bool
    */
   public function canSendNewOrderConfirmationEmail ($store = null) {
-    return $this->_notApiCall()
+    return $this->_notMventoryApi()
            && parent::canSendNewOrderConfirmationEmail($store);
   }
 
@@ -44,7 +44,7 @@ class MVentory_API_Helper_Mage_Sales_Data extends Mage_Sales_Helper_Data {
    * @return bool
    */
   public function canSendNewOrderEmail ($store = null) {
-    return $this->_notApiCall() && parent::canSendNewOrderEmail($store);
+    return $this->_notMventoryApi() && parent::canSendNewOrderEmail($store);
   }
 
   /**
@@ -54,7 +54,7 @@ class MVentory_API_Helper_Mage_Sales_Data extends Mage_Sales_Helper_Data {
    * @return bool
    */
   public function canSendOrderCommentEmail ($store = null) {
-    return $this->_notApiCall() && parent::canSendOrderCommentEmail($store);
+    return $this->_notMventoryApi() && parent::canSendOrderCommentEmail($store);
   }
 
   /**
@@ -64,7 +64,7 @@ class MVentory_API_Helper_Mage_Sales_Data extends Mage_Sales_Helper_Data {
    * @return bool
    */
   public function canSendNewShipmentEmail ($store = null) {
-    return $this->_notApiCall() && parent::canSendNewShipmentEmail($store);
+    return $this->_notMventoryApi() && parent::canSendNewShipmentEmail($store);
   }
 
   /**
@@ -74,7 +74,8 @@ class MVentory_API_Helper_Mage_Sales_Data extends Mage_Sales_Helper_Data {
    * @return bool
    */
   public function canSendShipmentCommentEmail ($store = null) {
-    return $this->_notApiCall() && parent::canSendShipmentCommentEmail($store);
+    return $this->_notMventoryApi()
+           && parent::canSendShipmentCommentEmail($store);
   }
 
   /**
@@ -84,7 +85,7 @@ class MVentory_API_Helper_Mage_Sales_Data extends Mage_Sales_Helper_Data {
    * @return bool
    */
   public function canSendNewInvoiceEmail ($store = null) {
-    return $this->_notApiCall() && parent::canSendNewInvoiceEmail($store);
+    return $this->_notMventoryApi() && parent::canSendNewInvoiceEmail($store);
   }
 
   /**
@@ -94,7 +95,8 @@ class MVentory_API_Helper_Mage_Sales_Data extends Mage_Sales_Helper_Data {
    * @return bool
    */
   public function canSendInvoiceCommentEmail ($store = null) {
-    return $this->_notApiCall() && parent::canSendInvoiceCommentEmail($store);
+    return $this->_notMventoryApi()
+           && parent::canSendInvoiceCommentEmail($store);
   }
 
   /**
@@ -104,7 +106,8 @@ class MVentory_API_Helper_Mage_Sales_Data extends Mage_Sales_Helper_Data {
    * @return bool
    */
   public function canSendNewCreditmemoEmail ($store = null) {
-    return $this->_notApiCall() && parent::canSendNewCreditmemoEmail($store);
+    return $this->_notMventoryApi()
+           && parent::canSendNewCreditmemoEmail($store);
   }
 
   /**
@@ -114,16 +117,19 @@ class MVentory_API_Helper_Mage_Sales_Data extends Mage_Sales_Helper_Data {
    * @return bool
    */
   public function canSendCreditmemoCommentEmail ($store = null) {
-    return $this->_notApiCall()
+    return $this->_notMventoryApi()
            && parent::canSendCreditmemoCommentEmail($store);
   }
 
   /**
-   * Check if Magento was requested throw API
+   * Check if current order/shipment/invoice is not being created
+   * via mVentory API
    *
    * @return bool
+   *   True if usual order/shipment/invoice,
+   *   false if mVentory order/shipment/invoice
    */
-  protected function _notApiCall () {
-    return Mage::getSingleton('api/server')->getAdapter() == null;
+  protected function _notMventoryApi () {
+    return !Mage::registry(MVentory_API_Model_Config::ORDER_DISABLE_EMAILS);
   }
 }

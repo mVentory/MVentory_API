@@ -235,6 +235,17 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
 
     $result = $cartPayment->setPaymentMethod($quoteId, $data, $storeId);
 
+    /**
+     * Set flag that we create order via mVentory API to prevent sending email
+     * for an order/shipment/invoice
+     *
+     * @see MVentory_API_Helper_Mage_Sales_Data
+     *   See the class to find how we disabled sending emails
+     *   for an order/shipment/invoice
+     */
+    Mage::unregister(MVentory_API_Model_Config::ORDER_DISABLE_EMAILS);
+    Mage::register(MVentory_API_Model_Config::ORDER_DISABLE_EMAILS, true, true);
+
     $orderId = $this->createOrder($quoteId, $storeId);
 
     $apiUser = $helper->getApiUser();
@@ -276,6 +287,9 @@ class MVentory_API_Model_Cart_Api extends Mage_Checkout_Model_Cart_Api {
     catch (Exception $e) {
       Mage::logException($e);
     }
+
+    //Unset the flag because the order was created
+    Mage::unregister(MVentory_API_Model_Config::ORDER_DISABLE_EMAILS);
 
     if ($updateProduct) try {
       Mage::app()->setCurrentStore(Mage_Core_Model_App::ADMIN_STORE_ID);
