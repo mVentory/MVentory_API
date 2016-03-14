@@ -62,4 +62,6 @@ class MVentory_API_Model_Config
   const MT_INPUT_GESTURES = 3;
   const MT_INPUT_INTERNETSEARCH = 4;
   const MT_INPUT_ANOTHERPROD = 5;
+
+  const ORDER_DISABLE_EMAILS = 'mventory_order_disable_emails';
 }
