@@ -128,6 +128,14 @@ class MVentory_API_Model_Product_Attribute_Api
   }
 
   public function addOptionAndReturnInfo ($attribute, $value) {
+    /**
+     * Required by _info() method
+     *
+     * @var MVentory_API_Model_Product_Attribute_Api::_info()
+     *   See the method to find how the variable is used
+     */
+    $this->_metadataHelper = Mage::helper('mventory/metadata');
+
     $storeId = $this->_helper->getCurrentStoreId();
 
     $attribute = $this->_getAttribute($attribute);
