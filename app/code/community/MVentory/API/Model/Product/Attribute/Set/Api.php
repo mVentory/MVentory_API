@@ -33,9 +33,21 @@ class MVentory_API_Model_Product_Attribute_Set_Api
 
     $sets = $this->itemsPerStoreView($storeId);
 
-    foreach ($sets as &$set)
+    //Load IDs of attribute sets with matcing rules for Magento categories
+    $attrSetsWithMatching
+      = Mage::getResourceModel('mventory/matching_collection')
+          ->getAttributeSetIds();
+
+    foreach ($sets as &$set) {
+      $setId = $set['set_id'];
+
+      $set['has_matching_rules'] = isset($attrSetsWithMatching[$setId])
+        ? '1'
+        : '0';
+
       $set['attributes'] = $attributeApi
                              ->fullInfoList($set['set_id']);
+    }
 
     return $sets;
   }
