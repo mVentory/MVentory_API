@@ -137,8 +137,12 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
 
     $_result = $stockItem->items($productId);
 
-    if (isset($_result[0]))
+    if (isset($_result[0])) {
+      //Unset fields we already have in the results array
+      unset($_result[0]['product_id'], $_result[0]['sku']);
+
       $result = array_merge($result, $_result[0]);
+    }
 
     $result['images'] = $this->_getImages($productId, $storeId);
 
