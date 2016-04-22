@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -643,22 +643,28 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
    *   - Update product's attribute set
    *   - Process additional SKUs
    *
+   * @todo remove $none parameter later
+   *
    * @param int|string $productId
+   *   Product ID
+   *
    * @param array $productData
    * @param string|int $store
-   * @param string $identifierType Type of $productId parameter
+   * @param string $none Former $identifierType parameter. Was deprecated
+   *   because the app calls this API only with product IDs.
+   *
    * @return boolean
    */
   public function update ($productId,
                           $productData,
                           $store = null,
-                          $identifierType = null) {
+                          $none = null) {
 
     //Use admin store ID to save values of attributes in the default scope
     $product = $this->_getProduct(
       $productId,
       Mage_Core_Model_App::ADMIN_STORE_ID,
-      $identifierType
+      'id'
     );
 
     //!!!TODO: do we want to update attr set in linked prods?
@@ -736,8 +742,6 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $this->_fault('data_invalid', $e->getMessage());
     }
 
-    $productId = $product->getId();
-
     if ($removeSkus)
       Mage::getResourceModel('mventory/sku')->removeByProductId($productId);
 
@@ -763,10 +767,18 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
   /**
    * Delete product
    *
+   * @todo accept only a product ID and remove second parameter
+   *
    * @param int|string $productId
    * @return boolean
    */
   public function delete ($productId, $identifierType = null) {
+    //This is for backward compatibility with old app versions, they always
+    //use an SKU. New versions use only (id, 'id') combination.
+    //Remove it later
+    if ($identifierType === null)
+      $identifierType = 'sku';
+
     $product = $this->_getProduct($productId, null, $identifierType);
     $helper = Mage::helper('mventory/product_configurable');
 

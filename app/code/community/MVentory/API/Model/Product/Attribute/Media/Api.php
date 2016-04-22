@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014-2015 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -27,8 +27,21 @@
 class MVentory_API_Model_Product_Attribute_Media_Api
   extends Mage_Catalog_Model_Product_Attribute_Media_Api {
 
+  /**
+   * [createAndReturnInfo description]
+   *
+   * @todo remove $none parameter later
+   *
+   * @param  [type] $productId [description]
+   * @param  [type] $data      [description]
+   * @param  [type] $storeId   [description]
+   * @param string $none Former $identifierType parameter. Was deprecated
+   *   because the app calls this API only with product IDs.
+   *
+   * @return [type]            [description]
+   */
   public function createAndReturnInfo ($productId, $data, $storeId = null,
-                                       $identifierType = null) {
+                                       $none = null) {
 
     if (!isset($data['file']))
       $this->_fault('data_invalid',
@@ -76,7 +89,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     //Temp solution, apply image settings globally
     $storeId = null;
 
-    $images = $this->items($productId, $storeId, $identifierType);
+    $images = $this->items($productId, $storeId, 'id');
 
     $name = $file['name'] . '.' . $this->_mimeTypes[$file['mime']];
 
@@ -85,7 +98,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
       //has following format '/i/m/image.ext' (dispretion path)
       if (strtolower(substr($image['file'], 5)) == $name)
         return Mage::getModel('mventory/product_api')
-                 ->fullInfo($productId, $identifierType);
+                 ->fullInfo($productId, 'id');
 
     $hasMainImage = false;
     $hasSmallImage = false;
@@ -124,7 +137,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         && Mage::getStoreConfig(MVentory_API_Model_Config::_BGG_EXCL_NEW))
       $data['exclude'] = '1';
 
-    $img = $this->create($productId, $data, $storeId, $identifierType);
+    $img = $this->create($productId, $data, $storeId, 'id');
 
     if ($isClipEnabled) try {
       $clipHelper = Mage::helper('mventory/imageclipper');
@@ -150,7 +163,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
           'event' => 'image-upload',
           'file' => $_img,
           'sku' => $this
-            ->_initProduct($productId, $storeId,$identifierType)
+            ->_initProduct($productId, $storeId, 'id')
             ->getSku()
         ));
     } catch (Exception $e) {
@@ -162,7 +175,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         'event' => 'image-upload-failed',
         'file' => $_img,
         'sku' => $this
-          ->_initProduct($productId, $storeId,$identifierType)
+          ->_initProduct($productId, $storeId, 'id')
           ->getSku()
       ));
     }
@@ -173,7 +186,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     /**
      * @todo Move getting of product ID into beginning of the function
      */
-    if (($productId = $helper->getProductId($productId, $identifierType)))
+    if (($productId = $helper->getProductId($productId, 'id')))
       $cID = $helper->getIdByChild($productId);
 
     //Set product's visibility to 'catalog and search' if product doesn't have
@@ -184,9 +197,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         $productId,
         array(
           'visibility' => Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
-        ),
-        null,
-        $identifierType
+        )
       );
 
     if (!empty($cID))
@@ -199,26 +210,30 @@ class MVentory_API_Model_Product_Attribute_Media_Api
           : Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
       );
 
-    return $productApi->fullInfo($productId, $identifierType);
+    return $productApi->fullInfo($productId, 'id');
   }
 
   /**
    * Update image data
    *
+   * @todo remove $none parameter later
+   *
    * @param int|string $id
    * @param string $file
    * @param array $data
    * @param string|int $store
-   * @param string $idType
+   * @param string $none Former $idType parameter. Was deprecated because
+   *   the app calls this API only with product IDs.
+   *
    * @return boolean
    */
-  public function update ($id, $file, $data, $store = null, $idType = null) {
+  public function update ($id, $file, $data, $store = null, $none = null) {
     $data = $this->_prepareImageData($data);
 
     //Temp solution, apply image settings globally
     $store = null;
-    $product = $this->_initProduct($id, $store, $idType);
-    $id = $product->getId();
+
+    $product = $this->_initProduct($id, $store, 'id');
 
     $backend = $this
       ->_getGalleryAttribute($product)
@@ -304,10 +319,22 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     return true;
   }
 
-  public function remove_ ($productId, $file, $identifierType = null) {
-    $image = $this->info($productId, $file, null, $identifierType);
+  /**
+   * [remove_ description]
+   *
+   * @todo remove $none parameter later
+   *
+   * @param  [type] $productId      [description]
+   * @param  [type] $file           [description]
+   * @param string $none Former $identifierType parameter. Was deprecated
+   *   because the app calls this API only with product IDs.
+   *
+   * @return [type]                 [description]
+   */
+  public function remove_ ($productId, $file, $none = null) {
+    $image = $this->info($productId, $file, null, 'id');
 
-    $product = $this->_initProduct($productId, null, $identifierType);
+    $product = $this->_initProduct($productId, null, 'id');
     $gallery = $this->_getGalleryAttribute($product);
 
     if (!$gallery->getBackend()->getImage($product, $file))
@@ -321,30 +348,20 @@ class MVentory_API_Model_Product_Attribute_Media_Api
       $this->_fault('not_removed', $e->getMessage());
     }
 
-    $images = $this->items($productId, null, $identifierType);
-
-    $helper = Mage::helper('mventory/product_configurable');
-
-    /**
-     * @todo Move getting of product ID into beginning of the function
-     */
-    if (($productId = $helper->getProductId($productId, $identifierType)))
-      $cID = $helper->getIdByChild($productId);
+    $images = $this->items($productId, null, 'id');
 
     $productApi = Mage::getModel('mventory/product_api');
+    $helper = Mage::helper('mventory/product_configurable');
+
+    $cID = $helper->getIdByChild($productId);
 
     if (!$images) {
       $defVisibility = $helper->getDefaultVisibility(
         $helper->getWebsite($productId)
       );
 
-      if (!(isset($cID) && $cID))
-        $productApi->update(
-          $productId,
-          array('visibility' => $defVisibility),
-          null,
-          $identifierType
-        );
+      if (!$cID)
+        $productApi->update($productId, ['visibility' => $defVisibility]);
     } else if (in_array('image', $image['types'])) {
       $this->update(
         $productId,
@@ -352,13 +369,11 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         array(
           'types' => array('image', 'small_image', 'thumbnail'),
           'exclude' => 0
-        ),
-        null,
-        $identifierType
+        )
       );
     }
 
-    if (isset($cID) && $cID)
+    if ($cID)
       $this->_sync(
         $productId,
         $cID,
@@ -388,7 +403,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
       ]);
     }
 
-    return $productApi->fullInfo($productId, $identifierType);
+    return $productApi->fullInfo($productId, 'id');
   }
 
   /**
@@ -425,37 +440,6 @@ class MVentory_API_Model_Product_Attribute_Media_Api
       $this->_fault('image_not_exists');
 
     return $this->_imageToArray($image, $product);
-  }
-
-  /**
-   * Retrieve product
-   *
-   * The function is redefined to allow loading product by additional SKU
-   * or barcode
-   *
-   * @param int|string $productId
-   * @param string|int $store
-   * @param  string $identifierType
-   * @return Mage_Catalog_Model_Product
-   */
-  protected function _initProduct($productId, $store = null,
-                                  $identifierType = null) {
-
-    $helper = Mage::helper('mventory/product');
-
-    $productId = $helper->getProductId($productId, $identifierType);
-
-    if (!$productId)
-      $this->_fault('product_not_exists');
-
-    $product = Mage::getModel('catalog/product')
-                 ->setStoreId(Mage::app()->getStore($store)->getId())
-                 ->load($productId);
-
-    if (!$product->getId())
-      $this->_fault('product_not_exists');
-
-    return $product;
   }
 
   private function _fixOrientation ($name, &$data) {

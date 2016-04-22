@@ -14,7 +14,7 @@
  * See the full license at http://creativecommons.org/licenses/by-nc-nd/4.0/
  *
  * @package MVentory/API
- * @copyright Copyright (c) 2014 mVentory Ltd. (http://mventory.com)
+ * @copyright Copyright (c) 2014-2016 mVentory Ltd. (http://mventory.com)
  * @license http://creativecommons.org/licenses/by-nc-nd/4.0/
  */
 
@@ -30,12 +30,6 @@ class MVentory_API_Model_Stock_Item_Api
   public function items ($productIds) {
     if (!is_array($productIds))
       $productIds = array($productIds);
-
-    $product = Mage::getModel('catalog/product');
-
-    foreach ($productIds as &$productId)
-      if ($newId = $product->getIdBySku($productId))
-        $productId = $newId;
 
     $storeId = Mage::helper('mventory')->getCurrentStoreId();
 
