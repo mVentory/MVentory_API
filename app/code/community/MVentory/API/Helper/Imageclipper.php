@@ -334,17 +334,12 @@ class MVentory_API_Helper_Imageclipper extends MVentory_API_Helper_Data
   * Delete file from Dropbox
   *
   * @param string /path/to/img1.jpg
-  * @return bool|array meta-data
+  * @return array meta-data
   */
   public function deleteFromDropbox ($filename) {
-    $dbxClient = $this->getDbxClient();
-
-    try {
-      return $dbxClient->delete($this->_toDbxPath($filename));
-    } catch (Exception $e) {
-    }
-
-    return false;
+    return $this
+      ->getDbxClient()
+      ->delete($this->_toDbxPath($filename));
   }
 
   /**
