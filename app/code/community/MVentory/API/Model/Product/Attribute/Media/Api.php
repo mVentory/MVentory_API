@@ -369,7 +369,7 @@ class MVentory_API_Model_Product_Attribute_Media_Api
     $helper = Mage::helper('mventory/imageclipper');
 
     if (Mage::getStoreConfig(MVentory_API_Model_Config::_BGG_ENABLED)) try {
-      $helper->deleteFromDropbox(basename($file));
+      $md = $helper->deleteFromDropbox(basename($file));
 
       if ($md['is_deleted'])
         $helper->log(array(
