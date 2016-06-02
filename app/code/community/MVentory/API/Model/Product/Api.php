@@ -705,6 +705,18 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
       $product->getAttributeSetId()
     );
 
+    //This is a workaround to enable changing of the status attribute
+    //using the hidden attribute. Also we need to unset value of the status
+    //attribute if there's no value for the hidden attribute in the incoming
+    //data, because the app tries to set product's status to Enable if it sees
+    //the product is disabled
+    if (isset($productData['hidden']))
+      $productData['status'] = $productData['hidden']
+        ? Mage_Catalog_Model_Product_Status::STATUS_DISABLED
+        : Mage_Catalog_Model_Product_Status::STATUS_ENABLED;
+    else
+      unset($productData['status']);
+
     $this->_prepareDataForSave($product, $productData);
 
     if (isset($removeOldValues) && $removeOldValues)

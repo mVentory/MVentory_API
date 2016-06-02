@@ -38,7 +38,10 @@ class MVentory_API_Helper_Product_Attribute
     'special_from_date' => true,
     'special_to_date' => true,
     'weight' => true,
-    'tax_class_id' => true
+    'tax_class_id' => true,
+
+    //Enable the attribute to allow replication of its value
+    'status' => true,
   );
 
   protected $_blacklist = array('cost' => true);
