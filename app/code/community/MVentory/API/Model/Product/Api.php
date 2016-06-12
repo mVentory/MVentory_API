@@ -322,7 +322,7 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
         $data['status'] = 1;
 
       $data['mv_created_userid'] = $helper->getApiUser()->getId();
-      $data['mv_created_date'] = time();
+      $data['mv_created_date'] = Varien_Date::now();
       $data['website_ids'] = $helper->getWebsitesForProduct();
 
       $website = $helper->getCurrentWebsite();
@@ -385,7 +385,8 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
                                           $mode = 'all',
                                           $subtractQty = 0) {
 
-    $newId = Mage::helper('mventory/product')->getProductId($newSku, 'sku');
+    $helper = Mage::helper('mventory/product');
+    $newId = $helper->getProductId($newSku, 'sku');
 
     if ($newId)
       return $this->fullInfo($newId, 'id');
@@ -421,6 +422,9 @@ class MVentory_API_Model_Product_Api extends Mage_Catalog_Model_Product_Api {
     //Set visibility to "Catalog, Search". By default all products are visible.
     //They will be hidden if configurable one is created.
     $data['visibility'] = 4;
+
+    $data['mv_created_userid'] = $helper->getApiUser()->getId();
+    $data['mv_created_date'] = Varien_Date::now();
 
     $new = $old
             ->setData('mventory_update_duplicate', $data)
