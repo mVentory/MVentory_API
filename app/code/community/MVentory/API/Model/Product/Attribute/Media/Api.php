@@ -366,29 +366,26 @@ class MVentory_API_Model_Product_Attribute_Media_Api
         !$images ? $defVisibility : null
       );
 
-    $helper = Mage::helper('mventory/imageclipper');
+    if (Mage::getStoreConfig(MVentory_API_Model_Config::_BGG_ENABLED)) {
+      $helper = Mage::helper('mventory/imageclipper');
+      $_img = basename($file);
+      $event = 'image-delete-failed';
 
-    if (Mage::getStoreConfig(MVentory_API_Model_Config::_BGG_ENABLED)) try {
-      $md = $helper->deleteFromDropbox(basename($file));
+      try {
+        $md = $helper->deleteFromDropbox($_img);
+        if ($md['is_deleted'])
+          $event = 'image-delete';
+      } catch (Exception $e) {
+        Mage::logException($e);
+      }
 
-      if ($md['is_deleted'])
-        $helper->log(array(
-          'date' => $helper->getCurrentDate(),
-          'time' => $helper->getCurrentTime(),
-          'event' => 'image-delete',
-          'file' => $_img,
-          'sku' => $product->getSku()
-        ));
-    } catch (Exception $e) {
-      Mage::logException($e);
-
-      $helper->log(array(
+      $helper->log([
         'date' => $helper->getCurrentDate(),
         'time' => $helper->getCurrentTime(),
-        'event' => 'image-delete-failed',
+        'event' => $event,
         'file' => $_img,
         'sku' => $product->getSku()
-      ));
+      ]);
     }
 
     return $productApi->fullInfo($productId, $identifierType);
